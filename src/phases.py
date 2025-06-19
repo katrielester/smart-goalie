@@ -77,7 +77,7 @@ smart_training_flow = {
             "- Relevant",
             "- Time-bound",
             "If your goal ticks all five, you’re much more likely to succeed.",
-            "Watch this video to learn more about SMART goals:\n\n<a href=\"https://www.youtube.com/watch?v=yA53yhiOe04&ab_channel=FlikliTV\" target=\"_blank\" style=\"color:#4ea8ff;\">Achieve More by Setting SMART Goals (YouTube)</a>"
+            "Watch this video to learn more about SMART goals:<br><br><a href=\"https://www.youtube.com/watch?v=yA53yhiOe04&ab_channel=FlikliTV\" target=\"_blank\" style=\"color:#4ea8ff;\">Achieve More by Setting SMART Goals (YouTube)</a>"
         ],
         "buttons": ["I watched the video"],
         "next": {

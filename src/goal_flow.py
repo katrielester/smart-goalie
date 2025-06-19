@@ -23,8 +23,9 @@ def run_goal_setting():
     else:
         if step.get("buttons"):
             selected = None
-            for btn in step["buttons"]:
-                if st.button(btn, key=f"btn_{btn}"):
+            cols = st.columns(len(step["buttons"]))
+            for idx, btn in enumerate(step["buttons"]):
+                if cols[idx].button(btn, key=f"btn_{btn}"):
                     selected = btn
                     break
             if selected:
@@ -58,15 +59,15 @@ def run_goal_setting():
                 updated_goal = suggest_timebound_fix(goal)
 
             # Format the goal output for readability
-            formatted_goal = updated_goal.replace("1.", "\n1.").replace("2.", "\n2.").replace("3.", "\n3.")
+            formatted_goal = updated_goal.replace("1.", "<br>1.").replace("2.", "<br>2.").replace("3.", "<br>3.")
             formatted_goal = formatted_goal.replace("Answer:", "").strip()
 
             # Save cleaned output
             st.session_state["suggested_goal"] = formatted_goal
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": f"This is an example of a more {fix_type} goal:\n\n{formatted_goal}\n\n"
-                        f"Try adjusting your goal if it needs improvement.\n"
+                "message": f"This is an example of a more {fix_type} goal:<br><br>{formatted_goal}<br><br>"
+                        f"Try adjusting your goal if it needs improvement.<br>"
             })
 
             st.session_state["smart_step"] = step["next"]
@@ -89,7 +90,7 @@ def run_goal_setting():
 
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "Here are some example tasks you can consider (just suggestions):\n\n" + suggested
+                "message": "Here are some example tasks you can consider (just suggestions):<br><br>" + suggested
             })
 
             st.session_state["goal_id_being_worked"] = goal_id

@@ -21,7 +21,10 @@ def generate(query: Query):
         return {"response": "(Model not available yet.)"}
 
     try:
-        output = llm(query.prompt, max_tokens=query.max_tokens)
+        output = llm(
+            query.prompt, 
+            max_tokens=query.max_tokens,
+            stop=["\n\n"])
         return {"response": output["choices"][0]["text"]}
     except Exception as e:
         print("Error:", str(e))
