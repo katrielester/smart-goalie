@@ -1,7 +1,12 @@
-from langchain_ollama import OllamaLLM
+# llama_utils.py
 
-llm = OllamaLLM(model="mistral")
-FAKE_MODE = True  # Toggle this to False when running on a real server
+import requests
+
+LLM_API_URL = "https://smart-goalie-llm.onrender.com/generate"
+
+import os
+
+FAKE_MODE = os.getenv("FAKE_MODE", "true").lower() == "true"
 
 def fake_response(goal_text, type_):
     examples = {
@@ -11,14 +16,23 @@ def fake_response(goal_text, type_):
         "relevant": f"This is an example of a more relevant goal: 'Finish the project to strengthen my programming portfolio.' Adding why it matters to you can boost motivation.",
         "timebound": f"This is an example of a time-bound goal: 'Submit the final version by the end of next week.' Timelines create urgency and accountability.",
         "refine": f"[Goal]Finish the final draft of my project report by next Friday to meet the submission deadline.[/Goal]",
-        "summary": f"This week, you made progress on your goal. Stay consistent and focus on one step at a time. You're doing great—keep going!"
+        "summary": f"This week, you made progress on your goal. Stay consistent and focus on one step at a time. You're doing great—keep going!",
+        "tasks": "1. Write the project outline\n2. Draft the introduction\n3. Collect feedback on initial draft"
     }
     return examples.get(type_, "This is a placeholder response.")
 
 def smart_wrapper(prompt, goal_text, type_):
     if FAKE_MODE:
         return fake_response(goal_text, type_)
-    return llm.invoke(prompt).strip()
+    try:
+        response = requests.post(
+            LLM_API_URL,
+            json={"prompt": prompt.strip(), "max_tokens":512}
+        )
+        response.raise_for_status()
+        return  response.json().get("response","").strip()
+    except Exception as e:
+        return f"(Error generating response: {e})"
 
 def suggest_specific_fix(goal_text):
     prompt = f"""
@@ -154,4 +168,4 @@ Only provide the new suggestions in this format:
 
 Make it clear that these are just examples for inspiration.
 """
-    return llm.invoke(prompt).strip()
+    return smart_wrapper(prompt, goal_text, "tasks")
