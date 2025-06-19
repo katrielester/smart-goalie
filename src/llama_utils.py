@@ -8,6 +8,11 @@ import os
 
 FAKE_MODE = os.getenv("FAKE_MODE", "true").lower() == "true"
 
+def extract_goal_variants(response_text):
+    lines = response_text.strip().splitlines()
+    variants = [line.strip() for line in lines if line.strip().startswith(("1.", "2.", "3."))]
+    return "\n".join(variants)
+
 def fake_response(goal_text, type_):
     examples = {
         "specific": f"This is an example of a more specific goal based on your input: 'Finish the backend module of my project.' Consider narrowing down your goal like this if it's too broad.",
@@ -27,7 +32,8 @@ def smart_wrapper(prompt, goal_text, type_):
     try:
         response = requests.post(
             LLM_API_URL,
-            json={"prompt": prompt.strip(), "max_tokens":128}
+            json={"prompt": prompt.strip(), "max_tokens":128},
+            timeout=60
         )
         response.raise_for_status()
         return  response.json().get("response","").strip()
@@ -36,9 +42,13 @@ def smart_wrapper(prompt, goal_text, type_):
 
 def suggest_specific_fix(goal_text):
     prompt = f"""
-Rewrite the goal below to make it more specific. Do not add explanations or extra information. Just return three more specific versions of the goal.
+You are a goal-refinement assistant.
 
-Only improve specificity — do not include numbers, timeframes, or reasons.
+Take the goal below and return exactly **3 clearer and more specific** versions. Make them short and focused.
+
+- Keep the same meaning.
+- Be task-oriented.
+- Do NOT add explanations or extra text.
 
 Format:
 1. ...
@@ -47,12 +57,7 @@ Format:
 
 Goal: {goal_text}
 """
-    raw_output = smart_wrapper(prompt, goal_text, "specific")
-    
-    # Format: add line breaks if needed
-    formatted = raw_output.replace("  ", "\n").replace("1.", "\n1.").replace("2.", "\n2.").replace("3.", "\n3.")
-    
-    return formatted.strip()
+    return smart_wrapper(prompt, goal_text, "specific")
 
 def suggest_measurable_fix(goal_text):
     prompt = f"""
@@ -100,7 +105,8 @@ Use this format:
 
 Goal: {goal_text}
 """
-    return smart_wrapper(prompt, goal_text, "achievable")
+    raw_output = smart_wrapper(prompt, goal_text, "specific")
+    return extract_goal_variants(raw_output)
 
 def suggest_relevant_fix(goal_text):
     prompt = f"""

@@ -17,8 +17,15 @@ class Query(BaseModel):
 
 @app.post("/generate")
 def generate(query: Query):
-    output = llm(query.prompt, max_tokens=query.max_tokens)
-    return {"response": output["choices"][0]["text"]}
+    if llm is None:
+        return {"response": "(Model not available yet.)"}
+
+    try:
+        output = llm(query.prompt, max_tokens=query.max_tokens)
+        return {"response": output["choices"][0]["text"]}
+    except Exception as e:
+        print("Error:", str(e))
+        return {"response": f"(Error generating response: {str(e)})"}
 
 if __name__ == "__main__":
     import uvicorn
