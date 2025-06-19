@@ -4,11 +4,9 @@ from pydantic import BaseModel
 
 app = FastAPI()
 MODEL_PATH = "/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
-llm = None
 
-if os.path.exists(MODEL_PATH):
-    from llama_cpp import Llama
-    llm = Llama(model_path=MODEL_PATH)
+from llama_cpp import Llama
+llm = Llama(model_path=MODEL_PATH)
 
 class Query(BaseModel):
     prompt: str
