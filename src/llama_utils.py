@@ -27,7 +27,7 @@ def smart_wrapper(prompt, goal_text, type_):
     try:
         response = requests.post(
             LLM_API_URL,
-            json={"prompt": prompt.strip(), "max_tokens":512}
+            json={"prompt": prompt.strip(), "max_tokens":256}
         )
         response.raise_for_status()
         return  response.json().get("response","").strip()
