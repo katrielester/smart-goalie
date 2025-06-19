@@ -1,2 +1,4 @@
-models/*.gguf
+/llm_backend/models/*.gguf
 .DS_Store
+/llm_backend/.DS_Store
+/llm_backend/models/.DS_Store
