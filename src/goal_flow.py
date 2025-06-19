@@ -57,12 +57,18 @@ def run_goal_setting():
             elif fix_type == "timebound":
                 updated_goal = suggest_timebound_fix(goal)
 
-            st.session_state["suggested_goal"] = updated_goal
+            # Format the goal output for readability
+            formatted_goal = updated_goal.replace("1.", "\n1.").replace("2.", "\n2.").replace("3.", "\n3.")
+            formatted_goal = formatted_goal.replace("Answer:", "").strip()
+
+            # Save cleaned output
+            st.session_state["suggested_goal"] = formatted_goal
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": f"This is an example of a more {fix_type} goal: '{updated_goal}'\n\n"
-                        f"Try adjusting your goal if it needs improvement.\n\n"
+                "message": f"This is an example of a more {fix_type} goal:\n\n{formatted_goal}\n\n"
+                        f"Try adjusting your goal if it needs improvement.\n"
             })
+
             st.session_state["smart_step"] = step["next"]
             st.session_state["message_index"] = 0
             st.rerun()

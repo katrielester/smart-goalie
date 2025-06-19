@@ -27,7 +27,7 @@ def smart_wrapper(prompt, goal_text, type_):
     try:
         response = requests.post(
             LLM_API_URL,
-            json={"prompt": prompt.strip(), "max_tokens":256}
+            json={"prompt": prompt.strip(), "max_tokens":128}
         )
         response.raise_for_status()
         return  response.json().get("response","").strip()
@@ -36,27 +36,23 @@ def smart_wrapper(prompt, goal_text, type_):
 
 def suggest_specific_fix(goal_text):
     prompt = f"""
-You are a goal-setting assistant.
+Rewrite the goal below to make it more specific. Do not add explanations or extra information. Just return three more specific versions of the goal.
 
-Your task is to rewrite the following goal to make it **more specific** — by clearly stating what, where, or how it will be done.
+Only improve specificity — do not include numbers, timeframes, or reasons.
 
-DO:
-- Keep the original meaning
-- Make the task concrete and well-defined
-- Return exactly 3 specific versions
-
-DO NOT:
-- Explain or give commentary
-- Mention timeframes, quantity, or motivation
-
-Use this format:
+Format:
 1. ...
 2. ...
 3. ...
 
 Goal: {goal_text}
 """
-    return smart_wrapper(prompt, goal_text, "specific")
+    raw_output = smart_wrapper(prompt, goal_text, "specific")
+    
+    # Format: add line breaks if needed
+    formatted = raw_output.replace("  ", "\n").replace("1.", "\n1.").replace("2.", "\n2.").replace("3.", "\n3.")
+    
+    return formatted.strip()
 
 def suggest_measurable_fix(goal_text):
     prompt = f"""
