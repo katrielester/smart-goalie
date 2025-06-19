@@ -3,12 +3,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 app = FastAPI()
-MODEL_PATH = "/models/phi-2.Q4_K_M.gguf"
-llm = None
+MODEL_PATH = "/models/active-model.gguf"
 
-if os.path.exists(MODEL_PATH):
-    from llama_cpp import Llama
-    llm = Llama(model_path=MODEL_PATH)
+from llama_cpp import Llama
+llm = Llama(model_path=MODEL_PATH)
 
 class Query(BaseModel):
     prompt: str
