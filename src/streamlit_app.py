@@ -19,6 +19,10 @@ from phases import smart_training_flow, weekly_reflection_prompts, goal_setting_
 from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
 from logger import setup_logger
 
+import os
+
+DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
+
 logger = setup_logger()
 
 st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
@@ -60,16 +64,16 @@ if "authenticated" not in st.session_state:
     st.session_state["group"] = group_assignment
 
 with st.sidebar:
-    if st.button("Dev: Jump to Goal Setting"):
-        st.session_state["chat_state"] = "goal_setting"
-        st.session_state["smart_step"] = "initial_goal"
-        st.session_state["message_index"] = 0
-        st.rerun()
+    if DEV_MODE:
+        if st.button("Dev: Jump to Goal Setting"):
+            st.session_state["chat_state"] = "goal_setting"
+            st.session_state["smart_step"] = "initial_goal"
+            st.session_state["message_index"] = 0
+            st.rerun()
 
-with st.sidebar:
-    if st.button("Dev: Jump to Reflection"):
-        st.session_state["chat_state"] = "reflection"
-        st.rerun()
+        if st.button("Dev: Jump to Reflection"):
+            st.session_state["chat_state"] = "reflection"
+            st.rerun()
 
 with st.sidebar:
     st.title("User Panel")
