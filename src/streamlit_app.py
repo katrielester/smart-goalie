@@ -212,165 +212,84 @@ if st.session_state["chat_state"] == "view_goals":
             "message": goal_html
         })
 
-chat_bubble_html = "".join([
-    f'<div class="{"chat-left" if m["sender"] == "Assistant" else "chat-right"}">{m["message"]}</div>'
-    for m in st.session_state["chat_thread"]
-])
+# chat_bubble_html = "".join([
+#     f'<div class="{"chat-left" if m["sender"] == "Assistant" else "chat-right"}">{m["message"]}</div>'
+#     for m in st.session_state["chat_thread"]
+# ])
+
+for entry in st.session_state["chat_thread"]:
+    with st.chat_message("assistant" if entry["sender"] == "Assistant" else "user"):
+        st.markdown(entry["message"])
 
 # Render chat container
-with st.container():
-    # JS Experiment
-    # components.html(f"""
-    # <html>
-    # <head>
-    # <style>
-    #     body {{
-    #         font-family: "Segoe UI", sans-serif;
-    #         margin: 0;
-    #         padding: 0;
-    #         background-color: #0e1117;
-    #         color: #f0f0f0;
-    #     }}
-    #     .chat-wrapper {{
-    #         height: {chat_height_px}px;
-    #         overflow-y: auto;
-    #         padding: 10px;
-    #         border-radius: 10px;
-    #         border: 1px solid #444;
-    #         background-color: #1c1f26;
-    #     }}
-    #     .chat-bubble {{
-    #         opacity: 0;
-    #         transform: translateY(10px);
-    #         transition: all 0.3s ease-in-out;
-    #         margin: 5px 0;
-    #         padding: 10px;
-    #         max-width: 70%;
-    #         border-radius: 10px;
-    #         word-wrap: break-word;
-    #     }}
-    #     .chat-left {{
-    #         background-color: #2b2f38;
-    #         text-align: left;
-    #         color: #eaeaea;
-    #     }}
-    #     .chat-right {{
-    #         background-color: #005fcf;
-    #         text-align: right;
-    #         color: #ffffff;
-    #         margin-left: auto;
-    #     }}
-    # </style>
-    # </head>
-    # <body>
-    #     <div id="chatbox" class="chat-wrapper"></div>
-
-    #     <script>
-    #         const messages = {[
-    #             {
-    #                 "sender": m["sender"],
-    #                 "message": m["message"].replace("\\n", "<br>").replace('"', '\\"')
-    #             } for m in st.session_state["chat_thread"]
-    #         ]};
-
-    #         const chatbox = document.getElementById("chatbox");
-
-    #         function addBubble(index) {{
-    #             if (index >= messages.length) return;
-
-    #             const m = messages[index];
-    #             const bubble = document.createElement("div");
-    #             bubble.classList.add("chat-bubble");
-    #             bubble.classList.add(m.sender === "Assistant" ? "chat-left" : "chat-right");
-    #             bubble.innerHTML = m.message;
-
-    #             chatbox.appendChild(bubble);
-
-    #             // Trigger animation
-    #             setTimeout(() => {{
-    #                 bubble.style.opacity = 1;
-    #                 bubble.style.transform = "translateY(0)";
-    #                 chatbox.scrollTop = chatbox.scrollHeight;
-    #             }}, 50);
-
-    #             setTimeout(() => {{
-    #                 addBubble(index + 1);
-    #             }}, 600);  // delay between bubbles
-    #         }}
-
-    #         addBubble(0);
-    #     </script>
-    # </body>
-    # </html>
-    # """, height=chat_height_px + 20, scrolling=False)
-    
+# with st.container():
 
     # Static HTML
-    components.html(f"""
-        <html>
-        <head>
-        <style>
-            body {{
-                font-family: "Segoe UI", sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #0e1117;
-                color: #f0f0f0;
-            }}
+    # components.html(f"""
+    #     <html>
+    #     <head>
+    #     <style>
+    #         body {{
+    #             font-family: "Segoe UI", sans-serif;
+    #             margin: 0;
+    #             padding: 0;
+    #             background-color: #0e1117;
+    #             color: #f0f0f0;
+    #         }}
 
-            .chat-wrapper {{
-                height: {chat_height_px}px;
-                overflow-y: auto;
-                padding: 10px;
-                border-radius: 10px;
-                border: 1px solid #444;
-                background-color: #1c1f26;
-            }}
+    #         .chat-wrapper {{
+    #             height: {chat_height_px}px;
+    #             overflow-y: auto;
+    #             padding: 10px;
+    #             border-radius: 10px;
+    #             border: 1px solid #444;
+    #             background-color: #1c1f26;
+    #         }}
 
-            .chat-left {{
-                text-align: left;
-                background-color: #2b2f38;
-                color: #eaeaea;
-                border-radius: 10px;
-                padding: 10px;
-                margin: 5px 0;
-                max-width: 70%;
-                display: block;
-                word-wrap: break-word;
-            }}
+    #         .chat-left {{
+    #             text-align: left;
+    #             background-color: #2b2f38;
+    #             color: #eaeaea;
+    #             border-radius: 10px;
+    #             padding: 10px;
+    #             margin: 5px 0;
+    #             max-width: 70%;
+    #             display: block;
+    #             word-wrap: break-word;
+    #         }}
 
-            .chat-right {{
-                text-align: right;
-                background-color: #005fcf;
-                color: #ffffff;
-                border-radius: 10px;
-                padding: 10px;
-                margin: 5px 0;
-                max-width: 70%;
-                margin-left: auto;
-                display: block;
-                word-wrap: break-word;
-            }}
-        </style>
-        </head>
-        <body>
-            <div id="chatbox" class="chat-wrapper">
-                {chat_bubble_html}
-                <div id="endofchat" style="height: 30px;"></div>
-            </div>
-            <script>
-                const chatBox = document.getElementById("chatbox");
-                chatBox.scrollTop = chatBox.scrollHeight;
-            </script>
-        </body>
-        </html>
-    """, height=chat_height_px, scrolling=False)
+    #         .chat-right {{
+    #             text-align: right;
+    #             background-color: #005fcf;
+    #             color: #ffffff;
+    #             border-radius: 10px;
+    #             padding: 10px;
+    #             margin: 5px 0;
+    #             max-width: 70%;
+    #             margin-left: auto;
+    #             display: block;
+    #             word-wrap: break-word;
+    #         }}
+    #     </style>
+    #     </head>
+    #     <body>
+    #         <div id="chatbox" class="chat-wrapper">
+    #             {chat_bubble_html}
+    #             <div id="endofchat" style="height: 30px;"></div>
+    #         </div>
+    #         <script>
+    #             const chatBox = document.getElementById("chatbox");
+    #             chatBox.scrollTop = chatBox.scrollHeight;
+    #         </script>
+    #     </body>
+    #     </html>
+    # """, height=chat_height_px, scrolling=False)
 
 
 def run_intro():
     intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals!"
 
-    if "did_intro_rerun" not in st.session_state:
+    if "did_intro_rerun" not in st.session_state or not st.session_state["did_intro_rerun"]:
         if not any(entry["message"] == intro_message for entry in st.session_state["chat_thread"]):
             st.session_state["chat_thread"].append({"sender": "Assistant", "message": intro_message})
             st.session_state["did_intro_rerun"] = True
