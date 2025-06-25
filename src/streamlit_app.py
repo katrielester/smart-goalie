@@ -368,14 +368,14 @@ with st.container():
 
 
 def run_intro():
-    print("🟢 In run_intro()")
-    intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
+    intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals!"
 
-    # Append the intro message only once
-    if not any(entry["message"] == intro_message for entry in st.session_state["chat_thread"]):
-        st.session_state["chat_thread"].append({"sender": "Assistant", "message": intro_message})
+    if "did_intro_rerun" not in st.session_state:
+        if not any(entry["message"] == intro_message for entry in st.session_state["chat_thread"]):
+            st.session_state["chat_thread"].append({"sender": "Assistant", "message": intro_message})
+            st.session_state["did_intro_rerun"] = True
+            st.rerun()
 
-    # If we haven't already clicked the start button
     if st.session_state.get("chat_state") == "intro":
         if st.button("Yes, let's start", key="start_training_btn"):
             st.session_state["chat_thread"].append({"sender": "User", "message": "Yes, let's start"})
