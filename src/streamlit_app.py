@@ -146,19 +146,18 @@ with st.sidebar:
             create_user(user_id, prolific_code=user_id, group=group_assignment)
             st.session_state["group"] = "treatment" if group_param == "1" else "control"
 
-        if user_completed_training(user_id):
-            st.session_state["chat_thread"] = [{
-                "sender": "Assistant",
-                "message": "Welcome back! What would you like to do today?"
-            }]
-            st.session_state["chat_state"] = "menu"
-        else:
-            if st.session_state.get("chat_state") not in ["smart_training", "goal_setting", "menu", "reflection", "view_goals"]:
-                st.session_state["chat_thread"] = [{
-                    "sender": "Assistant",
-                    "message": "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
-                }]
-        st.session_state["chat_state"] = "intro"
+        if "chat_state" not in st.session_state or st.session_state["chat_state"] not in [
+            "smart_training", "goal_setting", "menu", "reflection", "view_goals"
+        ]:
+            if user_completed_training(user_id):
+                if not st.session_state["chat_thread"]:
+                    st.session_state["chat_thread"].append({
+                        "sender": "Assistant",
+                        "message": "Welcome back! What would you like to do today?"
+                    })
+                st.session_state["chat_state"] = "menu"
+            else:
+                st.session_state["chat_state"] = "intro"
 
         # Auto-jump into reflection if week/session params exist and user is treatment
         if st.session_state["group"] == "treatment":
@@ -368,15 +367,19 @@ with st.container():
 def run_intro():
     print("🟢 In run_intro()")
     intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
+
+    # Append the intro message only once
     if not any(entry["message"] == intro_message for entry in st.session_state["chat_thread"]):
         st.session_state["chat_thread"].append({"sender": "Assistant", "message": intro_message})
-    if st.button("Yes, let's start", key="start_training_btn"):
-        if not any(entry["message"] == "Yes, let's start" for entry in st.session_state["chat_thread"]):
+
+    # If we haven't already clicked the start button
+    if st.session_state.get("chat_state") == "intro":
+        if st.button("Yes, let's start", key="start_training_btn"):
             st.session_state["chat_thread"].append({"sender": "User", "message": "Yes, let's start"})
-        st.session_state["chat_state"] = "smart_training"
-        st.session_state["smart_step"] = "intro"
-        st.session_state["message_index"] = 0
-        st.rerun()
+            st.session_state["chat_state"] = "smart_training"
+            st.session_state["smart_step"] = "intro"
+            st.session_state["message_index"] = 0
+            st.rerun()
 
 def run_smart_training():
     print("🔵 In run_smart_training()")
