@@ -16,16 +16,36 @@ def extract_goal_variants(response_text):
 
 def fake_response(goal_text, type_):
     examples = {
-        "specific": f"This is an example of a more specific goal based on your input: 'Finish the backend module of my project.' Consider narrowing down your goal like this if it's too broad.",
-        "measurable": f"This is an example of a more measurable goal: 'Complete three sections of my code, each with unit tests, by Friday.' Adding numbers and timelines can help track progress.",
-        "achievable": f"This is an example of a more achievable goal: 'Finish the login and signup features this week.' Try scaling down if the goal feels overwhelming.",
-        "relevant": f"This is an example of a more relevant goal: 'Finish the project to strengthen my programming portfolio.' Adding why it matters to you can boost motivation.",
-        "timebound": f"This is an example of a time-bound goal: 'Submit the final version by the end of next week.' Timelines create urgency and accountability.",
-        "refine": f"[Goal]Finish the final draft of my project report by next Friday to meet the submission deadline.[/Goal]",
-        "summary": f"This week, you made progress on your goal. Stay consistent and focus on one step at a time. You're doing great—keep going!",
-        "tasks": "1. Write the project outline\n2. Draft the introduction\n3. Collect feedback on initial draft"
+        "specific": (
+            "To make your goal more specific, try clarifying the exact action you plan to take. "
+            "For example, instead of saying 'improve', use a verb like 'draft', 'design', or 'research'."
+        ),
+        "measurable": (
+            "To make your goal more measurable, include numbers or frequencies. "
+            "Ask yourself: how much? how many times? what does success look like?"
+        ),
+        "achievable": (
+            "To make your goal more achievable, simplify it into a realistic first step. "
+            "Break down large ambitions into what you can actually complete this week."
+        ),
+        "relevant": (
+            "To make your goal more relevant, add a brief reason why it matters to you. "
+            "This could be related to personal growth, a deadline, or long-term plans."
+        ),
+        "timebound": (
+            "To make your goal more time-bound, add a deadline or timeframe. "
+            "You can use phrases like 'by Friday', 'every morning', or 'in two weeks'."
+        ),
+        "summary": (
+            "This week, you made progress on your goal. Stay consistent and focus on one step at a time. "
+            "You're doing great—keep going!"
+        ),
+        "tasks": (
+            "Here’s how to break down a goal into tasks: think of 2–3 small, specific actions you can complete this week. "
+            "Each task should help move your goal forward in a practical way."
+        )
     }
-    return examples.get(type_, "This is a placeholder response.")
+    return examples.get(type_, "No offline guidance available for this type.")
 
 def smart_wrapper(prompt, goal_text, type_):
     if FAKE_MODE:
@@ -44,122 +64,132 @@ def smart_wrapper(prompt, goal_text, type_):
         response.raise_for_status()
         return response.json().get("response", "").strip()
     except Exception as e:
-        return f"(Error generating response: {e})"
+        print(f"(Error generating response: {e})")
+        return fake_response(goal_text, type_)
 
 def suggest_specific_fix(goal_text):
-    prompt = f"""
-You are a goal-refinement assistant.
+   prompt = f"""
+    You are a goal refinement assistant.
 
-Your task is to rewrite the following goal to make it **more specific** — by clarifying the exact action or task, without changing its scope or adding measurement, time, or motivation.
+    Your task is to make the goal more specific with minimal edits.
 
-DO:
-- Replace vague words like "more", "better", "regularly" with concrete action verbs
-- Keep the goal's intent intact
-- Focus only on what the user will do
+    A specific goal clearly describes the action being taken, without turning it into a single small task.
 
-DO NOT:
-- Add numbers, frequency, or timelines (that's for later steps)
-- Add motivational phrases or explanations
+    Example:
+    Original: Improve my writing
+    Specific: Make progress on my article draft to improve my writing
 
-Return exactly 3 specific versions in this format:
-1. ...
-2. ...
-3. ...
+    Now improve the goal below by making it more specific.
 
-Goal: {goal_text}
-"""
-    return smart_wrapper(prompt, goal_text, "specific")
+    [Goal]
+    {goal_text}
+    [/Goal]
+
+    Return 3 lightly edited versions:
+    1. ...
+    2. ...
+    3. ...
+    """
+   return smart_wrapper(prompt, goal_text, "specific")
 
 def suggest_measurable_fix(goal_text):
     prompt = f"""
-You are a goal-setting assistant.
+    You are a goal refinement assistant.
 
-Your task is to rewrite the following goal to make it **more measurable** — by adding numbers, durations, frequencies, or specific outcomes that can be tracked.
+    Your task is to make the goal more measurable with minimal edits.
 
-DO:
-- Add measurable terms (e.g. how many, how often, how long)
-- Keep the action and meaning intact
+    A measurable goal includes a quantity or frequency that allows progress to be tracked, while still describing a full goal.
 
-DO NOT:
-- Add timeframes (like "by next week")
-- Add motivation or purpose
+    Example:
+    Original: Improve my writing
+    Measurable: Finish one complete article draft this week to improve my writing
 
-Return exactly 3 versions in this format:
-1. ...
-2. ...
-3. ...
+    Now improve the goal below by making it more measurable.
 
-Goal: {goal_text}
-"""
+    [Goal]
+    {goal_text}
+    [/Goal]
+
+    Return 3 lightly edited versions:
+    1. ...
+    2. ...
+    3. ...
+    """
     return smart_wrapper(prompt, goal_text, "measurable")
 
 def suggest_achievable_fix(goal_text):
     prompt = f"""
-You are a goal-setting assistant.
+    You are a goal refinement assistant.
 
-Your task is to rewrite the following goal to make it **more achievable** — by adjusting it into a smaller, realistic first step that can be done with current resources and constraints.
+    Your task is to make the goal more achievable with minimal edits.
 
-DO:
-- Keep the intent the same
-- Simplify or reduce the scope to something doable soon
+    An achievable goal is realistic and can be completed with current time and resources, while still remaining a meaningful weekly goal.
 
-DO NOT:
-- Add measurements or timelines
-- Use vague phrases like "try to"
+    Example:
+    Original: Publish multiple blog posts this week
+    Achievable: Draft one blog post this week with the goal of publishing it soon
 
-Return exactly 3 versions in this format:
-1. ...
-2. ...
-3. ...
+    Now improve the goal below by making it more achievable.
 
-Goal: {goal_text}
-"""
+    [Goal]
+    {goal_text}
+    [/Goal]
+
+    Return 3 lightly edited versions:
+    1. ...
+    2. ...
+    3. ...
+    """
     return smart_wrapper(prompt, goal_text, "achievable")
 
 def suggest_relevant_fix(goal_text):
     prompt = f"""
-You are a goal-setting assistant.
+    You are a goal refinement assistant.
 
-Your task is to rewrite the following goal to make it **more relevant** — by adding a personal reason or motivation that connects it to something meaningful.
+    Your task is to make the goal more relevant with minimal edits.
 
-DO:
-- Add a phrase like "to improve my health", "to reduce stress", or "for my long-term goals"
-- Keep the rest of the goal focused and unchanged
+    A relevant goal includes a personal reason or motivation that connects the action to a meaningful outcome.
 
-DO NOT:
-- Add numbers, deadlines, or how-to steps
-- Add general advice
+    Example:
+    Original: Practice coding every day
+    Relevant: Practice coding every day to prepare for job applications
 
-Return exactly 3 versions in this format:
-1. ...
-2. ...
-3. ...
+    Now improve the goal below by making it more relevant.
 
-Goal: {goal_text}
-"""
+    [Goal]
+    {goal_text}
+    [/Goal]
+
+    Return 3 lightly edited versions:
+    1. ...
+    2. ...
+    3. ...
+    """
     return smart_wrapper(prompt, goal_text, "relevant")
 
 def suggest_timebound_fix(goal_text):
     prompt = f"""
-You are a goal-setting assistant.
+    You are a goal refinement assistant.
 
-Your task is to rewrite the following goal to make it **time-bound** — by adding a clear deadline, duration, or recurring schedule.
+    Your task is to make the goal more time-bound with minimal edits.
 
-DO:
-- Add time markers (e.g., "by the end of the week", "in 2 weeks", "every morning")
-- Keep the rest of the goal intact
+    A time-bound goal includes a deadline, timeframe, or schedule that creates urgency and structure.
 
-DO NOT:
-- Change what the goal is
-- Add motivation or measurement
+    Example:
+    Original: Organize my notes
+    Time-bound: Organize my notes by the end of the week
 
-Return exactly 3 versions in this format:
-1. ...
-2. ...
-3. ...
+    Now improve the goal below by making it more time-bound.
 
-Goal: {goal_text}
-"""
+    [Goal]
+    {goal_text}
+    [/Goal]
+
+    Return 3 lightly edited versions:
+    1. ...
+    2. ...
+    3. ...
+    """
     return smart_wrapper(prompt, goal_text, "timebound")
 
 # def refine_goal(raw_goal):
@@ -184,25 +214,26 @@ Reflection:
 
 def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     existing_tasks = existing_tasks or []
-
     existing_list = "\n".join(f"- {task}" for task in existing_tasks) if existing_tasks else "None"
 
     prompt = f"""
-You are a productivity coach. The user has just created the following SMART goal:
+    You help users break down their goals into weekly tasks.
 
-Goal:
-{goal_text}
+    The user has set the following SMART goal:
+    [Goal]
+    {goal_text}
+    [/Goal]
 
-They have already added these tasks for this week:
-{existing_list}
+    These tasks have already been added:
+    {existing_list}
 
-Now, suggest 3 **new** example tasks they could complete by the end of this week, **excluding anything similar to the existing ones**. Your suggestions should help break down the goal into small, actionable steps.
+    Suggest 3 new example tasks they could complete by the end of this week. Do not repeat or closely match existing tasks. Focus on small, concrete actions that help move the goal forward.
 
-Only provide the new suggestions in this format:
-1. ...
-2. ...
-3. ...
+    Only output the 3 new tasks in this format:
+    1. ...
+    2. ...
+    3. ...
 
-Make it clear that these are just examples for inspiration.
-"""
+    These are just suggestions for inspiration.
+    """
     return smart_wrapper(prompt, goal_text, "tasks")

@@ -316,14 +316,15 @@ smart_training_flow = {
 
 goal_setting_flow = {
     "initial_goal": {
-        "text": [
-            "Let's get started!",
-            "You’ll only set one goal for this experiment, so pick something you really care about.",
-            "It doesn’t have to be finished in two weeks, but it should be something you’re motivated to start or move forward.",
-            "Please type the goal you would like to achieve."
-        ],
-        "input_type": "text",
-        "next": "check_specific"
+    "text": [
+        "Let's get started!",
+        "You’ll only set one goal for this experiment, so pick something you really care about.",
+        "It doesn’t have to be finished in two weeks, but it should be something you’re motivated to start or move forward.",
+        "Think of it as a short-term project or outcome — something meaningful that can be broken into 2–3 smaller tasks this week.",
+        "Please type the goal you would like to achieve."
+    ],
+    "input_type": "text",
+    "next": "check_specific"
     },
     "check_specific": {
         "text": [
