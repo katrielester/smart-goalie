@@ -131,6 +131,9 @@ with st.sidebar:
         if st.button("Authenticate (DEV only)") and user_id:
             st.session_state["authenticated"] = True
             st.session_state["user_id"] = user_id
+            if "did_rerun_auth" not in st.session_state:
+                st.session_state["did_rerun_auth"] = True
+                st.rerun()
             st.info(f"Manually authenticated as {user_id}")
     else:
         st.warning("Please access this link via Prolific.")
@@ -146,7 +149,7 @@ with st.sidebar:
             # Use URL param if user doesn't exist in DB
             group_param = st.query_params.get("g", ["2"])[0]
             group_assignment = "treatment" if group_param == "1" else "control"
-            create_user(user_id, prolific_code=user_id, group=group_code)
+            create_user(user_id, prolific_code=user_id, group=group_assignment)
             st.session_state["group"] = group_assignment
 
         if user_completed_training(user_id):
@@ -368,6 +371,7 @@ with st.container():
 
 
 def run_intro():
+    print("🟢 In run_intro()")
     intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
     if not any(entry["message"] == intro_message for entry in st.session_state["chat_thread"]):
         st.session_state["chat_thread"].append({"sender": "Assistant", "message": intro_message})
@@ -380,6 +384,7 @@ def run_intro():
         st.rerun()
 
 def run_smart_training():
+    print("🔵 In run_smart_training()")
     step = smart_training_flow[st.session_state["smart_step"]]
     texts = step["text"]
     if isinstance(texts, str):
