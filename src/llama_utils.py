@@ -2,7 +2,7 @@
 
 import requests
 
-LLM_API_URL = "https://smart-goalie-llm.onrender.com/generate"
+LLM_API_URL = "http://213.173.102.150:11434/api/generate"
 
 import os
 
@@ -29,14 +29,19 @@ def fake_response(goal_text, type_):
 def smart_wrapper(prompt, goal_text, type_):
     if FAKE_MODE:
         return fake_response(goal_text, type_)
+
     try:
         response = requests.post(
             LLM_API_URL,
-            json={"prompt": prompt.strip(), "max_tokens":100},
+            json={
+                "model": "mistral",
+                "prompt": prompt.strip(),
+                "stream": False
+            },
             timeout=30
         )
         response.raise_for_status()
-        return  response.json().get("response","").strip()
+        return response.json().get("response", "").strip()
     except Exception as e:
         return f"(Error generating response: {e})"
 
