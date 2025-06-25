@@ -167,8 +167,9 @@ with st.sidebar:
             if "week" in st.query_params and "session" in st.query_params:
                 st.session_state["chat_state"] = "reflection"
 
-        st.success("Welcome!")
-        st.rerun()
+        if "did_rerun_auth" not in st.session_state:
+            st.session_state["did_rerun_auth"] = True
+            st.rerun()
 
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("Please authenticate first.")
