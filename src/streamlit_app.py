@@ -159,11 +159,12 @@ with st.sidebar:
             }]
             st.session_state["chat_state"] = "menu"
         else:
-            st.session_state["chat_thread"] = [{
-                "sender": "Assistant",
-                "message": "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
-            }]
-            st.session_state["chat_state"] = "intro"
+            if st.session_state.get("chat_state") not in ["smart_training", "goal_setting", "menu", "reflection", "view_goals"]:
+                st.session_state["chat_thread"] = [{
+                    "sender": "Assistant",
+                    "message": "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
+                }]
+        st.session_state["chat_state"] = "intro"
 
         # Auto-jump into reflection if week/session params exist and user is treatment
         if st.session_state["group"] == "treatment":
