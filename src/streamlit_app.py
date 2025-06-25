@@ -10,7 +10,8 @@ from db import (
     get_tasks, get_goals, get_reflections, user_goals_exist,
 )
 from reflection_flow import run_weekly_reflection
-from phases import smart_training_flow, weekly_reflection_prompts, goal_setting_flow
+from goal_flow import run_goal_setting
+from phases import smart_training_flow
 from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
 from logger import setup_logger
 
@@ -280,7 +281,6 @@ with st.container():
         </html>
     """, height=chat_height_px, scrolling=False)
 
-from goal_flow import run_goal_setting
 
 def run_intro():
     intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
