@@ -9,11 +9,6 @@ from db import (
     save_goal, save_task, save_reflection,
     get_tasks, get_goals, get_reflections, user_goals_exist,
 )
-from llama_utils import (
-    refine_goal, suggest_specific_fix, suggest_measurable_fix,
-    suggest_achievable_fix, suggest_relevant_fix, suggest_timebound_fix,
-    summarize_reflection,
-)
 from reflection_flow import run_weekly_reflection
 from phases import smart_training_flow, weekly_reflection_prompts, goal_setting_flow
 from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
@@ -67,7 +62,6 @@ with st.sidebar:
     if DEV_MODE:
         if st.button("Dev: Jump to Goal Setting"):
             st.session_state["chat_state"] = "goal_setting"
-            st.session_state["smart_step"] = "initial_goal"
             st.session_state["message_index"] = 0
             st.rerun()
 
@@ -226,10 +220,6 @@ with st.container():
         </html>
     """, height=chat_height_px, scrolling=False)
 
-
-
-
-
 from goal_flow import run_goal_setting
 
 def run_intro():
@@ -325,7 +315,7 @@ def run_menu():
         st.session_state["message_index"] = 0
         st.rerun()
     if user_goals_exist(st.session_state["user_id"]):
-        if st.button("✅ View Existing Goals"):
+        if st.button("✅ View Existing Goal and Tasks"):
             st.session_state["chat_state"] = "view_goals"
             st.rerun()
     if st.session_state.get("group") == "treatment" and user_goals_exist(st.session_state["user_id"]):
