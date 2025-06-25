@@ -1,29 +1,9 @@
 #phases.py
-smart_intro_text = """
-SMART is a framework that helps you set better goals:
-
-- **Specific**: What exactly do you want to accomplish?
-- **Measurable**: How will you know it's done?
-- **Achievable**: Is it realistic for you?
-- **Relevant**: Does it matter to your current life or work?
-- **Time-bound**: What’s your timeline?
-
-Let’s try it together!
-"""
-
-weekly_reflection_prompts = [
-    "Which goal(s) did you work on this week?",
-    "How would you rate your progress? (0–100%)",
-    "What obstacles did you encounter?",
-    "What strategies worked well?",
-    "What will you do next week?"
-]
-
 
 smart_training_flow = {
     "intro": {
         "text": [
-            "Great! Now, I'm going to teach you about goal-setting, help you to set goals of your own, and monitor your progress.",
+            "Great! I’ll walk you through how to set a strong goal and help you track your progress over time.",
             "Are you ready to get started?"
         ],
         "buttons": ["Yes", "No"],
@@ -39,7 +19,7 @@ smart_training_flow = {
             "Then let’s get started {user_name}!",
             "First, let’s talk about goal-setting.",
             "Goal setting means deciding on something you want to achieve, and creating a plan to make it happen.",
-            "It’s the first step in turning the invisible into the visible—turning wishful thinking into an actionable plan.",
+            "It’s how we turn a vague idea into something you can actually work toward.",
             "Studies have shown that setting specific and challenging goals can significantly improve performance."
         ],
         "buttons": ["Continue"],
@@ -49,33 +29,33 @@ smart_training_flow = {
         "text": [
             "How often do you consciously set goals to help you achieve what you want in life?"
         ],
-        "buttons": ["Often", "Sometimes", "Never"],
-        "next": {"Often": "smart_intro1", "Sometimes": "smart_intro1", "Never": "smart_intro2"}
+        "buttons": ["All the time", "Sometimes", "Not really"],
+        "next": {"All the time": "smart_intro1", "Sometimes": "smart_intro1", "Not really": "smart_intro2"}
     },
     "smart_intro1": {
         "text": [
-            "That's great! I'm here to help you set goals even better."
-            "To do this, we’ll use the SMART goal criteria. Ready to dive in?"
+            "That's great! I'm here to help you take it to the next level."
+            "To do that, we’ll use something called SMART goals. Ready to dive in?"
         ],
         "buttons": ["Let’s do this!"],
         "next": {"Let’s do this!": "smart_definition"}
     },
     "smart_intro2": {
         "text": [
-            "No problem! I’m here to show you how to set goals that actually work.",
-            "To do this, we’ll use the SMART goal criteria. Ready to dive in?"
+            "No problem! That's exactly what I'm here for.",
+            "I'll show you a method called SMART goals. Ready to dive in?"
         ],
         "buttons": ["Let’s do this!"],
         "next": {"Let’s do this!": "smart_definition"}
     },
     "smart_definition": {
         "text": [
-            "SMART is an acronym to guide you in crafting great goals:",
-            "- Specific",
-            "- Measurable",
-            "- Achievable",
-            "- Relevant",
-            "- Time-bound",
+            "SMART is a simple acronym that helps you set goals you’re more likely to stick with. ",
+            "<b>S</b>pecific",
+            "<b>M</b>easurable",
+            "<b>A</b>chievable",
+            "<b>R</b>elevant",
+            "<b>T</b>ime-bound",
             "If your goal ticks all five, you’re much more likely to succeed.",
             "Watch this video to learn more about SMART goals:<br><br><a href=\"https://www.youtube.com/watch?v=yA53yhiOe04&ab_channel=FlikliTV\" target=\"_blank\" style=\"color:#4ea8ff;\">Achieve More by Setting SMART Goals (YouTube)</a>"
         ],
@@ -328,15 +308,15 @@ goal_setting_flow = {
     },
     "check_specific": {
         "text": [
-            "Is your goal specific enough?",
-            "A specific goal focuses on one clear outcome."
+            "Let’s check: is your goal specific enough?",
+            "A specific goal clearly describes one main thing you want to achieve, not something vague like 'do better' or 'be more consistent.'"
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "check_measurable", "No": "fix_specific"}
     },
     "fix_specific": {
         "text": [
-            "Let me help you make it more specific..."
+            "No worries, let’s tweak your goal to make it a little clearer and more focused."
         ],
         "fix_with_llm": "specific",
         "next": "input_specific"
@@ -344,22 +324,22 @@ goal_setting_flow = {
     "input_specific": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Now, based on the suggestion above, please type your improved version of the goal."
+            "Based on the suggestion above, try rewriting it to be more specific. Just type your updated version below."
         ],
         "input_type": "text",
         "next": "check_measurable"
     },
     "check_measurable": {
         "text": [
-            "Is your goal measurable?",
-            "A measurable goal lets you track progress clearly."
+            "Now let’s see if your goal is measurable.",
+            "This means you should be able to tell how much progress you’ve made or when it’s done, like a number, frequency, or result."
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "check_achievable", "No": "fix_measurable"}
     },
     "fix_measurable": {
         "text": [
-            "Let's make your goal more measurable..."
+            "Let’s fine-tune your goal so it’s easier to track. Just a small adjustment!"
         ],
         "fix_with_llm": "measurable",
         "next": "input_measurable"
@@ -367,22 +347,22 @@ goal_setting_flow = {
     "input_measurable": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Now, based on the suggestion above, please type your improved version of the goal."
+            "Based on the suggestion above, try rewriting it to be more measurable. Just type your updated version below."
         ],
         "input_type": "text",
         "next": "check_achievable"
     },
     "check_achievable": {
         "text": [
-            "Is your goal achievable for you?",
-            "An achievable goal should be realistic given your situation."
+            "Next up: is your goal achievable for you?",
+            "An achievable goal is realistic and fits your current time, energy, and resources. Not too overwhelming, not too easy."
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "check_relevant", "No": "fix_achievable"}
     },
     "fix_achievable": {
         "text": [
-            "Let's adjust your goal to be more achievable..."
+            "Alright, let’s scale it down just a bit so it feels more doable for you this week."
         ],
         "fix_with_llm": "achievable",
         "next": "input_achievable"
@@ -390,22 +370,22 @@ goal_setting_flow = {
     "input_achievable": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Now, based on the suggestion above, please type your improved version of the goal."
+            "Based on the suggestion above, try rewriting it to be more achievable. Just type your updated version below."
         ],
         "input_type": "text",
         "next": "check_relevant"
     },
     "check_relevant": {
         "text": [
-            "Is your goal relevant to your personal life, career, or values?",
-            "A relevant goal should matter to you personally."
+            "Now let’s check if your goal feels personally meaningful.",
+            "A relevant goal should matter to <b>you</b>, something that connects to your values, interests, or current priorities."
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "check_timebound", "No": "fix_relevant"}
     },
     "fix_relevant": {
         "text": [
-            "Let's make your goal clearly relevant to you..."
+            "Let’s strengthen the connection! Why does this goal matter to you personally?"
         ],
         "fix_with_llm": "relevant",
         "next": "input_relevant"
@@ -413,22 +393,22 @@ goal_setting_flow = {
     "input_relevant": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Now, based on the suggestion above, please type your improved version of the goal."
+            "Based on the suggestion above, try rewriting it to be more relevant. Just type your updated version below."
         ],
         "input_type": "text",
         "next": "check_timebound"
     },
     "check_timebound": {
         "text": [
-            "Does your goal have a clear timeframe or deadline?",
-            "Adding a timeline helps you stay focused."
+            "Almost done! Does your goal have a clear timeframe?",
+            "A time-bound goal includes a deadline, schedule, or review point, something that tells you <b>when</b> it will happen."
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "finalize_goal", "No": "fix_timebound"}
     },
     "fix_timebound": {
         "text": [
-            "Let's add a realistic timeframe to your goal..."
+            "Let’s add a simple timeframe to give your goal more structure and momentum."
         ],
         "fix_with_llm": "timebound",
         "next": "input_timebound"
@@ -436,7 +416,7 @@ goal_setting_flow = {
     "input_timebound": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Now, based on the suggestion above, please type your improved version of the goal."
+            "Based on the suggestion above, try rewriting it to be timebound. Just type your updated version below."
         ],
         "input_type": "text",
         "next": "finalize_goal"
@@ -445,6 +425,7 @@ goal_setting_flow = {
         "text": [
             "Here’s your finalized SMART goal!",
             "{current_goal}",
+            "You’ve done a great job refining your goal, it’s looking solid now!",
             "Would you like to save it or make manual edits?"
         ],
         "buttons": ["Save Goal", "Edit Manually"],
