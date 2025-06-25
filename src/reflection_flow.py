@@ -22,6 +22,11 @@ UWES_QUESTIONS = [
 ]
 
 def run_weekly_reflection():
+
+    if st.session_state.get("group") != "treatment":
+        st.warning("Reflections are only available for the treatment group.")
+        st.stop()
+        
     user_id = st.session_state["user_id"]
 
     # Get week and session from query params
