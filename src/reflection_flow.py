@@ -1,7 +1,9 @@
+# reflection_flow.py
+
 import streamlit as st
 from db import (
     get_goals, get_tasks, save_reflection, update_task_completion,
-    save_task, get_last_reflection, get_next_week_number
+    save_task, get_last_reflection, get_next_week_number, reflection_exists
 )
 from llama_utils import summarize_reflection
 
@@ -21,13 +23,33 @@ UWES_QUESTIONS = [
 
 def run_weekly_reflection():
     user_id = st.session_state["user_id"]
-    # For simplicity: support only 1 goal per user in this test flow
+
+    # Get week and session from query params
+    query_params = st.query_params.to_dict()
+    week = int(query_params.get("week", 1))  # fallback = 1
+    session = query_params.get("session", "a")  # fallback = 'a'
+
+    st.session_state["week"] = week
+    st.session_state["session"] = session
+
+    # Get the goal
     all_goals = get_goals(user_id)
     if not all_goals:
         st.info("You have no goals to reflect on yet.")
         return
 
     goal_id, goal_text = all_goals[0]
+
+    # Check if this session's reflection already exists
+    if reflection_exists(user_id, goal_id, week, session):
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>.<br><br>Thanks!"
+        })
+        if st.button("⬅️ Return to Prolific"):
+            st.stop()
+        return
+
     tasks = get_tasks(goal_id)
     if not tasks:
         st.info("You have no tasks for your goal. Add tasks first.")
@@ -160,40 +182,40 @@ def run_weekly_reflection():
             st.rerun()
 
     # 4. Motivation and Engagement, chat style (SIMS, then UWES)
-    elif st.session_state["reflection_step"] == len(tasks) + 3:
-        all_qs = SIMS_QUESTIONS + UWES_QUESTIONS
-        q_idx = st.session_state.get("motivation_idx", 0)
-        q = all_qs[q_idx]
-        scale = 5 if q in SIMS_QUESTIONS else 7
-        if f"ask_motivation_{q_idx}" not in st.session_state:
-            st.session_state["chat_thread"].append({"sender": "Assistant", "message": q})
-            st.session_state[f"ask_motivation_{q_idx}"] = True
-            st.rerun()
+    # elif st.session_state["reflection_step"] == len(tasks) + 3:
+    #     all_qs = SIMS_QUESTIONS + UWES_QUESTIONS
+    #     q_idx = st.session_state.get("motivation_idx", 0)
+    #     q = all_qs[q_idx]
+    #     scale = 5 if q in SIMS_QUESTIONS else 7
+    #     if f"ask_motivation_{q_idx}" not in st.session_state:
+    #         st.session_state["chat_thread"].append({"sender": "Assistant", "message": q})
+    #         st.session_state[f"ask_motivation_{q_idx}"] = True
+    #         st.rerun()
 
-        user_input = st.chat_input("Enter a number from 1 to 5" if scale == 5 else "Enter a number from 1 to 7")
-        if user_input:
-            try:
-                val = int(user_input.strip())
-                if 1 <= val <= scale:
-                    st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
-                    if q in SIMS_QUESTIONS:
-                        st.session_state["sims_responses"].append(val)
-                    else:
-                        st.session_state["uwes_responses"].append(val)
-                    st.session_state["motivation_idx"] = q_idx + 1
-                    st.rerun()
-                else:
-                    st.session_state["chat_thread"].append({"sender": "Assistant", "message": f"Please enter a number between 1 and {scale}."})
-            except ValueError:
-                st.session_state["chat_thread"].append({"sender": "Assistant", "message": "Please enter a valid number."})
-            q_idx += 1
-            if q_idx < len(all_qs):
-                st.session_state["motivation_idx"] = q_idx
-                st.rerun()
-            else:
-                st.session_state["reflection_step"] += 1
-                st.session_state["motivation_idx"] = 0
-                st.rerun()
+    #     user_input = st.chat_input("Enter a number from 1 to 5" if scale == 5 else "Enter a number from 1 to 7")
+    #     if user_input:
+    #         try:
+    #             val = int(user_input.strip())
+    #             if 1 <= val <= scale:
+    #                 st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
+    #                 if q in SIMS_QUESTIONS:
+    #                     st.session_state["sims_responses"].append(val)
+    #                 else:
+    #                     st.session_state["uwes_responses"].append(val)
+    #                 st.session_state["motivation_idx"] = q_idx + 1
+    #                 st.rerun()
+    #             else:
+    #                 st.session_state["chat_thread"].append({"sender": "Assistant", "message": f"Please enter a number between 1 and {scale}."})
+    #         except ValueError:
+    #             st.session_state["chat_thread"].append({"sender": "Assistant", "message": "Please enter a valid number."})
+    #         q_idx += 1
+    #         if q_idx < len(all_qs):
+    #             st.session_state["motivation_idx"] = q_idx
+    #             st.rerun()
+    #         else:
+    #             st.session_state["reflection_step"] += 1
+    #             st.session_state["motivation_idx"] = 0
+    #             st.rerun()
 
     # 5. Final summary and save
     elif st.session_state["reflection_step"] == len(tasks) + 4:
@@ -219,7 +241,7 @@ def run_weekly_reflection():
 
         # Save to DB
         next_week = get_next_week_number(user_id, goal_id)
-        save_reflection(user_id, goal_id, reflection_text, week_number=next_week)
+        save_reflection(user_id, goal_id, reflection_text, week_number=week, session=session)
 
         st.session_state["chat_thread"].append({
             "sender": "Assistant",

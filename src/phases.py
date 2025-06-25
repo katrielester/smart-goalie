@@ -318,6 +318,8 @@ goal_setting_flow = {
     "initial_goal": {
         "text": [
             "Let's get started!",
+            "You’ll only set one goal for this experiment, so pick something you really care about.",
+            "It doesn’t have to be finished in two weeks, but it should be something you’re motivated to start or move forward.",
             "Please type the goal you would like to achieve."
         ],
         "input_type": "text",

@@ -49,16 +49,38 @@ def run_goal_setting():
             fix_type = step["fix_with_llm"]
             goal = st.session_state.get("current_goal", "")
 
-            if fix_type == "specific":
-                updated_goal = suggest_specific_fix(goal)
-            elif fix_type == "measurable":
-                updated_goal = suggest_measurable_fix(goal)
-            elif fix_type == "achievable":
-                updated_goal = suggest_achievable_fix(goal)
-            elif fix_type == "relevant":
-                updated_goal = suggest_relevant_fix(goal)
-            elif fix_type == "timebound":
-                updated_goal = suggest_timebound_fix(goal)
+            # STEP 1: Show 'Typing...' only once
+            if "llm_typing" not in st.session_state:
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "Typing..."
+                })
+                st.session_state["llm_typing"] = True
+                st.rerun()
+
+            # STEP 2: If 'Typing...' is already shown, call LLM and replace it
+            if st.session_state.get("llm_typing"):
+                if fix_type == "specific":
+                    updated_goal = suggest_specific_fix(goal)
+                elif fix_type == "measurable":
+                    updated_goal = suggest_measurable_fix(goal)
+                elif fix_type == "achievable":
+                    updated_goal = suggest_achievable_fix(goal)
+                elif fix_type == "relevant":
+                    updated_goal = suggest_relevant_fix(goal)
+                elif fix_type == "timebound":
+                    updated_goal = suggest_timebound_fix(goal)
+
+                formatted_goal = updated_goal.replace("1.", "<br>1.").replace("2.", "<br>2.").replace("3.", "<br>3.").strip()
+
+                # Replace 'Typing...' with real output
+                st.session_state["chat_thread"][-1]["message"] = f"This is an example of a more {fix_type} goal:<br><br>{formatted_goal}<br><br>Try adjusting your goal if it needs improvement.<br>"
+
+                st.session_state["suggested_goal"] = formatted_goal
+                st.session_state["smart_step"] = step["next"]
+                st.session_state["message_index"] = 0
+                del st.session_state["llm_typing"]
+                st.rerun()
 
             # Format the goal output for readability
             formatted_goal = updated_goal.replace("1.", "<br>1.").replace("2.", "<br>2.").replace("3.", "<br>3.")
@@ -84,7 +106,7 @@ def run_goal_setting():
 
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "Your SMART goal has been saved! Now let's break it down into smaller tasks you can do this week."
+                "message": "Your SMART goal has been saved! Now let's break it down into smaller tasks you can do <b>this week</b>. We'll check in with you midweek to help you reflect and adjust if needed."
             })
 
             existing_tasks = [t[1] for t in get_tasks(goal_id)]
@@ -113,6 +135,9 @@ def run_add_tasks():
         st.session_state["chat_thread"].append({"sender": "User", "message": f"Task: {task_input.strip()}"})
         if st.session_state["task_count"] >= 1:
             if st.button("Done Adding Tasks"):
-                st.success("Saved your goal and tasks!")
-                st.session_state["chat_state"] = "menu"
-                st.rerun()
+                if st.session_state["task_count"] < 3:
+                    st.warning("Try to add all 3 tasks for a smoother check-in later.")
+                else:
+                    st.success("Saved your goal and tasks!")
+                    st.session_state["chat_state"] = "menu"
+                    st.rerun()
