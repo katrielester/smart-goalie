@@ -2,7 +2,8 @@
 
 import requests
 
-LLM_API_URL = "http://213.173.102.150:11434/api/generate"
+# LLM_API_URL = "http://213.173.102.150:11434/api/generate"
+LLM_API_URL = "https://498spxjyhd6q36-11434.proxy.runpod.net/api/generate"
 
 import os
 
