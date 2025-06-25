@@ -53,12 +53,6 @@ if st.session_state["chat_state"] in ["menu", "view_goals"]:
 else:
     chat_height = "60vh"  # default height
 
-if "authenticated" not in st.session_state:
-    query_params = st.query_params
-    group_code = query_params.get("g", ["2"])[0]  # Default to "2"
-    group_assignment = "treatment" if group_code == "1" else "control"
-    st.session_state["group"] = group_assignment
-
 with st.sidebar:
     if DEV_MODE:
         if st.button("Dev: Jump to Goal Setting"):
@@ -150,7 +144,7 @@ with st.sidebar:
             group_param = st.query_params.get("g", ["2"])[0]
             group_assignment = "treatment" if group_param == "1" else "control"
             create_user(user_id, prolific_code=user_id, group=group_assignment)
-            st.session_state["group"] = group_assignment
+            st.session_state["group"] = "treatment" if group_param == "1" else "control"
 
         if user_completed_training(user_id):
             st.session_state["chat_thread"] = [{
