@@ -87,6 +87,11 @@ def save_task(goal_id, task_text):
     conn.commit()
 
 def get_tasks(goal_id):
+    try:
+        goal_id = int(goal_id)
+    except ValueError:
+        return []
+
     cursor.execute("SELECT id, task_text, completed FROM tasks WHERE goal_id = %s", (goal_id,))
     return cursor.fetchall()
 
