@@ -95,6 +95,12 @@ for entry in st.session_state["chat_thread"]:
     with st.chat_message("assistant" if entry["sender"] == "Assistant" else "user"):
         st.markdown(entry["message"])
 
+st.markdown("""
+<script>
+window.scrollTo(0, document.body.scrollHeight);
+</script>
+""", unsafe_allow_html=True)
+
 def run_intro():
     intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals!"
     if "did_intro_rerun" not in st.session_state or not st.session_state["did_intro_rerun"]:
@@ -129,7 +135,7 @@ def run_smart_training():
             st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
 
         st.session_state["message_index"] += 1
-        time.sleep(0.5)
+        # time.sleep(0.5)
         st.rerun()
 
     else:
@@ -145,25 +151,7 @@ def run_smart_training():
                 st.session_state["smart_step"] = step["next"][selected]
                 st.session_state["message_index"] = 0
                 st.rerun()
-        elif step.get("input_type") == "text":
-            user_input = st.chat_input("Type your answer")
-            if user_input:
-                st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
-                if st.session_state["smart_step"] in ["relevant_prompt", "relevant_explain_anyway"]:
-                    base_goal = "I would like to work out three times a week, at least 30 minutes each time"
-                    relevance_reason = user_input.strip()
-                    if not relevance_reason.lower().startswith("to "):
-                        relevance_reason = "to " + relevance_reason
-                    full_goal = f"{base_goal}, {relevance_reason}."
-                    st.session_state["full_goal"] = full_goal
-                    st.session_state["smart_step"] = "relevant_echo"
-                elif st.session_state["smart_step"] == "get_name":
-                    st.session_state["user_name"] = user_input
-                    st.session_state["smart_step"] = step["next"]
-                else:
-                    st.session_state["smart_step"] = step["next"]
-                st.session_state["message_index"] = 0
-                st.rerun()
+
         elif step.get("complete"):
             mark_training_completed(st.session_state["user_id"])
             st.session_state["chat_state"] = "goal_setting"
