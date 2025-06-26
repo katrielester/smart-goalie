@@ -292,7 +292,7 @@ with st.container():
 
 
 def run_intro():
-    intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals!"
+    intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
 
     if "did_intro_rerun" not in st.session_state or not st.session_state["did_intro_rerun"]:
         if not any(entry["message"] == intro_message for entry in st.session_state["chat_thread"]):
@@ -301,8 +301,8 @@ def run_intro():
             st.rerun()
 
     if st.session_state.get("chat_state") == "intro":
-        if st.button("Yes, let's start", key="start_training_btn"):
-            st.session_state["chat_thread"].append({"sender": "User", "message": "Yes, let's start"})
+        if st.button("Yes, let's start!", key="start_training_btn"):
+            st.session_state["chat_thread"].append({"sender": "User", "message": "Yes, let's start!"})
             st.session_state["chat_state"] = "smart_training"
             st.session_state["smart_step"] = "intro"
             st.session_state["message_index"] = 0
@@ -311,6 +311,9 @@ def run_intro():
 def run_smart_training():
     print("🔵 In run_smart_training()")
     step = smart_training_flow[st.session_state["smart_step"]]
+    if st.session_state["smart_step"] not in smart_training_flow:
+        st.error(f"❌ Step '{st.session_state['smart_step']}' not found in smart_training_flow!")
+        st.stop()
     texts = step["text"]
     if isinstance(texts, str):
         texts = [texts]
@@ -379,14 +382,14 @@ def run_smart_training():
         elif step.get("complete"):
             mark_training_completed(st.session_state["user_id"])
             st.session_state["chat_state"] = "goal_setting"
-            st.session_state["smart_step"] = "initial_goal"
+            st.session_state["goal_step"] = "initial_goal"
             st.session_state["message_index"] = 0
             st.rerun()
 
 def run_menu():
     if st.button("➕ Create a New Goal"):
         st.session_state["chat_state"] = "goal_setting"
-        st.session_state["smart_step"] = "initial_goal"
+        st.session_state["goal_step"] = "initial_goal"
         st.session_state["message_index"] = 0
         st.rerun()
     if user_goals_exist(st.session_state["user_id"]):

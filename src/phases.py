@@ -22,7 +22,7 @@ smart_training_flow = {
     },
     "how_often": {
         "text": [
-            "How often do you consciously set goals to help you achieve what you want in life?"
+            "Do you often consciously set goals to help you achieve what you want in life?"
         ],
         "buttons": ["All the time", "Sometimes", "Not really"],
         "next": {"All the time": "smart_intro1", "Sometimes": "smart_intro1", "Not really": "smart_intro2"}

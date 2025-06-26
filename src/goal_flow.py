@@ -11,7 +11,7 @@ from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phas
 from phases import goal_setting_flow
 
 def run_goal_setting():
-    step = goal_setting_flow[st.session_state["smart_step"]]
+    step = goal_setting_flow[st.session_state["goal_step"]]
     texts = step["text"]
     if isinstance(texts, str):
         texts = [texts]
@@ -36,7 +36,7 @@ def run_goal_setting():
                 break
         if selected:
             st.session_state["chat_thread"].append({"sender": "User", "message": selected})
-            st.session_state["smart_step"] = step["next"][selected]
+            st.session_state["goal_step"] = step["next"][selected]
             st.session_state["message_index"] = 0
             st.rerun()
 
@@ -45,7 +45,7 @@ def run_goal_setting():
         if user_input:
             st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
             st.session_state["current_goal"] = user_input
-            st.session_state["smart_step"] = step["next"]
+            st.session_state["goal_step"] = step["next"]
             st.session_state["message_index"] = 0
             st.rerun()
 
@@ -86,7 +86,7 @@ def run_goal_setting():
             )
 
             del st.session_state["llm_typing"]
-            st.session_state["smart_step"] = step["next"]
+            st.session_state["goal_step"] = step["next"]
             st.session_state["message_index"] = 0
             st.rerun()
 
