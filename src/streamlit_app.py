@@ -187,6 +187,7 @@ if st.session_state["chat_state"] == "view_goals":
         "Your SMART Goals:" in m["message"] or "You haven’t created any goals" in m["message"]
         for m in st.session_state["chat_thread"]
     ):
+        user_id = str(st.session_state["user_id"])  # Ensure it's a string
         goals = get_goals(st.session_state["user_id"])
         if not goals:
             goal_html = "<div class='chat-left'>You haven’t created any goals yet.</div>"
@@ -424,6 +425,7 @@ def run_view_goals():
     )
 
     if not already_rendered:
+        user_id = str(st.session_state["user_id"])  # Ensure it's a string
         goals = get_goals(st.session_state["user_id"])
         if not goals:
             goal_html = "<div class='chat-left'>You haven’t created any goals yet.</div>"
