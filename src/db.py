@@ -31,11 +31,27 @@ def get_user_info(user_id):
 def mark_training_completed(user_id):
     cursor.execute("UPDATE users SET has_completed_training = TRUE WHERE user_id = %s", (user_id,))
     conn.commit()
+    update_user_phase(user_id,1)
 
 def user_completed_training(user_id):
     cursor.execute("SELECT has_completed_training FROM users WHERE user_id = %s", (user_id,))
     row = cursor.fetchone()
     return row is not None and row["has_completed_training"]
+
+def get_user_phase(user_id):
+    cursor.execute("SELECT phase FROM users WHERE user_id = %s", (user_id,))
+    row = cursor.fetchone()
+    return row["phase"]
+
+def update_user_phase(user_id, new_phase):
+    cursor.execute("UPDATE users SET phase = %s WHERE user_id = %s", (new_phase, user_id))
+    conn.commit()
+
+# 0 = registered but not done onboarding
+# 1 = training done
+# 2 = initial goal and task entered (onboarding done)
+# 3 = first reflection done
+# 4 = second reflection done
 
 def save_message_to_db(user_id, sender, message):
     cursor.execute(

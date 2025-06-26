@@ -15,37 +15,49 @@ def extract_goal_variants(response_text):
     return "\n".join(variants)
 
 def fake_response(goal_text, type_):
-    examples = {
-        "specific": (
-            "To make your goal more specific, try clarifying the exact action you plan to take. "
-            "For example, instead of saying 'improve', use a verb like 'draft', 'design', or 'research'."
-        ),
-        "measurable": (
-            "To make your goal more measurable, include numbers or frequencies. "
-            "Ask yourself: how much? how many times? what does success look like?"
-        ),
-        "achievable": (
-            "To make your goal more achievable, simplify it into a realistic first step. "
-            "Break down large ambitions into what you can actually complete this week."
-        ),
-        "relevant": (
-            "To make your goal more relevant, add a brief reason why it matters to you. "
-            "This could be related to personal growth, a deadline, or long-term plans."
-        ),
-        "timebound": (
-            "To make your goal more time-bound, add a deadline or timeframe. "
-            "You can use phrases like 'by Friday', 'every morning', or 'in two weeks'."
-        ),
-        "summary": (
-            "This week, you made progress on your goal. Stay consistent and focus on one step at a time. "
-            "You're doing great—keep going!"
-        ),
-        "tasks": (
-            "Here’s how to break down a goal into tasks: think of 2–3 small, specific actions you can complete this week. "
-            "Each task should help move your goal forward in a practical way."
+    if type_ == "specific":
+        return (
+            f"1. Clarify and define exactly what you plan to do. e.g., instead of '{goal_text}', say 'Research and outline my topic for the article'\n"
+            f"2. Replace general terms with actionable verbs. e.g., 'Draft the first two sections of my article'\n"
+            f"3. Add a clear action phrase, e.g., 'Schedule two sessions to focus on writing this week'"
         )
-    }
-    return examples.get(type_, "No offline guidance available for this type.")
+    elif type_ == "measurable":
+        return (
+            f"1. Add frequency, e.g., '{goal_text}, three times this week'\n"
+            f"2. Add quantity, e.g., '{goal_text}, for at least 30 minutes each time'\n"
+            f"3. Define success, e.g., 'Complete one full version of the task'"
+        )
+    elif type_ == "achievable":
+        return (
+            f"1. Scale it down, e.g., 'Do a first draft' instead of 'Finish the full project'\n"
+            f"2. Choose just one focus area, e.g., 'Just research background sources'\n"
+            f"3. Limit time, e.g., '{goal_text}, but only for 1 hour per session'"
+        )
+    elif type_ == "relevant":
+        return (
+            f"1. Add motivation, e.g., '{goal_text} to prepare for job interviews'\n"
+            f"2. Tie to a deadline, e.g., '{goal_text} because the application is due next month'\n"
+            f"3. Link to values, e.g., '{goal_text} to improve my skills in something I care about'"
+        )
+    elif type_ == "timebound":
+        return (
+            f"1. Add a deadline, e.g., '{goal_text} by Friday'\n"
+            f"2. Use a schedule, e.g., '{goal_text} every morning at 9 AM'\n"
+            f"3. Set a timeframe, e.g., '{goal_text} for the next 2 weeks'"
+        )
+    elif type_ == "summary":
+        return (
+            "This week, you made progress on your goal. Stay consistent and focus on one step at a time. "
+            "You're doing great, keep going!"
+        )
+    elif type_ == "tasks":
+        return (
+            "1. Break the goal into parts\n"
+            "2. Schedule a first step\n"
+            "3. Identify one small, specific task to complete by Friday"
+        )
+
+    return "No fallback guidance available for this type."
 
 def smart_wrapper(prompt, goal_text, type_):
     if FAKE_MODE:
@@ -203,12 +215,18 @@ def suggest_timebound_fix(goal_text):
 
 def summarize_reflection(reflection_text):
     prompt = f"""
-Summarize this weekly reflection in 1–2 sentences.
+You are a supportive goal coach.
 
-Keep it encouraging and focused on progress, even if small.
+Your task is to summarize the user's weekly reflection in a warm and encouraging tone.
+
+1. Keep the summary short (1–2 sentences).
+2. Focus on any progress made — even small steps.
+3. If the user is struggling, highlight their effort and suggest they keep going.
 
 Reflection:
 {reflection_text}
+
+Return only the summary. End with a short positive note (e.g., "See you next time!" or "You’re doing great — keep it up!")
 """
     return smart_wrapper(prompt, reflection_text, "summary")
 

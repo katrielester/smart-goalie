@@ -10,7 +10,7 @@ from db import (
     get_tasks, get_goals, get_reflections, user_goals_exist,
 )
 from reflection_flow import run_weekly_reflection
-from goal_flow import run_goal_setting
+from goal_flow import run_goal_setting, run_add_tasks
 from phases import smart_training_flow
 from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
 from logger import setup_logger
@@ -459,3 +459,5 @@ elif st.session_state["chat_state"] == "reflection":
     run_weekly_reflection()
 elif st.session_state["chat_state"] == "view_goals":
     run_view_goals()
+elif st.session_state["chat_state"] == "add_tasks":
+    run_add_tasks()
