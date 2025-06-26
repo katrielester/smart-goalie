@@ -418,33 +418,33 @@ def run_menu():
 
 def run_view_goals():
     # Only add the chat message if not already rendered
-    # already_rendered = any(
-    #     "Your SMART Goals:" in m["message"] or "You haven’t created any goals" in m["message"]
-    #     for m in st.session_state["chat_thread"]
-    # )
+    already_rendered = any(
+        "Your SMART Goals:" in m["message"] or "You haven’t created any goals" in m["message"]
+        for m in st.session_state["chat_thread"]
+    )
 
-    # if not already_rendered:
-    #     goals = get_goals(st.session_state["user_id"])
-    #     if not goals:
-    #         goal_html = "<div class='chat-left'>You haven’t created any goals yet.</div>"
-    #     else:
-    #         goal_html = "<div class='chat-left'><strong>Your SMART Goals:</strong><br>"
-    #         for goal_id, goal_text in goals:
-    #             goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
-    #             tasks = get_tasks(goal_id)
-    #             if tasks:
-    #                 for task_id, task_text, completed in tasks:
-    #                     status = "✅" if completed else "⬜️"
-    #                     goal_html += f"{status} {task_text}<br>"
-    #             else:
-    #                 goal_html += "<em>No subtasks yet.</em><br>"
-    #             goal_html += "<hr>"
-    #         goal_html += "</div>"
+    if not already_rendered:
+        goals = get_goals(st.session_state["user_id"])
+        if not goals:
+            goal_html = "<div class='chat-left'>You haven’t created any goals yet.</div>"
+        else:
+            goal_html = "<div class='chat-left'><strong>Your SMART Goals:</strong><br>"
+            for goal_id, goal_text in goals:
+                goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
+                tasks = get_tasks(goal_id)
+                if tasks:
+                    for task_id, task_text, completed in tasks:
+                        status = "✅" if completed else "⬜️"
+                        goal_html += f"{status} {task_text}<br>"
+                else:
+                    goal_html += "<em>No subtasks yet.</em><br>"
+                goal_html += "<hr>"
+            goal_html += "</div>"
 
-    #     st.session_state["chat_thread"].append({
-    #         "sender": "Assistant",
-    #         "message": goal_html
-    #     })
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": goal_html
+        })
 
     if st.button("Back to Menu"):
         st.session_state["chat_state"] = "menu"

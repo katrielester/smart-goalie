@@ -12,37 +12,37 @@ FAKE_MODE = os.getenv("FAKE_MODE", "true").lower() == "true"
 def extract_goal_variants(response_text):
     lines = response_text.strip().splitlines()
     variants = [line.strip() for line in lines if line.strip().startswith(("1.", "2.", "3."))]
-    return "\n".join(variants)
+    return "<br>".join(variants)
 
 def fake_response(goal_text, type_):
     if type_ == "specific":
         return (
-            f"1. Clarify and define exactly what you plan to do. e.g., instead of '{goal_text}', say 'Research and outline my topic for the article'\n"
-            f"2. Replace general terms with actionable verbs. e.g., 'Draft the first two sections of my article'\n"
+            f"1. Clarify and define exactly what you plan to do. e.g., instead of '{goal_text}', say 'Research and outline my topic for the article'<br>"
+            f"2. Replace general terms with actionable verbs. e.g., 'Draft the first two sections of my article'<br>"
             f"3. Add a clear action phrase, e.g., 'Schedule two sessions to focus on writing this week'"
         )
     elif type_ == "measurable":
         return (
-            f"1. Add frequency, e.g., '{goal_text}, three times this week'\n"
-            f"2. Add quantity, e.g., '{goal_text}, for at least 30 minutes each time'\n"
+            f"1. Add frequency, e.g., '{goal_text}, three times this week'<br>"
+            f"2. Add quantity, e.g., '{goal_text}, for at least 30 minutes each time'<br>"
             f"3. Define success, e.g., 'Complete one full version of the task'"
         )
     elif type_ == "achievable":
         return (
-            f"1. Scale it down, e.g., 'Do a first draft' instead of 'Finish the full project'\n"
-            f"2. Choose just one focus area, e.g., 'Just research background sources'\n"
+            f"1. Scale it down, e.g., 'Do a first draft' instead of 'Finish the full project'<br>"
+            f"2. Choose just one focus area, e.g., 'Just research background sources'<br>"
             f"3. Limit time, e.g., '{goal_text}, but only for 1 hour per session'"
         )
     elif type_ == "relevant":
         return (
-            f"1. Add motivation, e.g., '{goal_text} to prepare for job interviews'\n"
-            f"2. Tie to a deadline, e.g., '{goal_text} because the application is due next month'\n"
+            f"1. Add motivation, e.g., '{goal_text} to prepare for job interviews'<br>"
+            f"2. Tie to a deadline, e.g., '{goal_text} because the application is due next month'<br>"
             f"3. Link to values, e.g., '{goal_text} to improve my skills in something I care about'"
         )
     elif type_ == "timebound":
         return (
-            f"1. Add a deadline, e.g., '{goal_text} by Friday'\n"
-            f"2. Use a schedule, e.g., '{goal_text} every morning at 9 AM'\n"
+            f"1. Add a deadline, e.g., '{goal_text} by Friday'<br>"
+            f"2. Use a schedule, e.g., '{goal_text} every morning at 9 AM'<br>"
             f"3. Set a timeframe, e.g., '{goal_text} for the next 2 weeks'"
         )
     elif type_ == "summary":
@@ -52,8 +52,8 @@ def fake_response(goal_text, type_):
         )
     elif type_ == "tasks":
         return (
-            "1. Break the goal into parts\n"
-            "2. Schedule a first step\n"
+            "1. Break the goal into parts<br>"
+            "2. Schedule a first step<br>"
             "3. Identify one small, specific task to complete by Friday"
         )
 
@@ -85,19 +85,19 @@ def suggest_specific_fix(goal_text):
 
     Your task is to make the goal more specific with minimal edits.
 
-    A specific goal clearly describes the action being taken, without turning it into a single small task.
+    A specific goal clearly describes the main skill, outcome, or project being worked on — while staying at a high-level that could take 2+ weeks.
 
     Example:
-    Original: Improve my writing
-    Specific: Make progress on my article draft to improve my writing
+    Original: Improve my job prospects
+    Specific: Improve my job prospects by completing a free transcription course
 
-    Now improve the goal below by making it more specific.
+    Now improve the goal below by making it more specific (without turning it into a weekly task).
 
     [Goal]
     {goal_text}
     [/Goal]
 
-    Return 3 lightly edited versions:
+    Please return 3 lightly edited versions, numbered in this format:
     1. ...
     2. ...
     3. ...
@@ -110,11 +110,11 @@ def suggest_measurable_fix(goal_text):
 
     Your task is to make the goal more measurable with minimal edits.
 
-    A measurable goal includes a quantity or frequency that allows progress to be tracked, while still describing a full goal.
+    A measurable goal includes a way to track progress or completion — such as a result, frequency, or milestone — while remaining a high-level goal that takes 2+ weeks.
 
     Example:
-    Original: Improve my writing
-    Measurable: Finish one complete article draft this week to improve my writing
+    Original: Learn a new skill
+    Measurable: Complete a free transcription course to learn a new skill
 
     Now improve the goal below by making it more measurable.
 
@@ -122,7 +122,7 @@ def suggest_measurable_fix(goal_text):
     {goal_text}
     [/Goal]
 
-    Return 3 lightly edited versions:
+    Please return 3 lightly edited versions, numbered in this format:
     1. ...
     2. ...
     3. ...
@@ -135,19 +135,19 @@ def suggest_achievable_fix(goal_text):
 
     Your task is to make the goal more achievable with minimal edits.
 
-    An achievable goal is realistic and can be completed with current time and resources, while still remaining a meaningful weekly goal.
+    An achievable goal should still be meaningful and long-term, but scaled to fit within your current time and resources.
 
     Example:
-    Original: Publish multiple blog posts this week
-    Achievable: Draft one blog post this week with the goal of publishing it soon
+    Original: Become fluent in Spanish
+    Achievable: Complete 10 beginner Spanish lessons to start building fluency
 
-    Now improve the goal below by making it more achievable.
+    Now improve the goal below by making it more achievable (without shrinking it into a weekly task).
 
     [Goal]
     {goal_text}
     [/Goal]
 
-    Return 3 lightly edited versions:
+    Please return 3 lightly edited versions, numbered in this format:
     1. ...
     2. ...
     3. ...
@@ -158,13 +158,13 @@ def suggest_relevant_fix(goal_text):
     prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the goal more relevant with minimal edits.
+    Your task is to make the goal more personally meaningful with minimal edits.
 
-    A relevant goal includes a personal reason or motivation that connects the action to a meaningful outcome.
+    A relevant goal includes a personal reason or benefit — something that makes the goal feel valuable to the person setting it.
 
     Example:
-    Original: Practice coding every day
-    Relevant: Practice coding every day to prepare for job applications
+    Original: Learn data entry
+    Relevant: Learn data entry to access more flexible online jobs
 
     Now improve the goal below by making it more relevant.
 
@@ -172,7 +172,7 @@ def suggest_relevant_fix(goal_text):
     {goal_text}
     [/Goal]
 
-    Return 3 lightly edited versions:
+    Please return 3 lightly edited versions, numbered in this format:
     1. ...
     2. ...
     3. ...
@@ -185,11 +185,11 @@ def suggest_timebound_fix(goal_text):
 
     Your task is to make the goal more time-bound with minimal edits.
 
-    A time-bound goal includes a deadline, timeframe, or schedule that creates urgency and structure.
+    A time-bound goal includes a clear deadline or timeframe that adds structure and urgency.
 
     Example:
-    Original: Organize my notes
-    Time-bound: Organize my notes by the end of the week
+    Original: Improve my typing speed
+    Time-bound: Improve my typing speed by completing a 2-week typing bootcamp
 
     Now improve the goal below by making it more time-bound.
 
@@ -197,7 +197,7 @@ def suggest_timebound_fix(goal_text):
     {goal_text}
     [/Goal]
 
-    Return 3 lightly edited versions:
+    Please return 3 lightly edited versions, numbered in this format:
     1. ...
     2. ...
     3. ...
@@ -232,26 +232,33 @@ Return only the summary. End with a short positive note (e.g., "See you next tim
 
 def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     existing_tasks = existing_tasks or []
-    existing_list = "\n".join(f"- {task}" for task in existing_tasks) if existing_tasks else "None"
+    existing_list = "<br>".join(f"- {task}" for task in existing_tasks) if existing_tasks else "None"
 
     prompt = f"""
-    You help users break down their goals into weekly tasks.
+    You help users break down their SMART goals into small weekly tasks.
 
-    The user has set the following SMART goal:
+    The user’s SMART goal is:
     [Goal]
     {goal_text}
     [/Goal]
 
-    These tasks have already been added:
+    These tasks have already been added and should not be repeated:
     {existing_list}
 
-    Suggest 3 new example tasks they could complete by the end of this week. Do not repeat or closely match existing tasks. Focus on small, concrete actions that help move the goal forward.
+    Suggest 3 new example tasks they could realistically complete by the end of this week.
+    
+    Each task should:
+    - Be specific and action-oriented (what will they do?)
+    - Be small and achievable within one week
+    - Include a measurable outcome or time/duration when relevant
 
-    Only output the 3 new tasks in this format:
+    Avoid vague tasks (like “get better” or “do more”) and avoid full subgoals or complex projects.
+
+    Return only the 3 tasks in this format:
     1. ...
     2. ...
     3. ...
 
-    These are just suggestions for inspiration.
+    These are just suggestions to help the user think of their own.
     """
     return smart_wrapper(prompt, goal_text, "tasks")

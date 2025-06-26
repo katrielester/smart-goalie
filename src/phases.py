@@ -64,8 +64,9 @@ smart_training_flow = {
     },
     "specific_intro": {
         "text": [
-            "Let’s say the goal is: 'Get more healthy this year.'",
-            "Is this goal specific enough?"
+            "For this experiment, you’ll set one meaningful goal: something that will take at least two weeks to make progress on. We’ll use the SMART framework to help shape it.",
+            "Let’s say someone sets this goal: 'I want to improve my job prospects by learning a new skill.'",
+            "Is that goal specific enough?"
         ],
         "buttons": ["Yes", "No"],
         "next": {
@@ -75,25 +76,25 @@ smart_training_flow = {
     },
     "specific_feedback_yes": {
         "text": [
-            "Not quite! A goal like 'get more healthy' is vague.",
-            "We want a single clear action, like working out regularly."
+            "Close! It's heading in the right direction!",
+            "But we can make it more specific by naming the skill or method, like: 'Complete a free transcription course.'"
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "specific_example"}
     },
     "specific_feedback_no": {
         "text": [
-            "Exactly! That goal is too vague.",
-            "A specific goal should be just one clear action, like working out regularly."
+            "Right! It’s a bit broad. We can narrow it down by choosing one skill or course.",
+            "For example: 'Complete a free transcription course.'"
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "specific_example"}
     },
     "specific_example": {
         "text": [
-            "Between these, which is more specific?",
-            "1. I want to eat healthier and work out.",
-            "2. I want to work out regularly."
+            "Which of these is more specific?",
+            "1. I want to learn new skills.",
+            "2. I want to complete a free transcription course."
         ],
         "buttons": ["1", "2"],
         "next": {
@@ -103,24 +104,24 @@ smart_training_flow = {
     },
     "specific_explain": {
         "text": [
-            "That's close! But it combines two goals. Specific goals should focus on just one action.",
-            "We’ll use: 'I want to work out regularly' going forward."
+            "That’s a great start, but it’s still too vague.",
+            "It’s better to focus on one clear action, like completing a course on transcription."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "measurable_intro"}
     },
     "specific_confirm": {
         "text": [
-            "Exactly! One clear focus makes a goal more actionable.",
-            "We’ll use: 'I want to work out regularly' going forward."
+            "Exactly. That version gives us a single, focused outcome.",
+            "We’ll use: 'Complete a free transcription course.' going forward."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "measurable_intro"}
     },
     "measurable_intro": {
         "text": [
-            "Next is M: Measurable.",
-            "Does 'I want to work out regularly' tell us how often or how long?"
+            "Now for M: Measurable.",
+            "Does 'complete a free transcription course' clearly tell us how to track progress?"
         ],
         "buttons": ["Yes", "No"],
         "next": {
@@ -130,15 +131,16 @@ smart_training_flow = {
     },
     "measurable_almost": {
         "text": [
-            "Good guess — it's close.",
-            "But we should add details like how often or how long to make it fully measurable."
+            "Not bad, it’s measurable by whether you finish or not.",
+            "But we can be more detailed by including how many modules or lessons to complete each week."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "measurable_example"}
     },
     "measurable_right": {
         "text": [
-            "Correct — we need specifics like frequency and duration to measure success."
+            "Correct! Course completion is a clear, trackable outcome.",
+            "Still, adding lesson or module targets makes it even stronger."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "measurable_example"}
@@ -146,8 +148,8 @@ smart_training_flow = {
     "measurable_example": {
         "text": [
             "Which of these is more measurable?",
-            "1. I want to work out 3 times a week.",
-            "2. I want to work out 3 times a week, at least 30 minutes each time."
+            "1. Complete a free transcription course.",
+            "2. Complete a free transcription course with at least 3 modules this week."
         ],
         "buttons": ["1", "2"],
         "next": {
@@ -157,24 +159,24 @@ smart_training_flow = {
     },
     "measurable_explain": {
         "text": [
-            "Nice! That’s measurable.",
-            "We can make it even clearer by including the time spent."
+            "That’s measurable, but we can make it more structured by setting a weekly target.",
+            "This helps track progress along the way."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "achievable_intro"}
     },
     "measurable_confirm": {
         "text": [
-            "Perfect! Frequency and duration make it fully measurable."
+            "Perfect! Weekly milestones make progress easier to follow and adjust if needed."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "achievable_intro"}
     },
     "achievable_intro": {
         "text": [
-            "Now A: Achievable.",
-            "Think of this goal: 'Work out 3 times a week for at least 30 minutes.'",
-            "Is this goal realistic given most people’s schedules?"
+            "Next is A: Achievable.",
+            "Think about this goal: 'Complete a free transcription course with at least 3 modules this week.'",
+            "Is that realistic for someone with other work and responsibilities?"
         ],
         "buttons": ["Yes", "No"],
         "next": {
@@ -184,72 +186,74 @@ smart_training_flow = {
     },
     "achievable_confirm": {
         "text": [
-            "Yes! A realistic but challenging goal sets you up for success."
+            "Exactly! It’s focused but doable, that’s what we want."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "relevant_intro"}
     },
     "achievable_explain": {
         "text": [
-            "Good point! If a goal feels too difficult, we can make it more manageable.",
-            "It’s better to start small and build up."
+            "Good thinking! If that feels like too much, it can be scaled down.",
+            "The key is to challenge yourself without making it overwhelming."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "relevant_intro"}
     },
     "relevant_intro": {
         "text": [
-            "R is for Relevant — the goal should matter to you.",
-            "Why might someone want to work out regularly?"
+            "R stands for Relevant: the goal should matter to <b>you</b>.",
+            "Why might someone want to complete a transcription course?"
         ],
         "buttons": [
-            "To improve health",
-            "To reduce stress",
-            "To feel more energetic"
+            "To qualify for better-paying jobs",
+            "To learn new freelance skills",
+            "To feel more confident applying to gigs"
         ],
         "next": {
-            "To improve health": "relevant_confirm",
-            "To reduce stress": "relevant_confirm",
-            "To feel more energetic": "relevant_confirm"
+            "To qualify for better-paying jobs": "relevant_confirm",
+            "To learn new freelance skills": "relevant_confirm",
+            "To feel more confident applying to gigs": "relevant_confirm"
         }
     },
     "relevant_confirm": {
         "text": [
-            "Nice! Tying a goal to personal values or needs makes it more motivating."
+            "Exactly! When a goal connects to something personal, you're more likely to stick with it."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "time_intro"}
     },
     "time_intro": {
         "text": [
-            "T is for Time-bound — adding a timeframe helps you stay focused.",
-            "Which of these timeframes would complete the goal?"
+            "Lastly, T: Time-bound.",
+            "We’ll add a clear timeframe, this helps build momentum and sets a finish line.",
+            "Which of these timeframes would make the goal more time-bound?"
         ],
         "buttons": [
-            "For the next 3 months",
-            "Until December",
-            "Review progress monthly"
+            "Complete the course within 2 weeks",
+            "Finish 3 modules by this Friday",
+            "Review progress after each module"
         ],
         "next": {
-            "For the next 3 months": "complete",
-            "Until December": "complete",
-            "Review progress monthly": "complete"
+            "Complete the course within 2 weeks": "complete",
+            "Finish 3 modules by this Friday": "complete",
+            "Review progress after each module": "complete"
         }
     },
     "complete": {
         "text": [
-            "Great job! You now understand how to make a goal SMART.",
-            "Next, let’s set a goal that matters to YOU."
+            "Awesome! You've now seen how a vague goal becomes SMART:",
+            "<b>'I want to improve my job prospects by learning a new skill.'</b>",
+            "→ <b>'I want to complete a free transcription course within 2 weeks.'</b>",
+            "For this study, you’ll pick one big-picture goal, just like the example above. Later, we’ll break it into 2–3 small weekly tasks to help you stay on track.",
+            "You’re ready to set your own SMART goal now!",
+            
         ],
         "buttons": ["Continue to goal setting"],
         "next": {"Continue to goal setting": "end"}
     },
     "end": {
-        "text": ["Training complete. You're ready to set your own SMART goal!"],
+        "text": ["SMART goal training complete — let’s help you set your own now!"],
         "complete": True
-    },
-    "exit": {
-        "text": ["No worries! Come back anytime you’re ready."]
     }
 }
 
@@ -257,9 +261,10 @@ goal_setting_flow = {
     "initial_goal": {
     "text": [
         "Let's get started!",
-        "You’ll only set one goal for this experiment, so pick something you really care about.",
-        "It doesn’t have to be finished in two weeks, but it should be something you’re motivated to start or move forward.",
-        "Think of it as a short-term project or outcome — something meaningful that can be broken into 2–3 smaller tasks this week.",
+        "You’ll only set one personal goal for this experiment, so choose something you really care about.",
+        "Pick a goal that will take at least two weeks to make meaningful progress on. It doesn’t need to be finished by then, but it should be something you’re genuinely motivated to work on.",
+        "Think of it as a small project, habit, or outcome that’s realistic, meaningful, and important to you right now.",
+        "Later, you’ll break this into 2–3 smaller tasks for the week. But for now, just focus on the big picture.",
         "Please type the goal you would like to achieve."
     ],
     "input_type": "text",
