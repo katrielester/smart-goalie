@@ -1,339 +1,27 @@
-#streamlit_app.py
+# goal_flow.py
 
 import streamlit as st
-import time
-from datetime import datetime
-from db import (
-    create_user, user_completed_training, mark_training_completed,
-    save_message_to_db, get_chat_history, get_user_info,
-    save_goal, save_task, save_reflection,
-    get_tasks, get_goals, get_reflections, user_goals_exist,
+from llama_utils import (
+    suggest_specific_fix, suggest_measurable_fix,
+    suggest_achievable_fix, suggest_relevant_fix,
+    suggest_timebound_fix, suggest_tasks_for_goal
 )
-from reflection_flow import run_weekly_reflection
-from goal_flow import run_goal_setting
-from phases import smart_training_flow
-from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
-from logger import setup_logger
+from db import save_goal, save_task, get_tasks
+from phases import goal_setting_flow
 
-import os
-
-DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
-
-logger = setup_logger()
-
-st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
-
-st.markdown("""
-    <style>
-    button {
-        background-color: #1f77b4;
-        color: white !important;
-        border-radius: 8px;
-        padding: 0.5rem 1.2rem;
-        margin-bottom: 0.5rem;
-        text-align: left;
-        width: 100%;
-    }
-    button:hover {
-        background-color: #145a86;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-st.session_state.setdefault("chat_state", "intro")
-st.session_state.setdefault("user_id", "")
-st.session_state.setdefault("chat_thread", [])
-st.session_state.setdefault("smart_step", "intro")
-st.session_state.setdefault("message_index", 0)
-st.session_state.setdefault("current_goal", "")
-
-# Dynamic chat height
-if st.session_state["chat_state"] in ["menu", "view_goals"]:
-    chat_height = "45vh"  # tighter chat when UI is crowded
-else:
-    chat_height = "60vh"  # default height
-
-with st.sidebar:
-    if DEV_MODE:
-        if st.button("Dev: Jump to Goal Setting"):
-            st.session_state["chat_state"] = "goal_setting"
-            st.session_state["message_index"] = 0
-            st.rerun()
-
-        if st.button("Dev: Jump to Reflection"):
-            st.session_state["chat_state"] = "reflection"
-            st.rerun()
-
-# with st.sidebar:
-#     st.title("User Panel")
-#     user_id = st.text_input("Enter your Prolific ID")
-    
-#     if st.button("Authenticate"):
-#         if user_id:
-#             st.session_state["authenticated"] = True
-#             st.session_state["user_id"] = user_id
-
-#             user_info = get_user_info(user_id)
-
-#             if user_info:
-#                 print("🔍 Raw user_info from DB:", user_info)
-#                 prolific_code, has_completed_training, db_group = user_info
-#                 st.session_state["group"] = db_group.strip().lower()
-#             else:
-#                 # Use URL param if user doesn't exist in DB
-#                 group_param = st.query_params.get("g", ["2"])[0]
-#                 group_assignment = "treatment" if group_param == "1" else "control"
-#                 create_user(user_id, prolific_code=user_id, group=group_assignment)
-#                 st.session_state["group"] = group_assignment
-
-#             if user_completed_training(user_id):
-#                 st.session_state["chat_thread"] = [{
-#                     "sender": "Assistant",
-#                     "message": "Welcome back! What would you like to do today?"
-#                 }]
-#                 st.session_state["chat_state"] = "menu"
-#             else:
-#                 st.session_state["chat_thread"] = [{
-#                     "sender": "Assistant",
-#                     "message": "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
-#                 }]
-#                 st.session_state["chat_state"] = "intro"
-
-#             # Auto-jump into reflection if week/session params exist and user is treatment
-#             if st.session_state["group"] == "treatment":
-#                 if "week" in st.query_params and "session" in st.query_params:
-#                     st.session_state["chat_state"] = "reflection"
-
-#             st.success("Welcome!")
-#             st.rerun()
-#         else:
-#             st.error("Please provide your Prolific ID.")
-
-with st.sidebar:
-    st.title("User Panel")
-
-    query_params = st.query_params
-    prolific_id = query_params.get("PROLIFIC_PID")
-
-    if prolific_id:
-        user_id = prolific_id
-        st.session_state["authenticated"] = True
-        st.session_state["user_id"] = user_id
-        st.info(f"Authenticated as Prolific ID: {user_id}")
-    elif DEV_MODE:
-        user_id = st.text_input("Enter your Prolific ID")
-        if not st.session_state.get("authenticated"):
-            if st.button("Authenticate (DEV only)") and user_id:
-                st.session_state["authenticated"] = True
-                st.session_state["user_id"] = user_id
-                st.rerun()
-        else:
-            st.info(f"Manually authenticated as {st.session_state['user_id']}")
-    else:
-        st.warning("Please access this link via Prolific.")
-        st.stop()
-
-    if st.session_state.get("authenticated"):
-        user_info = get_user_info(user_id)
-
-        if user_info:
-            prolific_code, has_completed_training, db_group = user_info
-            st.session_state["group"] = db_group.strip().lower()
-        else:
-            # Use URL param if user doesn't exist in DB
-            group_param = st.query_params.get("g", ["2"])[0]
-            group_assignment = group_param
-            create_user(user_id, prolific_code=user_id, group=group_assignment)
-            st.session_state["group"] = "treatment" if group_param == "1" else "control"
-
-        if "chat_state" not in st.session_state or st.session_state["chat_state"] not in [
-            "smart_training", "goal_setting", "menu", "reflection", "view_goals"
-        ]:
-            if user_completed_training(user_id):
-                if not st.session_state["chat_thread"]:
-                    st.session_state["chat_thread"].append({
-                        "sender": "Assistant",
-                        "message": "Welcome back! What would you like to do today?"
-                    })
-                st.session_state["chat_state"] = "menu"
-            else:
-                st.session_state["chat_state"] = "intro"
-
-        # Auto-jump into reflection if week/session params exist and user is treatment
-        if st.session_state["group"] == "treatment":
-            if "week" in st.query_params and "session" in st.query_params:
-                st.session_state["chat_state"] = "reflection"
-
-        if "did_rerun_auth" not in st.session_state:
-            st.session_state["did_rerun_auth"] = True
-            st.rerun()
-
-if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
-    st.warning("Please authenticate first.")
-    st.stop()
-
-st.title("SMART Goalie")
-
-
-import streamlit.components.v1 as components
-
-# Use pixel height for consistent layout
-chat_height_px = 400
-# if st.session_state["chat_state"] not in ["menu", "view_goals"] else 400
-
-# Inject goal HTML into chat thread if viewing goals
-if st.session_state["chat_state"] == "view_goals":
-    if not any(
-        "Your SMART Goals:" in m["message"] or "You haven’t created any goals" in m["message"]
-        for m in st.session_state["chat_thread"]
-    ):
-        goals = get_goals(st.session_state["user_id"])
-        if not goals:
-            goal_html = "<div class='chat-left'>You haven’t created any goals yet.</div>"
-        else:
-            goal_html = "<div class='chat-left'><strong>Your SMART Goals:</strong><br>"
-            for goal_id, goal_text in goals:
-                goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
-                tasks = get_tasks(goal_id)
-                if tasks:
-                    for task_id, task_text, completed in tasks:
-                        status = "✅" if completed else "⬜️"
-                        goal_html += f"{status} {task_text}<br>"
-                else:
-                    goal_html += "<em>No subtasks yet.</em><br>"
-                goal_html += "<hr>"
-            goal_html += "</div>"
-
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": goal_html
-        })
-
-chat_bubble_html = "".join([
-    f'<div class="{"chat-left" if m["sender"] == "Assistant" else "chat-right"}">{m["message"]}</div>'
-    for m in st.session_state["chat_thread"]
-])
-
-# for entry in st.session_state["chat_thread"]:
-#     with st.chat_message("assistant" if entry["sender"] == "Assistant" else "user"):
-#         st.markdown(entry["message"])
-#         scroll_script = """
-#             <script>
-#                 setTimeout(() => {
-#                     window.scrollTo(0, document.body.scrollHeight);
-#                 }, 100);
-#             </script>
-#         """
-#         st.markdown(scroll_script, unsafe_allow_html=True)
-
-# Render chat container
-with st.container():
-
-    # Static HTML
-    components.html(f"""
-        <html>
-        <head>
-        <style>
-            body {{
-                font-family: "Segoe UI", sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #0e1117;
-                color: #f0f0f0;
-            }}
-
-            .chat-wrapper {{
-                height: {chat_height_px}px;
-                overflow-y: auto;
-                padding: 10px;
-                border-radius: 10px;
-                border: 1px solid #444;
-                background-color: #1c1f26;
-            }}
-
-            .chat-left {{
-                text-align: left;
-                background-color: #2b2f38;
-                color: #eaeaea;
-                border-radius: 10px;
-                padding: 10px;
-                margin: 5px 0;
-                max-width: 70%;
-                display: block;
-                word-wrap: break-word;
-            }}
-
-            .chat-right {{
-                text-align: right;
-                background-color: #005fcf;
-                color: #ffffff;
-                border-radius: 10px;
-                padding: 10px;
-                margin: 5px 0;
-                max-width: 70%;
-                margin-left: auto;
-                display: block;
-                word-wrap: break-word;
-            }}
-        </style>
-        </head>
-        <body>
-            <div id="chatbox" class="chat-wrapper">
-                {chat_bubble_html}
-                <div id="endofchat" style="height: 30px;"></div>
-            </div>
-            <script>
-                const chatBox = document.getElementById("chatbox");
-                chatBox.scrollTop = chatBox.scrollHeight;
-            </script>
-        </body>
-        </html>
-    """, height=chat_height_px, scrolling=False)
-
-
-def run_intro():
-    intro_message = "Hi! I'm Goalie. Are you ready to learn about SMART goals!"
-
-    if "did_intro_rerun" not in st.session_state or not st.session_state["did_intro_rerun"]:
-        if not any(entry["message"] == intro_message for entry in st.session_state["chat_thread"]):
-            st.session_state["chat_thread"].append({"sender": "Assistant", "message": intro_message})
-            st.session_state["did_intro_rerun"] = True
-            st.rerun()
-
-    if st.session_state.get("chat_state") == "intro":
-        if st.button("Yes, let's start", key="start_training_btn"):
-            st.session_state["chat_thread"].append({"sender": "User", "message": "Yes, let's start"})
-            st.session_state["chat_state"] = "smart_training"
-            st.session_state["smart_step"] = "intro"
-            st.session_state["message_index"] = 0
-            st.rerun()
-
-def run_smart_training():
-    print("🔵 In run_smart_training()")
-    step = smart_training_flow[st.session_state["smart_step"]]
+def run_goal_setting():
+    step = goal_setting_flow[st.session_state["smart_step"]]
     texts = step["text"]
     if isinstance(texts, str):
         texts = [texts]
 
     current_index = st.session_state.get("message_index", 0)
-    all_texts_rendered = current_index >= len(texts)
 
-    # Step 1: Show assistant messages one-by-one
-    if not all_texts_rendered:
-        rendered_messages = [entry["message"] for entry in st.session_state["chat_thread"] if entry["sender"] == "Assistant"]
-        current_text = texts[current_index]
-        current_text = current_text.replace("{user_name}", st.session_state.get("user_name", ""))
-        current_text = current_text.replace("{full_goal}", st.session_state.get("full_goal", ""))
-
-        if current_text not in rendered_messages:
-            st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
-
-        # Always advance index after rendering
+    if current_index < len(texts):
+        current_text = texts[current_index].replace("{current_goal}", st.session_state.get("current_goal", ""))
+        st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
         st.session_state["message_index"] += 1
-        time.sleep(0.7)
         st.rerun()
-
-    # Step 2: Handle buttons or input after all messages are rendered
     else:
         if step.get("buttons"):
             selected = None
@@ -348,114 +36,108 @@ def run_smart_training():
                 st.session_state["message_index"] = 0
                 st.rerun()
 
-        # elif step.get("input_type") == "text":
-        #     user_input = st.chat_input("Type your answer")
-        #     if user_input:
-        #         st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
+        elif step.get("input_type") == "text":
+            user_input = st.chat_input("Type your answer")
+            if user_input:
+                st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
+                st.session_state["current_goal"] = user_input
+                st.session_state["smart_step"] = step["next"]
+                st.session_state["message_index"] = 0
+                st.rerun()
 
-        #         # Handle relevance explanation path
-        #         if st.session_state["smart_step"] in ["relevant_prompt", "relevant_explain_anyway"]:
-        #             base_goal = "I would like to work out three times a week, at least 30 minutes each time"
-        #             relevance_reason = user_input.strip()
+        elif "fix_with_llm" in step:
+            fix_type = step["fix_with_llm"]
+            goal = st.session_state.get("current_goal", "")
 
-        #             if not relevance_reason.lower().startswith("to "):
-        #                 relevance_reason = "to " + relevance_reason
+            # STEP 1: Show 'Typing...' only once
+            if "llm_typing" not in st.session_state:
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "Typing..."
+                })
+                st.session_state["llm_typing"] = True
+                st.rerun()
 
-        #             full_goal = f"{base_goal}, {relevance_reason}."
-        #             st.session_state["full_goal"] = full_goal
-        #             st.session_state["smart_step"] = "relevant_echo"
-        #             st.session_state["message_index"] = 0
-        #             st.rerun()
+            # STEP 2: If 'Typing...' is already shown, call LLM and replace it
+            if st.session_state.get("llm_typing"):
+                if fix_type == "specific":
+                    updated_goal = suggest_specific_fix(goal)
+                elif fix_type == "measurable":
+                    updated_goal = suggest_measurable_fix(goal)
+                elif fix_type == "achievable":
+                    updated_goal = suggest_achievable_fix(goal)
+                elif fix_type == "relevant":
+                    updated_goal = suggest_relevant_fix(goal)
+                elif fix_type == "timebound":
+                    updated_goal = suggest_timebound_fix(goal)
 
-        #         # Generic case for all other steps
-        #         else:
-        #             if st.session_state["smart_step"] == "get_name":
-        #                 st.session_state["user_name"] = user_input
+                formatted_goal = updated_goal.replace("1.", "<br>1.").replace("2.", "<br>2.").replace("3.", "<br>3.").strip()
 
-        #             st.session_state["smart_step"] = step["next"]
-        #             st.session_state["message_index"] = 0
-        #             st.rerun()
+                # Replace 'Typing...' with real output
+                st.session_state["chat_thread"][-1]["message"] = f"This is an example of a more {fix_type} goal:<br><br>{formatted_goal}<br><br>Try adjusting your goal if it needs improvement.<br>"
 
-        elif step.get("complete"):
-            mark_training_completed(st.session_state["user_id"])
-            st.session_state["chat_state"] = "goal_setting"
-            st.session_state["smart_step"] = "initial_goal"
+                st.session_state["suggested_goal"] = formatted_goal
+                st.session_state["smart_step"] = step["next"]
+                st.session_state["message_index"] = 0
+                del st.session_state["llm_typing"]
+                st.rerun()
+
+            # Format the goal output for readability
+            formatted_goal = updated_goal.replace("1.", "<br>1.").replace("2.", "<br>2.").replace("3.", "<br>3.")
+            formatted_goal = formatted_goal.replace("Answer:", "").strip()
+
+            # Save cleaned output
+            st.session_state["suggested_goal"] = formatted_goal
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": f"This is an example of a more {fix_type} goal:<br><br>{formatted_goal}<br><br>"
+                        f"Try adjusting your goal if it needs improvement.<br>"
+            })
+
+            st.session_state["smart_step"] = step["next"]
             st.session_state["message_index"] = 0
             st.rerun()
 
-def run_menu():
-    if st.button("➕ Create a New Goal"):
-        st.session_state["chat_state"] = "goal_setting"
-        st.session_state["smart_step"] = "initial_goal"
-        st.session_state["message_index"] = 0
-        st.rerun()
-    if user_goals_exist(st.session_state["user_id"]):
-        if st.button("✅ View Existing Goal and Tasks"):
-            st.session_state["chat_state"] = "view_goals"
+        elif step.get("complete"):
+            goal_id = save_goal(
+                user_id=st.session_state["user_id"],
+                goal_text=st.session_state["current_goal"]
+            )
+
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "Your SMART goal has been saved! Now let's break it down into smaller tasks you can do <b>this week</b>. We'll check in with you midweek to help you reflect and adjust if needed."
+            })
+
+            existing_tasks = [t[1] for t in get_tasks(goal_id)]
+            suggested = suggest_tasks_for_goal(st.session_state["current_goal"], existing_tasks)
+
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "Here are some example tasks you can consider (just suggestions):<br><br>" + suggested
+            })
+
+            st.session_state["goal_id_being_worked"] = goal_id
+            st.session_state["task_count"] = 0
+            st.session_state["chat_state"] = "add_tasks"
             st.rerun()
-    if st.session_state.get("group") == "treatment" and user_goals_exist(st.session_state["user_id"]):
-        if st.button("✏️ Weekly Reflection"):
-            st.session_state["chat_state"] = "reflection"
-            st.rerun()
 
-# def run_reflection():
-#     st.subheader("Weekly Check-In")
-#     responses = []
-#     for q in weekly_reflection_prompts:
-#         ans = st.text_area(q, key=q)
-#         responses.append(f"{q}\n{ans}\n")
-#     if st.button("Submit Reflection"):
-#         full_reflection = "\n".join(responses)
-#         save_reflection(st.session_state["user_id"], None, full_reflection, week_number=1)
-#         with st.spinner("Summarizing your progress..."):
-#             summary = summarize_reflection(full_reflection)
-#         st.session_state["chat_thread"].append({"sender": "User", "message": full_reflection})
-#         st.session_state["chat_thread"].append({"sender": "Assistant", "message": summary})
-#         st.success("Reflection submitted!")
-
-def run_view_goals():
-    # Only add the chat message if not already rendered
-    # already_rendered = any(
-    #     "Your SMART Goals:" in m["message"] or "You haven’t created any goals" in m["message"]
-    #     for m in st.session_state["chat_thread"]
-    # )
-
-    # if not already_rendered:
-    #     goals = get_goals(st.session_state["user_id"])
-    #     if not goals:
-    #         goal_html = "<div class='chat-left'>You haven’t created any goals yet.</div>"
-    #     else:
-    #         goal_html = "<div class='chat-left'><strong>Your SMART Goals:</strong><br>"
-    #         for goal_id, goal_text in goals:
-    #             goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
-    #             tasks = get_tasks(goal_id)
-    #             if tasks:
-    #                 for task_id, task_text, completed in tasks:
-    #                     status = "✅" if completed else "⬜️"
-    #                     goal_html += f"{status} {task_text}<br>"
-    #             else:
-    #                 goal_html += "<em>No subtasks yet.</em><br>"
-    #             goal_html += "<hr>"
-    #         goal_html += "</div>"
-
-    #     st.session_state["chat_thread"].append({
-    #         "sender": "Assistant",
-    #         "message": goal_html
-    #     })
-
-    if st.button("Back to Menu"):
+def run_add_tasks():
+    if st.session_state["task_count"] >= 3:
+        st.success("You've added 3 tasks. Great work!")
         st.session_state["chat_state"] = "menu"
         st.rerun()
 
-if st.session_state["chat_state"] == "intro":
-    run_intro()
-elif st.session_state["chat_state"] == "smart_training":
-    run_smart_training()
-elif st.session_state["chat_state"] == "menu":
-    run_menu()
-elif st.session_state["chat_state"] == "goal_setting":
-    run_goal_setting()
-elif st.session_state["chat_state"] == "reflection":
-    run_weekly_reflection()
-elif st.session_state["chat_state"] == "view_goals":
-    run_view_goals()
+    task_input = st.chat_input("Add a small task to help achieve your goal")
+    if task_input:
+        save_task(st.session_state["goal_id_being_worked"], task_input.strip())
+        st.session_state["task_count"] += 1
+        st.session_state["chat_thread"].append({"sender": "User", "message": f"Task: {task_input.strip()}"})
+        if st.session_state["task_count"] >= 1:
+            if st.button("Done Adding Tasks"):
+                if st.session_state["task_count"] < 3:
+                    st.warning("Try to add all 3 tasks for a smoother check-in later.")
+                else:
+                    st.success("Saved your goal and tasks!")
+                    st.session_state["chat_state"] = "menu"
+                    st.rerun()
