@@ -130,10 +130,14 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
 
 #  FORCE TASK ENTRY IF GOAL EXISTS BUT NO TASK
 
+# Only run force-task logic once per session unless reset
+if "force_task_handled" not in st.session_state:
+    st.session_state["force_task_handled"] = False
+
 goals = get_goals_with_task_counts(st.session_state["user_id"])
 incomplete_goal = next((g for g in goals if g["task_count"]==0), None)
 
-if incomplete_goal:
+if incomplete_goal and not st.session_state["force_task_handled"]:
     st.session_state["goal_id_being_worked"] = incomplete_goal["id"]
     st.session_state["current_goal"] = incomplete_goal["goal_text"]
     st.session_state["tasks_saved"] = []

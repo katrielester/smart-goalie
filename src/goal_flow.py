@@ -187,6 +187,7 @@ def run_add_tasks():
         if col1.button("✅ Yes, save task"):
             task = st.session_state.pop("candidate_task")
             save_task(goal_id, task)
+            st.session_state["force_task_handled"] = False
             st.session_state["tasks_saved"].append(task)
 
             st.session_state["chat_thread"].append({
@@ -231,21 +232,6 @@ def run_add_tasks():
                 "sender": "Assistant",
                 "message": f"You’ve added {len(st.session_state['tasks_saved'])} task(s). "
                         "You can review or update them during your reflection later."
-            })
-            if get_user_phase(st.session_state["user_id"]) < 2:
-                show_reflection_explanation()
-                update_user_phase(st.session_state["user_id"], 2)
-            st.session_state["chat_state"] = "menu"
-            del st.session_state["task_entry_stage"]
-            st.rerun()
-
-    # Optional early exit after 1+ tasks
-    if st.session_state["task_entry_stage"] == "entry" and len(st.session_state["tasks_saved"]) >= 1:
-        if st.button("✅ Done for now"):
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": f"You’ve added {len(st.session_state['tasks_saved'])} task(s). "
-                           "You can review or update them during your reflection later."
             })
             if get_user_phase(st.session_state["user_id"]) < 2:
                 show_reflection_explanation()
