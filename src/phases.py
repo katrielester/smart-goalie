@@ -261,11 +261,11 @@ goal_setting_flow = {
     "initial_goal": {
     "text": [
         "Let's get started!",
-        "You’ll only set one personal goal for this experiment, so choose something you really care about.",
-        "Pick a goal that will take at least two weeks to make meaningful progress on. It doesn’t need to be finished by then, but it should be something you’re genuinely motivated to work on.",
-        "Think of it as a small project, habit, or outcome that’s realistic, meaningful, and important to you right now.",
-        "Later, you’ll break this into 2–3 smaller tasks for the week. But for now, just focus on the big picture.",
-        "Please type the goal you would like to achieve."
+        "You’ll set just one personal goal for this 2-week experiment, so choose something you really care about.",
+        "Choose a goal that takes time and effort, something you can make real progress on over two weeks.",
+        "Think of it as a mini project or habit you care about. It shouldn't be something you finish in one sitting.",
+        "Later, you’ll break this into 2–3 small weekly tasks. For now, focus on the <b>big picture.</b>",
+        "What's one goal you'd really like to work on?"
     ],
     "input_type": "text",
     "next": "check_specific"
@@ -273,8 +273,8 @@ goal_setting_flow = {
     "check_specific": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Let’s check: is your goal specific enough?",
-            "A specific goal clearly describes one main thing you want to achieve, not something vague like 'do better' or 'be more consistent.'"
+            "Let’s check: is your goal specific?",
+            "A specific goal clearly focuses on <b>one</b> clear outcome, not something vague like 'do better' or 'be more consistent.'"
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "check_measurable", "No": "fix_specific"}
@@ -289,7 +289,8 @@ goal_setting_flow = {
     "input_specific": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Based on the suggestion above, try rewriting it to be more specific. Just type your updated version below."
+            "Based on the suggestion above, try rewriting it to be more specific. Just type your updated version below.",
+            "✏️ You'll be working on this for 2 weeks and breaking it into smaller tasks. So keep it focused but still broad enough for progress over time."
         ],
         "input_type": "text",
         "next": "check_measurable"
@@ -297,15 +298,15 @@ goal_setting_flow = {
     "check_measurable": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Now let’s see, is your goal is measurable?",
-            "This means you should be able to tell how much progress you’ve made or when it’s done, like a number, frequency, or result."
+            "Now let’s see, is it measurable?",
+            "Can you track your progress with something like a number, frequency, or milestone?"
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "check_achievable", "No": "fix_measurable"}
     },
     "fix_measurable": {
         "text": [
-            "Let’s fine-tune your goal so it’s easier to track. Just a small adjustment!"
+            "Let’s add a way to track progress Just a small adjustment!"
         ],
         "fix_with_llm": "measurable",
         "next": "input_measurable"
@@ -313,7 +314,8 @@ goal_setting_flow = {
     "input_measurable": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Based on the suggestion above, try rewriting it to be more measurable. Just type your updated version below."
+            "Based on the suggestion above, try rewriting it to be more measurable. Just type your updated version below.",
+            "💡 It should still feel like a high-level goal, not just one task, but a project or habit you'll grow over the next two weeks."
         ],
         "input_type": "text",
         "next": "check_achievable"
@@ -321,15 +323,15 @@ goal_setting_flow = {
     "check_achievable": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Next up: is your goal achievable for you?",
-            "An achievable goal is realistic and fits your current time, energy, and resources. Not too overwhelming, not too easy."
+            "Next up: is your goal achievable for you right now??",
+            "It should feel realistic: challenging, but doable with the time and energy you have."
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "check_relevant", "No": "fix_achievable"}
     },
     "fix_achievable": {
         "text": [
-            "Alright, let’s scale it down just a bit so it feels more doable for you this week."
+            "Alright, let’s make it a bit more manageable so you can make steady progress!"
         ],
         "fix_with_llm": "achievable",
         "next": "input_achievable"
@@ -337,7 +339,7 @@ goal_setting_flow = {
     "input_achievable": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Based on the suggestion above, try rewriting it to be more achievable. Just type your updated version below."
+            "Try rewriting it to be more doable: something you can make progress on over the next two weeks."
         ],
         "input_type": "text",
         "next": "check_relevant"
@@ -345,15 +347,15 @@ goal_setting_flow = {
     "check_relevant": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Now let’s check, does your goal feel personally meaningful?",
-            "A relevant goal should matter to <b>you</b>, something that connects to your values, interests, or priorities."
+            "Now let’s check, does this goal feel personally meaningful to you?",
+            "A relevant goal connects to what <b>you</b> care about, your interests, values, or current priorities."
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "check_timebound", "No": "fix_relevant"}
     },
     "fix_relevant": {
         "text": [
-            "Let’s strengthen the connection! Why does this goal matter to you personally?"
+            "Let’s bring in the 'why'. Why does this goal matter to you personally?"
         ],
         "fix_with_llm": "relevant",
         "next": "input_relevant"
@@ -361,7 +363,7 @@ goal_setting_flow = {
     "input_relevant": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Based on the suggestion above, try rewriting it to be more relevant. Just type your updated version below."
+            "Try rewriting it to be more personally meaningful to you. Just type your updated version below."
         ],
         "input_type": "text",
         "next": "check_timebound"
@@ -370,14 +372,15 @@ goal_setting_flow = {
         "text": [
             "Here’s your current goal: {current_goal}",
             "Almost done! Does your goal have a clear timeframe?",
-            "A time-bound goal includes a deadline, schedule, or review point, something that tells you <b>when</b> it will happen."
+            "A time-bound goal has a deadline, schedule, or review point, something that tells you <b>when</b> it will happen."
         ],
         "buttons": ["Yes", "No"],
         "next": {"Yes": "finalize_goal", "No": "fix_timebound"}
     },
     "fix_timebound": {
         "text": [
-            "Let’s add a simple timeframe to give your goal more structure and momentum."
+            "Let’s add a simple timeframe to help pace your progress.",
+            "⏳ Reminder: You’ll work on this goal throughout the full 2-week experiment. So pick a timeframe that supports ongoing momentum."
         ],
         "fix_with_llm": "timebound",
         "next": "input_timebound"
@@ -385,7 +388,8 @@ goal_setting_flow = {
     "input_timebound": {
         "text": [
             "Here’s your current goal: {current_goal}",
-            "Based on the suggestion above, try rewriting it to be timebound. Just type your updated version below."
+            "Based on the suggestion above, try adding a timeframe to your goal. Just type your updated version below.",
+            "✏️ You’ll work on this same goal throughout the 2-week experiment, so pick a timeframe that supports steady progress, even if it goes beyond 2 weeks."
         ],
         "input_type": "text",
         "next": "finalize_goal"
@@ -394,18 +398,28 @@ goal_setting_flow = {
         "text": [
             "Here’s your finalized SMART goal!",
             "{current_goal}",
-            "You’ve done a great job refining your goal, it’s looking solid now!",
-            "Would you like to save it or make manual edits?"
+            "Great job, it’s looking solid now!",
+            "You’ll use this goal for the full 2 weeks and soon break it into smaller weekly tasks.",
+            "Ready to save it, or do you want to tweak it first?"
         ],
         "buttons": ["Save Goal", "Edit Manually"],
         "next": {"Save Goal": "save_goal", "Edit Manually": "edit_goal"}
     },
     "edit_goal": {
         "text": [
-            "Please type your edited version of the SMART goal."
+            "Please type your updated version of the goal below."
         ],
         "input_type": "text",
-        "next": "save_goal"
+        "next": "finalize_edit_goal"
+    },
+    "finalize_edit_goal": {
+        "text": [
+            "Here’s your updated SMART goal!",
+            "{current_goal}",
+            "Ready to save it, or do you want to tweak it?"
+        ],
+        "buttons": ["Save Goal", "Edit Manually"],
+        "next": {"Save Goal": "save_goal", "Edit Manually": "edit_goal"}
     },
     "save_goal": {
         "text": [

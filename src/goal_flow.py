@@ -82,7 +82,6 @@ def run_goal_setting():
                 f"Here’s your <b>current goal</b>:<br>{current_goal}<br><br>"
                 f"Here are <b>3 example improvements</b> to make it more {fix_type}:<br><br>"
                 f"{formatted_variants}<br><br>"
-                "Try adjusting your goal based on these suggestions."
             )
 
             del st.session_state["llm_typing"]

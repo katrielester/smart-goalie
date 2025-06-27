@@ -80,29 +80,32 @@ def smart_wrapper(prompt, goal_text, type_):
         return fake_response(goal_text, type_)
 
 def suggest_specific_fix(goal_text):
-   prompt = f"""
+        prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the goal more specific with minimal edits.
+    Your task is to make the following goal more specific with minimal edits.
 
-    A specific goal clearly describes the main skill, outcome, or project being worked on — while staying at a high-level that could take 2+ weeks.
+    A specific goal describes one clear outcome or focus area — not something vague like "do better" or "be more consistent." Avoid bundling multiple actions.
 
-    Example:
-    Original: Improve my job prospects
-    Specific: Improve my job prospects by completing a free transcription course
+    Examples:
+    Original: Do better in interviews  
+    Specific: Improve my interview skills by practicing behavioral questions
 
-    Now improve the goal below by making it more specific (without turning it into a weekly task).
+    Original: Get healthier  
+    Specific: Improve my health by building a consistent walking routine
 
-    [Goal]
-    {goal_text}
+    Now revise the goal below to be more specific. Suggest 3 lightly edited versions:
+
+    [Goal]  
+    {goal_text}  
     [/Goal]
 
-    Please return 3 lightly edited versions, numbered in this format:
+    Return them in this format:
     1. ...
     2. ...
     3. ...
     """
-   return smart_wrapper(prompt, goal_text, "specific")
+        return smart_wrapper(prompt, goal_text, "specific")
 
 def suggest_measurable_fix(goal_text):
     prompt = f"""
@@ -110,16 +113,16 @@ def suggest_measurable_fix(goal_text):
 
     Your task is to make the goal more measurable with minimal edits.
 
-    A measurable goal includes a way to track progress or completion — such as a result, frequency, or milestone — while remaining a high-level goal that takes 2+ weeks.
+    A measurable goal includes a way to track progress — like a number, frequency, or result — while still being a high-level goal that will take around 2 weeks of effort.
 
     Example:
-    Original: Learn a new skill
+    Original: Learn a new skill  
     Measurable: Complete a free transcription course to learn a new skill
 
-    Now improve the goal below by making it more measurable.
+    Now improve the goal below by making it more measurable (without turning it into a one-off task).
 
-    [Goal]
-    {goal_text}
+    [Goal]  
+    {goal_text}  
     [/Goal]
 
     Please return 3 lightly edited versions, numbered in this format:
@@ -135,16 +138,16 @@ def suggest_achievable_fix(goal_text):
 
     Your task is to make the goal more achievable with minimal edits.
 
-    An achievable goal should still be meaningful and long-term, but scaled to fit within your current time and resources.
+    An achievable goal should still feel meaningful and take at least 2 weeks to make progress — but it should fit the person’s current time, energy, and situation.
 
-    Example:
-    Original: Become fluent in Spanish
+    Example:  
+    Original: Become fluent in Spanish  
     Achievable: Complete 10 beginner Spanish lessons to start building fluency
 
-    Now improve the goal below by making it more achievable (without shrinking it into a weekly task).
+    Now improve the goal below by making it more achievable (without shrinking it into a short weekly task).
 
-    [Goal]
-    {goal_text}
+    [Goal]  
+    {goal_text}  
     [/Goal]
 
     Please return 3 lightly edited versions, numbered in this format:
@@ -158,18 +161,18 @@ def suggest_relevant_fix(goal_text):
     prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the goal more personally meaningful with minimal edits.
+    Your task is to make the goal feel more personally meaningful with minimal edits.
 
-    A relevant goal includes a personal reason or benefit — something that makes the goal feel valuable to the person setting it.
+    A relevant goal includes a reason it matters to the person — something tied to their values, interests, goals, or current priorities.
 
-    Example:
-    Original: Learn data entry
+    Example:  
+    Original: Learn data entry  
     Relevant: Learn data entry to access more flexible online jobs
 
-    Now improve the goal below by making it more relevant.
+    Now improve the goal below by making it more personally relevant.
 
-    [Goal]
-    {goal_text}
+    [Goal]  
+    {goal_text}  
     [/Goal]
 
     Please return 3 lightly edited versions, numbered in this format:
@@ -183,18 +186,18 @@ def suggest_timebound_fix(goal_text):
     prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the goal more time-bound with minimal edits.
+    Your task is to add a clear timeframe to the goal with minimal edits.
 
-    A time-bound goal includes a clear deadline or timeframe that adds structure and urgency.
+    A time-bound goal includes a deadline, schedule, or timeframe — something realistic that gives the goal structure and momentum over 2+ weeks.
 
-    Example:
-    Original: Improve my typing speed
+    Example:  
+    Original: Improve my typing speed  
     Time-bound: Improve my typing speed by completing a 2-week typing bootcamp
 
     Now improve the goal below by making it more time-bound.
 
-    [Goal]
-    {goal_text}
+    [Goal]  
+    {goal_text}  
     [/Goal]
 
     Please return 3 lightly edited versions, numbered in this format:

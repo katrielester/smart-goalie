@@ -104,7 +104,7 @@ def run_weekly_reflection():
 
         if use_success_reflection:
             questions = [
-                ("what", "✨ Just a quick one — what helped you make progress this week? (One sentence is fine!)"),
+                ("what", "✨ Just a quick one: what helped you make progress this week? (One sentence is fine!)"),
                 ("so_what", "🔍 Why do you think it felt easier or more motivating this time?"),
                 ("now_what", "➡️ What’s something you’d like to keep doing next week?")
             ]
@@ -140,25 +140,59 @@ def run_weekly_reflection():
         idx = st.session_state.get("update_task_idx", 0)
         if idx < len(tasks):
             task_id, task_text, _ = tasks[idx]
-            update_choice = st.radio(
-                f"Do you want to keep, modify, or replace this task?<br><br><b>{task_text}</b>",
-                ["Keep", "Modify", "Replace"],
-                key=f"update_{task_id}"
-            )
-            if update_choice in ["Modify", "Replace"]:
+            
+            if f"ask_update_{task_id}" not in st.session_state:
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": f"What do you want to do with this task?<br><br><b>{task_text}</b>"
+                })
+                st.session_state[f"ask_update_{task_id}"] = True
+                st.rerun()
+
+            choices = ["Keep", "Modify", "Replace"]
+            selected = None
+            cols = st.columns(len(choices))
+            for idx, choice in enumerate(choices):
+                if cols[idx].button(choice, key=f"{task_id}_{choice}"):
+                    selected = choice
+                    break
+
+            if selected:
+                st.session_state["chat_thread"].append({
+                    "sender": "User",
+                    "message": selected
+                })
+                st.session_state[f"update_choice_{task_id}"] = selected
+
+                if selected in ["Modify", "Replace"]:
+                    st.session_state["awaiting_task_edit"] = True
+                else:
+                    st.session_state["chat_thread"].append({
+                        "sender": "Assistant",
+                        "message": "👍 Task kept as is."
+                    })
+                    st.session_state["update_task_idx"] += 1
+                    st.rerun()
+
+            if st.session_state.get("awaiting_task_edit"):
                 new_text = st.chat_input("Write the new version of this task:")
                 if new_text:
+                    task_id, _, _ = tasks[st.session_state["update_task_idx"]]
                     update_task_completion(task_id, True)
                     save_task(goal_id, new_text)
-                    st.session_state["chat_thread"].append({"sender": "Assistant", "message": f"✅ Task updated to: '{new_text}'"})
-                    st.session_state["chat_thread"].append({"sender": "User", "message": new_text})
-                    st.session_state["update_task_idx"] = idx + 1
+
+                    st.session_state["chat_thread"].append({
+                        "sender": "Assistant",
+                        "message": f"✅ Task updated to: '{new_text}'"
+                    })
+                    st.session_state["chat_thread"].append({
+                        "sender": "User",
+                        "message": new_text
+                    })
+
+                    st.session_state["awaiting_task_edit"] = False
+                    st.session_state["update_task_idx"] += 1
                     st.rerun()
-            else:
-                st.session_state["chat_thread"].append({"sender": "Assistant", "message": f"👍 Task kept as is."})
-                st.session_state["chat_thread"].append({"sender": "User", "message": update_choice})
-                st.session_state["update_task_idx"] = idx + 1
-                st.rerun()
         else:
             st.session_state["reflection_step"] += 1
             st.session_state["update_task_idx"] = 0
