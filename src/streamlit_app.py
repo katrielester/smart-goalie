@@ -132,11 +132,13 @@ with st.sidebar:
                 st.session_state["chat_state"] = "menu"
             else:
                 st.session_state["chat_state"] = "intro"
-
+                
         # Auto-jump into reflection if week/session params exist and user is treatment
         if st.session_state["group"] == "treatment":
             if "week" in st.query_params and "session" in st.query_params:
                 st.session_state["chat_state"] = "reflection"
+
+        
 
         # if "did_rerun_auth" not in st.session_state:
         #     st.session_state["did_rerun_auth"] = True
