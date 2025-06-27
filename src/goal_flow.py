@@ -102,7 +102,7 @@ def run_goal_setting():
         st.session_state["task_count"] = 0
         st.session_state["tasks_entered"] = []
         
-        existing_tasks = [t[1] for t in get_tasks(goal_id)]
+        existing_tasks = [t["task_text"] for t in get_tasks(goal_id)]
         suggested = suggest_tasks_for_goal(st.session_state["current_goal"], existing_tasks)
 
         st.session_state["chat_thread"].extend([
@@ -150,8 +150,7 @@ def run_add_tasks():
 
     if st.session_state["task_entry_stage"] == "suggest":
 
-        st.write("DEBUG: get_tasks output", get_tasks(goal_id))
-        existing_tasks = [t[1] for t in get_tasks(goal_id)]
+        existing_tasks = [t["task_text"] for t in get_tasks(goal_id)]
         current_goal = st.session_state.get("current_goal", "")
         try:
             suggested = extract_goal_variants(suggest_tasks_for_goal(current_goal, existing_tasks))
