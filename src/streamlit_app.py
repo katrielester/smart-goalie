@@ -238,10 +238,30 @@ if st.session_state["chat_state"] == "view_goals":
             "message": goal_html
         })
 
-chat_bubble_html = "".join([
-    f'<div class="{"chat-left" if m["sender"] == "Assistant" else "chat-right"}">{m["message"]}</div>'
-    for m in st.session_state["chat_thread"]
-])
+# STABLE VER
+# chat_bubble_html = "".join([
+#     f'<div class="{"chat-left" if m["sender"] == "Assistant" else "chat-right"}">{m["message"]}</div>'
+#     for m in st.session_state["chat_thread"]
+# ])
+
+# EXPERIMENTAL START #
+previous_len = st.session_state.get("last_rendered_index", 0)
+current_len = len(st.session_state["chat_thread"])
+
+# Mark which are new
+chat_bubble_html = ""
+for i, m in enumerate(st.session_state["chat_thread"]):
+    css_class = "chat-left" if m["sender"] == "Assistant" else "chat-right"
+    if i >= previous_len:
+        # This is a new message – hide initially
+        chat_bubble_html += f'<div class="{css_class} message" style="display: none;">{m["message"]}</div>'
+    else:
+        chat_bubble_html += f'<div class="{css_class}">{m["message"]}</div>'
+
+# Save current length for next render
+st.session_state["last_rendered_index"] = current_len
+
+# EXPERIMENTAL END #
 
 # for entry in st.session_state["chat_thread"]:
 #     with st.chat_message("assistant" if entry["sender"] == "Assistant" else "user"):
@@ -257,67 +277,138 @@ chat_bubble_html = "".join([
 
 # Render chat container
 with st.container():
-
+    # STABLE VER START #
     # Static HTML
+    # components.html(f"""
+    #     <html>
+    #     <head>
+    #     <style>
+    #         body {{
+    #             font-family: "Segoe UI", sans-serif;
+    #             margin: 0;
+    #             padding: 0;
+    #             background-color: #0e1117;
+    #             color: #f0f0f0;
+    #         }}
+
+    #         .chat-wrapper {{
+    #             height: {chat_height_px}px;
+    #             overflow-y: auto;
+    #             padding: 10px;
+    #             border-radius: 10px;
+    #             border: 1px solid #444;
+    #             background-color: #1c1f26;
+    #         }}
+
+    #         .chat-left {{
+    #             text-align: left;
+    #             background-color: #2b2f38;
+    #             color: #eaeaea;
+    #             border-radius: 10px;
+    #             padding: 10px;
+    #             margin: 5px 0;
+    #             max-width: 70%;
+    #             display: block;
+    #             word-wrap: break-word;
+    #         }}
+
+    #         .chat-right {{
+    #             text-align: right;
+    #             background-color: #005fcf;
+    #             color: #ffffff;
+    #             border-radius: 10px;
+    #             padding: 10px;
+    #             margin: 5px 0;
+    #             max-width: 70%;
+    #             margin-left: auto;
+    #             display: block;
+    #             word-wrap: break-word;
+    #         }}
+    #     </style>
+    #     </head>
+    #     <body>
+    #         <div id="chatbox" class="chat-wrapper">
+    #             {chat_bubble_html}
+    #             <div id="endofchat" style="height: 30px;"></div>
+    #         </div>
+    #         <script>
+    #             const chatBox = document.getElementById("chatbox");
+    #             chatBox.scrollTop = chatBox.scrollHeight;
+    #         </script>
+    #     </body>
+    #     </html>
+    # """, height=chat_height_px, scrolling=False)
+    # STABLE VER END #
+
+    # EXPERIMENTAL VER START #
     components.html(f"""
-        <html>
-        <head>
-        <style>
-            body {{
-                font-family: "Segoe UI", sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #0e1117;
-                color: #f0f0f0;
-            }}
+    <html>
+    <head>
+    <style>
+        body {{
+            font-family: "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0e1117;
+            color: #f0f0f0;
+        }}
+        .chat-wrapper {{
+            height: {chat_height_px}px;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            background-color: #1c1f26;
+        }}
+        .chat-left {{
+            text-align: left;
+            background-color: #2b2f38;
+            color: #eaeaea;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            max-width: 70%;
+            display: block;
+            word-wrap: break-word;
+        }}
+        .chat-right {{
+            text-align: right;
+            background-color: #005fcf;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            max-width: 70%;
+            margin-left: auto;
+            display: block;
+            word-wrap: break-word;
+        }}
+    </style>
+    </head>
+    <body>
+        <div id="chatbox" class="chat-wrapper">
+            {chat_bubble_html}
+            <div id="endofchat" style="height: 30px;"></div>
+        </div>
+        <script>
+            const chatBox = document.getElementById("chatbox");
+            const newMessages = document.querySelectorAll(".message");
 
-            .chat-wrapper {{
-                height: {chat_height_px}px;
-                overflow-y: auto;
-                padding: 10px;
-                border-radius: 10px;
-                border: 1px solid #444;
-                background-color: #1c1f26;
-            }}
-
-            .chat-left {{
-                text-align: left;
-                background-color: #2b2f38;
-                color: #eaeaea;
-                border-radius: 10px;
-                padding: 10px;
-                margin: 5px 0;
-                max-width: 70%;
-                display: block;
-                word-wrap: break-word;
-            }}
-
-            .chat-right {{
-                text-align: right;
-                background-color: #005fcf;
-                color: #ffffff;
-                border-radius: 10px;
-                padding: 10px;
-                margin: 5px 0;
-                max-width: 70%;
-                margin-left: auto;
-                display: block;
-                word-wrap: break-word;
-            }}
-        </style>
-        </head>
-        <body>
-            <div id="chatbox" class="chat-wrapper">
-                {chat_bubble_html}
-                <div id="endofchat" style="height: 30px;"></div>
-            </div>
-            <script>
-                const chatBox = document.getElementById("chatbox");
+            function revealMessages(i) {{
+                if (i >= newMessages.length) return;
+                newMessages[i].style.display = "block";
                 chatBox.scrollTop = chatBox.scrollHeight;
-            </script>
-        </body>
-        </html>
+                setTimeout(() => revealMessages(i + 1), 500);
+            }}
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+            revealMessages(0);
+        </script>
+    </body>
+    </html>
     """, height=chat_height_px, scrolling=False)
+
+    # EXPERIMENTAL VER END #
 
 
 def run_intro():

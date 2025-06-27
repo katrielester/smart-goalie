@@ -149,10 +149,9 @@ def run_add_tasks():
         existing_tasks = [t[1] for t in get_tasks(goal_id)]
         current_goal = st.session_state.get("current_goal", "")
         try:
-            suggested = suggest_tasks_for_goal(current_goal, existing_tasks)
+            suggested = extract_goal_variants(suggest_tasks_for_goal(current_goal, existing_tasks))
         except:
             suggested = (
-                "Here are 3 example tasks you might consider:<br><br>"
                 "1. Break down your goal into a 30-minute session<br>"
                 "2. Block calendar time to work on it<br>"
                 "3. Set a reminder to check your progress"
