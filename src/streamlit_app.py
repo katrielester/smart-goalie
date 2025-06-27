@@ -8,6 +8,7 @@ from db import (
     save_message_to_db, get_chat_history, get_user_info,
     save_goal, save_task, save_reflection,
     get_tasks, get_goals, get_reflections, user_goals_exist,
+    get_goals_with_task_counts
 )
 from reflection_flow import run_weekly_reflection
 from goal_flow import run_goal_setting, run_add_tasks
@@ -127,6 +128,55 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
     st.warning("Please authenticate first.")
     st.stop()
 
+#  FORCE TASK ENTRY IF GOAL EXISTS BUT NO TASK
+
+goals = get_goals_with_task_counts(st.session_state["user_id"])
+incomplete_goal = next((g for g in goals if g["task_count"]==0), None)
+
+if incomplete_goal:
+    st.session_state["goal_id_being_worked"] = incomplete_goal["id"]
+    st.session_state["current_goal"] = incomplete_goal["goal_text"]
+    st.session_state["tasks_saved"] = []
+    st.session_state["task_entry_stage"] = "suggest"
+    st.session_state["chat_state"] = "add_tasks"
+
+    st.session_state["chat_thread"] = [{
+        "sender": "Assistant",
+        "message": (
+            "Welcome back! It looks like you've set a goal but haven't added any weekly tasks yet:<br><br>"
+            f"<b>{incomplete_goal['goal_text']}</b><br><br>"
+            "Let's start by adding your first task to help you move forward this week."
+
+        )
+    }]
+    st.rerun()
+
+add_tasks_goal_id = st.query_params.get("add_tasks_for_goal")
+
+if add_tasks_goal_id:
+    try:
+        goal_id = int(add_tasks_goal_id)
+        goal_list = get_goals(st.session_state["user_id"])
+        goal = next((g for g in goal_list if g["id"] == goal_id), None)
+    except Exception:
+        goal = None
+
+    if goal:
+        st.session_state["goal_id_being_worked"] = goal_id
+        st.session_state["current_goal"] = goal["goal_text"]
+        st.session_state["tasks_saved"] = []
+        st.session_state["task_entry_stage"] = "suggest"
+        st.session_state["chat_state"] = "add_tasks"
+
+        st.session_state["chat_thread"] = [{
+            "sender": "Assistant",
+            "message": (
+                f"You’re adding more tasks for your goal:<br><br><b>{goal['goal_text']}</b><br><br>"
+                "Let’s continue breaking it down into small weekly steps."
+            )
+        }]
+        st.rerun()
+
 st.title("SMART Goalie")
 
 
@@ -161,6 +211,10 @@ if st.session_state["chat_state"] == "view_goals":
                 else:
                     goal_html += "<em>No subtasks yet.</em><br>"
                 goal_html += "<hr>"
+                goal_html += (
+                    f"<a href='?add_tasks_for_goal={goal_id}' target='_self'>"
+                    f"<button style='margin-top: 5px;'>➕ Add More Tasks</button></a><br>"
+                )
             goal_html += "</div>"
 
         st.session_state["chat_thread"].append({
@@ -384,8 +438,7 @@ def run_view_goals():
     #         "sender": "Assistant",
     #         "message": goal_html
     #     })
-    st.write("DEBUG: Current user_id is", st.session_state["user_id"])
-    st.write("Goals for 123:", get_goals("123"))
+    
 
     if st.button("Back to Menu"):
         st.session_state["chat_state"] = "menu"

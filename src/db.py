@@ -137,3 +137,13 @@ def reflection_exists(user_id, goal_id, week_number, session_id):
         LIMIT 1
     """, (user_id, goal_id, week_number, session_id))
     return cursor.fetchone() is not None
+
+def get_goals_with_task_counts(user_id):
+    cursor.execute("""
+        SELECT g.id, g.goal_text, COUNT(t.id) AS task_count
+        FROM goals g
+        LEFT JOIN tasks t ON g.id = t.goal_id
+        WHERE g.user_id = %s
+        GROUP BY g.id, g.goal_text
+    """, (user_id,))
+    return cursor.fetchall()

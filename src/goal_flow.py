@@ -199,7 +199,7 @@ def run_add_tasks():
                     "sender": "Assistant",
                     "message": "Would you like to add another task?"
                 })
-                st.session_state["task_entry_stage"] = "suggest"
+                st.session_state["task_entry_stage"] = "add_more_decision"
             else:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
@@ -219,6 +219,24 @@ def run_add_tasks():
             })
             st.session_state["task_entry_stage"] = "entry"
             del st.session_state["candidate_task"]
+            st.rerun()
+    elif st.session_state["task_entry_stage"] == "add_more_decision":
+        col1, col2 = st.columns([1, 1])
+        if col1.button("➕ Yes, add another"):
+            st.session_state["task_entry_stage"] = "suggest"
+            st.rerun()
+
+        if col2.button("✅ No, done for now"):
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": f"You’ve added {len(st.session_state['tasks_saved'])} task(s). "
+                        "You can review or update them during your reflection later."
+            })
+            if get_user_phase(st.session_state["user_id"]) < 2:
+                show_reflection_explanation()
+                update_user_phase(st.session_state["user_id"], 2)
+            st.session_state["chat_state"] = "menu"
+            del st.session_state["task_entry_stage"]
             st.rerun()
 
     # Optional early exit after 1+ tasks
@@ -260,4 +278,4 @@ def show_reflection_explanation():
             "please take a quick pre-survey to help us understand your baseline."
             "<br><br><a href='[PROLIFIC PRE-SURVEY LINK]' target='_blank'>Click here to begin the pre-survey</a>"
         )
-})
+    })
