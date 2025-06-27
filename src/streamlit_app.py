@@ -49,10 +49,13 @@ st.markdown("""
 # st.session_state.setdefault("current_goal", "")
 
 # Dynamic chat height
-if st.session_state["chat_state"] in ["menu", "view_goals"]:
-    chat_height = "45vh"  # tighter chat when UI is crowded
+if "chat_state" in st.session_state:
+    if st.session_state["chat_state"] in ["menu", "view_goals"]:
+        chat_height = "45vh"
+    else:
+        chat_height = "60vh"
 else:
-    chat_height = "60vh"  # default height
+    chat_height = "60vh"  # fallback if not initialized yet
 
 with st.sidebar:
     if DEV_MODE:
