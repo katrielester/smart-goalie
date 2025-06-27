@@ -113,7 +113,7 @@ with st.sidebar:
             st.session_state["group"] = "treatment" if group_param == "1" else "control"
 
         if "chat_state" not in st.session_state or st.session_state["chat_state"] not in [
-            "smart_training", "goal_setting", "menu", "reflection", "view_goals"
+            "smart_training", "goal_setting", "menu", "reflection", "view_goals", "add_tasks"
         ]:
             if user_completed_training(user_id):
                 if not st.session_state["chat_thread"]:

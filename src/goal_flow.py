@@ -136,6 +136,7 @@ def run_goal_setting():
 
 
 def run_add_tasks():
+    print("DEBUG: run_add_tasks() triggered")
     goal_id = st.session_state.get("goal_id_being_worked")
 
     if "tasks_saved" not in st.session_state:
