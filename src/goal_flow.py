@@ -148,26 +148,39 @@ def run_add_tasks():
     if "task_entry_stage" not in st.session_state:
         st.session_state["task_entry_stage"] = "suggest"  # can be 'suggest', 'entry', 'confirm'
 
-    if st.session_state["task_entry_stage"] == "suggest":
+        if st.session_state["task_entry_stage"] == "suggest":
+            if "suggestion_pending" not in st.session_state:
+                # Step 1: Add a brief message so the user sees something while LLM works
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "Thinking of task suggestions for you… ✍️"
+                })
+                st.session_state["suggestion_pending"] = True
+                st.rerun()
 
-        existing_tasks = [t["task_text"] for t in get_tasks(goal_id)]
-        current_goal = st.session_state.get("current_goal", "")
-        try:
-            suggested = extract_goal_variants(suggest_tasks_for_goal(current_goal, existing_tasks))
-        except:
-            suggested = (
-                "1. Break down your goal into a 30-minute session<br>"
-                "2. Block calendar time to work on it<br>"
-                "3. Set a reminder to check your progress"
-            )
+            else:
+                # Step 2: LLM call happens here, now that placeholder is shown
+                existing_tasks = [t["task_text"] for t in get_tasks(goal_id)]
+                current_goal = st.session_state.get("current_goal", "")
+                try:
+                    suggested = extract_goal_variants(suggest_tasks_for_goal(current_goal, existing_tasks))
+                except:
+                    suggested = (
+                        "1. Break down your goal into a 30-minute session<br>"
+                        "2. Block calendar time to work on it<br>"
+                        "3. Set a reminder to check your progress"
+                    )
 
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": f"Here are some task ideas based on your goal:<br><br>{suggested}<br><br>"
-                       "Type one of these or add your own!"
-        })
-        st.session_state["task_entry_stage"] = "entry"
-        st.rerun()
+                # Step 3: Replace "thinking…" message with real output
+                st.session_state["chat_thread"][-1] = {
+                    "sender": "Assistant",
+                    "message": f"Here are some task ideas based on your goal:<br><br>{suggested}<br><br>"
+                            "Type one of these or add your own!"
+                }
+
+                st.session_state["task_entry_stage"] = "entry"
+                del st.session_state["suggestion_pending"]
+                st.rerun()
 
     elif st.session_state["task_entry_stage"] == "entry":
         task_input = st.chat_input("Type a small task you'd like to do")

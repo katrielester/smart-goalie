@@ -238,30 +238,31 @@ def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     existing_list = "<br>".join(f"- {task}" for task in existing_tasks) if existing_tasks else "None"
 
     prompt = f"""
-    You help users break down their SMART goals into small weekly tasks.
+    You help users break down SMART goals into short, concrete weekly tasks.
 
-    The user’s SMART goal is:
+    The user's SMART goal is:
     [Goal]
     {goal_text}
     [/Goal]
 
-    These tasks have already been added and should not be repeated:
+    Tasks already added (do not repeat or rephrase these):
     {existing_list}
 
-    Suggest 3 new example tasks they could realistically complete by the end of this week.
-    
-    Each task should:
-    - Be specific and action-oriented (what will they do?)
-    - Be small and achievable within one week
-    - Include a measurable outcome or time/duration when relevant
+    Suggest exactly 3 new weekly tasks. Each task should:
+    - Be actionable and specific (describe the exact action)
+    - Fit into a single sentence, under 15 words
+    - Be achievable within one week
+    - Include a time, quantity, or duration if relevant
 
-    Avoid vague tasks (like “get better” or “do more”) and avoid full subgoals or complex projects.
+    Avoid:
+    - Rambling or multiple steps per task
+    - Repeating existing tasks
+    - Generic phrasing like "try to..." or "maybe"
 
-    Return only the 3 tasks in this format:
+    Respond with only the 3 tasks, in this format:
+
     1. ...
     2. ...
     3. ...
-
-    These are just suggestions to help the user think of their own.
     """
     return smart_wrapper(prompt, goal_text, "tasks")
