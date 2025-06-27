@@ -104,7 +104,7 @@ with st.sidebar:
 
         if user_info:
             prolific_code, has_completed_training, db_group = user_info
-            st.session_state["group"] = db_group.strip().lower()
+            st.session_state["group"] = "treatment" if db_group.strip().lower()=="1" else "control"
         else:
             # Use URL param if user doesn't exist in DB
             group_param = st.query_params.get("g", ["2"])[0]
