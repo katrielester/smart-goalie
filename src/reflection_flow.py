@@ -104,15 +104,15 @@ def run_weekly_reflection():
 
         if use_success_reflection:
             questions = [
-                ("what", "✨ Just a quick one: what helped you make progress this week? (One sentence is fine!)"),
-                ("so_what", "🔍 Why do you think it felt easier or more motivating this time?"),
-                ("now_what", "➡️ What’s something you’d like to keep doing next week?")
+                ("what", "✨ Just a quick one: <b>what helped you make progress this week?</b> (One sentence is fine!)"),
+                ("so_what", "🔍 Why do you think it <b>felt easier or more motivating</b> this time?"),
+                ("now_what", "➡️ What’s something you’d like to <b>keep doing next week</b>?")
             ]
         else:
             questions = [
-                ("outcome", "💡 What’s one benefit you’d gain if next week goes really well?"),
-                ("obstacle", "🧱 What got in the way of your tasks this week?"),
-                ("plan", "🛠️ If that same obstacle happens again, what could you try?")
+                ("outcome", "💡 What’s one <b>benefit</b> you’d gain if next week goes really well?"),
+                ("obstacle", "🚧 What <b>got in the way</b> of your tasks this week?"),
+                ("plan", "🛠️ If that same obstacle happens again, <b>what could you try?</b>")
             ]
 
         q_idx = st.session_state.get("reflection_q_idx", 0)
