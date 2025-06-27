@@ -543,8 +543,8 @@ def run_view_goals():
                         "Let's break it down into small weekly steps."
                     )
                 }]
-                st.query_params.clear()
-                st.rerun()
+                run_add_tasks()
+                st.stop()
     if st.button("Back to Menu"):
         st.session_state["chat_state"] = "menu"
         st.rerun()
