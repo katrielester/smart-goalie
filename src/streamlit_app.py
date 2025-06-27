@@ -274,17 +274,6 @@ st.session_state["last_rendered_index"] = current_len
 
 # EXPERIMENTAL END #
 
-# for entry in st.session_state["chat_thread"]:
-#     with st.chat_message("assistant" if entry["sender"] == "Assistant" else "user"):
-#         st.markdown(entry["message"])
-#         scroll_script = """
-#             <script>
-#                 setTimeout(() => {
-#                     window.scrollTo(0, document.body.scrollHeight);
-#                 }, 100);
-#             </script>
-#         """
-#         st.markdown(scroll_script, unsafe_allow_html=True)
 
 # Render chat container
 with st.container():

@@ -94,6 +94,10 @@ def suggest_specific_fix(goal_text):
     Original: Get healthier  
     Specific: Improve my health by building a consistent walking routine
 
+    Avoid listing small tasks. Just make the goal sharper, not more detailed.
+
+    Each version should fit into a single sentence, under 15 words.
+
     Now revise the goal below to be more specific. Suggest 3 lightly edited versions:
 
     [Goal]  
@@ -111,21 +115,25 @@ def suggest_measurable_fix(goal_text):
     prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the goal more measurable with minimal edits.
+    Your task is to make the goal more measurable — but keep it as a high-level goal (not a list of tasks).
 
-    A measurable goal includes a way to track progress — like a number, frequency, or result — while still being a high-level goal that will take around 2 weeks of effort.
+    A measurable goal includes a way to track progress (like frequency, quantity, or evidence of progress), but it should still describe an overall outcome that will take 2 weeks of effort.
 
-    Example:
+    Example:  
     Original: Learn a new skill  
-    Measurable: Complete a free transcription course to learn a new skill
+    Measurable: Track my progress by completing lessons in an online course over the next 2 weeks
 
-    Now improve the goal below by making it more measurable (without turning it into a one-off task).
+    Avoid: turning the goal into detailed action steps or one-time tasks.
+
+    Each version should fit into a single sentence, under 15 words.
+
+    Now improve the goal below by making it more measurable.
 
     [Goal]  
     {goal_text}  
     [/Goal]
 
-    Please return 3 lightly edited versions, numbered in this format:
+    Return 3 improved versions in this format:
     1. ...
     2. ...
     3. ...
@@ -143,6 +151,10 @@ def suggest_achievable_fix(goal_text):
     Example:  
     Original: Become fluent in Spanish  
     Achievable: Complete 10 beginner Spanish lessons to start building fluency
+
+    Adjust scale, not break it down into parts.
+
+    Each version should fit into a single sentence, under 15 words.
 
     Now improve the goal below by making it more achievable (without shrinking it into a short weekly task).
 
@@ -169,6 +181,10 @@ def suggest_relevant_fix(goal_text):
     Original: Learn data entry  
     Relevant: Learn data entry to access more flexible online jobs
 
+    Keep the goal short and high-level. Do not turn it into a personal story or a long explanation.
+
+    Each version should fit into a single sentence, under 15 words.
+
     Now improve the goal below by making it more personally relevant.
 
     [Goal]  
@@ -193,6 +209,10 @@ def suggest_timebound_fix(goal_text):
     Example:  
     Original: Improve my typing speed  
     Time-bound: Improve my typing speed by completing a 2-week typing bootcamp
+
+    Mention timeframe without converting it into a weekly task list.
+
+    Each version should fit into a single sentence, under 15 words.
 
     Now improve the goal below by making it more time-bound.
 
