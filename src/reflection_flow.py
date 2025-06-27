@@ -2,7 +2,7 @@ import streamlit as st
 from db import (
     get_goals, get_tasks, save_reflection, update_task_completion,
     save_task, get_last_reflection, get_next_week_number, reflection_exists,
-    get_user_phase, update_user_phase
+    get_user_phase, update_user_phase, get_user_group
 )
 from llama_utils import summarize_reflection
 
@@ -10,6 +10,8 @@ progress_options = ["None", "A little", "Some", "Most", "Completed"]
 progress_numeric = {"None": 0, "A little": 1, "Some": 2, "Most": 3, "Completed": 4}
 
 def run_weekly_reflection():
+    st.write(get_user_group(st.session_state["user_id"]))
+    st.write(st.session_state.get("group"))
     if st.session_state.get("chat_state") != "reflection":
         st.session_state["chat_state"] = "reflection"
         st.rerun()

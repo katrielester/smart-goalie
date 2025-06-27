@@ -28,6 +28,10 @@ def get_user_info(user_id):
     cursor.execute("SELECT prolific_code, has_completed_training, group_assignment FROM users WHERE user_id = %s", (user_id,))
     return cursor.fetchone()
 
+def get_user_group(user_id):
+    cursor.execute("SELECT group_assignment FROM users WHERE user_id = %s", (user_id,))
+    return cursor.fetchone()
+
 def mark_training_completed(user_id):
     cursor.execute("UPDATE users SET has_completed_training = TRUE WHERE user_id = %s", (user_id,))
     conn.commit()
