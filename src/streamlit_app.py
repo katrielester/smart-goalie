@@ -102,9 +102,17 @@ with st.sidebar:
             st.session_state["current_goal"] = ""
         user_info = get_user_info(user_id)
 
+        user_info = get_user_info(user_id)
+
         if user_info:
             prolific_code, has_completed_training, db_group = user_info
-            st.session_state["group"] = "treatment" if db_group.strip().lower()=="1" else "control"
+
+            if isinstance(db_group, dict):
+                assignment = db_group.get("group_assignment", "").strip()
+            else:
+                assignment = str(db_group).strip()
+
+            st.session_state["group"] = "treatment" if assignment == "1" else "control"
         else:
             # Use URL param if user doesn't exist in DB
             group_param = st.query_params.get("g", ["2"])[0]
