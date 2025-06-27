@@ -1,2 +1,6 @@
 .DS_Store
 .DS_Store
+src/streamlit_app.py
+.gitignore
+stash/streamlit_app_chatmessage_version.py
+stash/streamlit_app_html

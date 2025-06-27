@@ -160,9 +160,12 @@ if incomplete_goal and not st.session_state["force_task_handled"]:
             "Welcome back! It looks like you've set a goal but haven't added any weekly tasks yet:<br><br>"
             f"<b>{incomplete_goal['goal_text']}</b><br><br>"
             "Let's start by adding your first task to help you move forward this week."
-
         )
     }]
+
+    # Prevent infinite rerun loop
+    st.session_state["force_task_handled"] = True
+
     st.rerun()
 
 add_tasks_goal_id = st.query_params.get("add_tasks_for_goal")
@@ -446,6 +449,7 @@ def run_view_goals():
                         "Let's break it down into small weekly steps."
                     )
                 }]
+                st.query_params.clear()
                 st.rerun()
     if st.button("Back to Menu"):
         st.session_state["chat_state"] = "menu"
