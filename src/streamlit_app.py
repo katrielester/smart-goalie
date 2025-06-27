@@ -102,8 +102,6 @@ with st.sidebar:
             st.session_state["current_goal"] = ""
         user_info = get_user_info(user_id)
 
-        user_info = get_user_info(user_id)
-
         if user_info:
             prolific_code, has_completed_training, db_group = user_info
 
@@ -113,19 +111,12 @@ with st.sidebar:
                 assignment = str(db_group).strip()
 
             st.session_state["group"] = "treatment" if assignment == "1" else "control"
-            # ⛔ Prevent menu fallback from overriding reflection state
-            if "forced_reflection" not in st.session_state:
-                st.session_state["forced_reflection"] = False
-
-            if (
-                st.session_state["group"] == "treatment"
-                and "week" in st.query_params
-                and "session" in st.query_params
-                and not st.session_state["forced_reflection"]
-            ):
-                st.session_state["chat_state"] = "reflection"
-                st.session_state["forced_reflection"] = True
-                st.rerun()
+            
+            # Force reflection BEFORE anything else overrides it
+            if "chat_state" not in st.session_state:
+                if st.session_state["group"] == "treatment":
+                    if "week" in st.query_params and "session" in st.query_params:
+                        st.session_state["chat_state"] = "reflection"
         else:
             # Use URL param if user doesn't exist in DB
             group_param = st.query_params.get("g", ["2"])[0]
@@ -139,7 +130,7 @@ with st.sidebar:
                 "smart_training", "goal_setting", "menu", "reflection", "view_goals", "add_tasks"
             ]
         ):
-            if st.session_state.get("chat_state") != "reflection":  # 👈 prevent overriding reflection
+            if st.session_state.get("chat_state") != "reflection":  # prevent overriding reflection
                 if user_completed_training(user_id):
                     if not st.session_state["chat_thread"]:
                         st.session_state["chat_thread"].append({

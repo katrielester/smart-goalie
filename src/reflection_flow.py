@@ -19,7 +19,6 @@ def run_weekly_reflection():
         st.session_state["user_id"] = query_params.get("user_id")
 
     if "group" not in st.session_state:
-        from db import get_user_group
         group_code = get_user_group(st.session_state["user_id"]).strip()
         st.session_state["group"] = "treatment" if group_code == "1" else "control"
 
