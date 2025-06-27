@@ -1,3 +1,5 @@
+# reflection_flow.py
+
 import streamlit as st
 from db import (
     get_goals, get_tasks, save_reflection, update_task_completion,
@@ -10,14 +12,25 @@ progress_options = ["None", "A little", "Some", "Most", "Completed"]
 progress_numeric = {"None": 0, "A little": 1, "Some": 2, "Most": 3, "Completed": 4}
 
 def run_weekly_reflection():
+
+    query_params = st.query_params.to_dict()
+
+    if "user_id" not in st.session_state:
+        st.session_state["user_id"] = query_params.get("user_id")
+
+    if "group" not in st.session_state:
+        from db import get_user_group
+        group_code = get_user_group(st.session_state["user_id"]).strip()
+        st.session_state["group"] = "treatment" if group_code == "1" else "control"
+
     st.write(get_user_group(st.session_state["user_id"]))
     st.write(st.session_state.get("group"))
-    if st.session_state.get("chat_state") != "reflection":
-        st.session_state["chat_state"] = "reflection"
-        st.rerun()
     if st.session_state.get("group") != "treatment":
         st.warning("Reflections are only available for the treatment group.")
         st.stop()
+    if st.session_state.get("chat_state") != "reflection":
+        st.session_state["chat_state"] = "reflection"
+        st.rerun()
 
     user_id = st.session_state["user_id"]
 

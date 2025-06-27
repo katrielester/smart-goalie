@@ -82,7 +82,6 @@ def run_goal_setting():
             current_goal = st.session_state.get("current_goal", "")
 
             st.session_state["chat_thread"][-1]["message"] = (
-                f"Here’s your <b>current goal</b>:<br>{current_goal}<br><br>"
                 f"Here are <b>3 example improvements</b> to make it more {fix_type}:<br><br>"
                 f"{formatted_variants}<br><br>"
             )

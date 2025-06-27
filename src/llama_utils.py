@@ -83,28 +83,32 @@ def suggest_specific_fix(goal_text):
         prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the following goal more specific with minimal edits.
+    Your task: Revise the goal below to make it more specific, using minimal edits.
 
-    A specific goal describes one clear outcome or focus area — not something vague like "do better" or "be more consistent." Avoid bundling multiple actions.
+    Guidelines:
+    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later)
+    - Make it more concrete and focused (avoid vague phrases like "do better").
+    - Do NOT shrink it into a short-term task or add detailed steps.
+
+    Each revision must be:
+    - A single sentence
+    - Under 15 words
 
     Examples:
+
     Original: Do better in interviews  
     Specific: Improve my interview skills by practicing behavioral questions
 
     Original: Get healthier  
-    Specific: Improve my health by building a consistent walking routine
+    Specific: Improve my health by building a consistent exercise routine
 
-    Avoid listing small tasks. Just make the goal sharper, not more detailed.
-
-    Each version should fit into a single sentence, under 15 words.
-
-    Now revise the goal below to be more specific. Suggest 3 lightly edited versions:
+    Now revise the goal below:
 
     [Goal]  
     {goal_text}  
     [/Goal]
 
-    Return them in this format:
+    Return only 3 revised versions, numbered like this:
     1. ...
     2. ...
     3. ...
@@ -115,25 +119,29 @@ def suggest_measurable_fix(goal_text):
     prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the goal more measurable — but keep it as a high-level goal (not a list of tasks).
+    Your task: Make the goal more measurable using minimal edits while keeping it high-level.
 
-    A measurable goal includes a way to track progress (like frequency, quantity, or evidence of progress), but it should still describe an overall outcome that will take 2 weeks of effort.
+    Guidelines:
+    - Add a way to track progress (e.g., frequency, quantity, or visible milestone).
+    - Do NOT turn the goal into a one-time task or a detailed plan.
+    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later)
+    
+    Each version must be:
+    - A single sentence
+    - Under 15 words
 
-    Example:  
+    Examples:
+
     Original: Learn a new skill  
-    Measurable: Track my progress by completing lessons in an online course over the next 2 weeks
+    Measurable: Learn a new skill by completing progress-based online lessons
 
-    Avoid: turning the goal into detailed action steps or one-time tasks.
-
-    Each version should fit into a single sentence, under 15 words.
-
-    Now improve the goal below by making it more measurable.
+    Now revise the goal below:
 
     [Goal]  
     {goal_text}  
     [/Goal]
 
-    Return 3 improved versions in this format:
+    Return only 3 revised versions, numbered like this:
     1. ...
     2. ...
     3. ...
@@ -144,25 +152,29 @@ def suggest_achievable_fix(goal_text):
     prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the goal more achievable with minimal edits.
+    Your task: Make the goal more achievable using minimal edits without turning it into a weekly task.
 
-    An achievable goal should still feel meaningful and take at least 2 weeks to make progress — but it should fit the person’s current time, energy, and situation.
+    Guidelines:
+    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later)
+    - Adjust the scale to fit someone’s current time, energy, or situation.
+    - Do NOT break it down into step-by-step tasks.
 
-    Example:  
+    Each version must be:
+    - A single sentence
+    - Under 15 words
+
+    Examples:
+
     Original: Become fluent in Spanish  
-    Achievable: Complete 10 beginner Spanish lessons to start building fluency
+    Achievable: Complete beginner Spanish lessons to start building fluency
 
-    Adjust scale, not break it down into parts.
-
-    Each version should fit into a single sentence, under 15 words.
-
-    Now improve the goal below by making it more achievable (without shrinking it into a short weekly task).
+    Now revise the goal below:
 
     [Goal]  
     {goal_text}  
     [/Goal]
 
-    Please return 3 lightly edited versions, numbered in this format:
+    Return only 3 revised versions, numbered like this:
     1. ...
     2. ...
     3. ...
@@ -173,25 +185,29 @@ def suggest_relevant_fix(goal_text):
     prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to make the goal feel more personally meaningful with minimal edits.
+    Your task: Make the goal more personally meaningful to the person with minimal edits.
 
-    A relevant goal includes a reason it matters to the person — something tied to their values, interests, goals, or current priorities.
+    Guidelines:
+    - Add a reason the goal matters (e.g. values, priorities, or long-term benefit).
+    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later).
+    - Do NOT turn it into a personal story or detailed explanation.
 
-    Example:  
+    Each version must be:
+    - A single sentence
+    - Under 15 words
+
+    Examples:
+
     Original: Learn data entry  
-    Relevant: Learn data entry to access more flexible online jobs
+    Relevant: Learn data entry to access flexible online work opportunities
 
-    Keep the goal short and high-level. Do not turn it into a personal story or a long explanation.
-
-    Each version should fit into a single sentence, under 15 words.
-
-    Now improve the goal below by making it more personally relevant.
+    Now revise the goal below:
 
     [Goal]  
     {goal_text}  
     [/Goal]
 
-    Please return 3 lightly edited versions, numbered in this format:
+    Return only 3 revised versions, numbered like this:
     1. ...
     2. ...
     3. ...
@@ -202,25 +218,29 @@ def suggest_timebound_fix(goal_text):
     prompt = f"""
     You are a goal refinement assistant.
 
-    Your task is to add a clear timeframe to the goal with minimal edits.
+    Your task: Add a realistic timeframe to the goal with minimal edits.
 
-    A time-bound goal includes a deadline, schedule, or timeframe — something realistic that gives the goal structure and momentum over 2+ weeks.
+    Guidelines:
+    - Include a realistic timeframe, schedule, or deadline.
+    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later)
+    - Do NOT break the goal into smaller steps like one-time tasks or detailed plan.
 
-    Example:  
+    Each revision must be:
+    - A single sentence
+    - Under 15 words
+
+    Examples:
+
     Original: Improve my typing speed  
-    Time-bound: Improve my typing speed by completing a 2-week typing bootcamp
+    Time-bound: Improve my typing speed over the next 2 weeks
 
-    Mention timeframe without converting it into a weekly task list.
-
-    Each version should fit into a single sentence, under 15 words.
-
-    Now improve the goal below by making it more time-bound.
+    Now revise the goal below:
 
     [Goal]  
     {goal_text}  
     [/Goal]
 
-    Please return 3 lightly edited versions, numbered in this format:
+    Return 3 revised versions, numbered like this:
     1. ...
     2. ...
     3. ...
