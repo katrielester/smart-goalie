@@ -153,28 +153,30 @@ if "force_task_handled" not in st.session_state:
     st.session_state["force_task_handled"] = False
 
 goals = get_goals_with_task_counts(st.session_state["user_id"])
-incomplete_goal = next((g for g in goals if g["task_count"]==0), None)
 
-if incomplete_goal and not st.session_state["force_task_handled"]:
-    st.session_state["goal_id_being_worked"] = incomplete_goal["id"]
-    st.session_state["current_goal"] = incomplete_goal["goal_text"]
-    st.session_state["tasks_saved"] = []
-    st.session_state["task_entry_stage"] = "suggest"
-    st.session_state["chat_state"] = "add_tasks"
+# Only trigger if there ARE goals and one of them has zero tasks
+if goals and not st.session_state.get("force_task_handled", False):
+    incomplete_goal = next((g for g in goals if g["task_count"] == 0), None)
 
-    st.session_state["chat_thread"] = [{
-        "sender": "Assistant",
-        "message": (
-            "Welcome back! It looks like you've set a goal but haven't added any weekly tasks yet:<br><br>"
-            f"<b>{incomplete_goal['goal_text']}</b><br><br>"
-            "Let's start by adding your first task to help you move forward this week."
-        )
-    }]
+    if incomplete_goal:
+        # Prevent infinite rerun loop BEFORE rerun
+        st.session_state["force_task_handled"] = True
 
-    # Prevent infinite rerun loop
-    st.session_state["force_task_handled"] = True
+        st.session_state["goal_id_being_worked"] = incomplete_goal["id"]
+        st.session_state["current_goal"] = incomplete_goal["goal_text"]
+        st.session_state["tasks_saved"] = []
+        st.session_state["task_entry_stage"] = "suggest"
+        st.session_state["chat_state"] = "add_tasks"
+        st.session_state["chat_thread"] = [{
+            "sender": "Assistant",
+            "message": (
+                "Welcome back! It looks like you've set a goal but haven't added any weekly tasks yet:<br><br>"
+                f"<b>{incomplete_goal['goal_text']}</b><br><br>"
+                "Let's start by adding your first task to help you move forward this week."
+            )
+        }]
 
-    st.rerun()
+        st.rerun()
 
 add_tasks_goal_id = st.query_params.get("add_tasks_for_goal")
 
@@ -397,7 +399,7 @@ with st.container():
             function revealMessages(i) {{
                 if (i >= newMessages.length) return;
                 newMessages[i].style.display = "block";
-                chatBox.scrollTop = chatBox.scrollHeight;
+                chatBox.scarollTop = chatBox.scrollHeight;
                 setTimeout(() => revealMessages(i + 1), 500);
             }}
 
