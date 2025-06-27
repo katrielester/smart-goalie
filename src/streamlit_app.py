@@ -41,12 +41,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.session_state.setdefault("chat_state", "intro")
-st.session_state.setdefault("user_id", "")
-st.session_state.setdefault("chat_thread", [])
-st.session_state.setdefault("smart_step", "intro")
-st.session_state.setdefault("message_index", 0)
-st.session_state.setdefault("current_goal", "")
+# st.session_state.setdefault("chat_state", "intro")
+# st.session_state.setdefault("user_id", "")
+# st.session_state.setdefault("chat_thread", [])
+# st.session_state.setdefault("smart_step", "intro")
+# st.session_state.setdefault("message_index", 0)
+# st.session_state.setdefault("current_goal", "")
 
 # Dynamic chat height
 if st.session_state["chat_state"] in ["menu", "view_goals"]:
@@ -90,6 +90,13 @@ with st.sidebar:
         st.stop()
 
     if st.session_state.get("authenticated"):
+        # Initialization only after authentication
+        if "chat_state" not in st.session_state:
+            st.session_state["chat_state"] = "intro"
+            st.session_state["chat_thread"] = []
+            st.session_state["smart_step"] = "intro"
+            st.session_state["message_index"] = 0
+            st.session_state["current_goal"] = ""
         user_info = get_user_info(user_id)
 
         if user_info:
@@ -120,9 +127,9 @@ with st.sidebar:
             if "week" in st.query_params and "session" in st.query_params:
                 st.session_state["chat_state"] = "reflection"
 
-        if "did_rerun_auth" not in st.session_state:
-            st.session_state["did_rerun_auth"] = True
-            st.rerun()
+        # if "did_rerun_auth" not in st.session_state:
+        #     st.session_state["did_rerun_auth"] = True
+        #     st.rerun()
 
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("Please authenticate first.")
@@ -172,13 +179,16 @@ if add_tasks_goal_id:
         st.session_state["task_entry_stage"] = "suggest"
         st.session_state["chat_state"] = "add_tasks"
 
-        st.session_state["chat_thread"] = [{
-            "sender": "Assistant",
-            "message": (
-                f"You’re adding more tasks for your goal:<br><br><b>{goal['goal_text']}</b><br><br>"
-                "Let’s continue breaking it down into small weekly steps."
-            )
-        }]
+        # Only add message if not already in chat
+        already_has_prompt = any("adding more tasks for your goal" in m["message"] for m in st.session_state["chat_thread"])
+        if not already_has_prompt:
+            st.session_state["chat_thread"] = [{
+                "sender": "Assistant",
+                "message": (
+                    f"You're adding more tasks for your goal:<br><br><b>{goal['goal_text']}</b><br><br>"
+                    "Let's break it down into small weekly steps."
+                )
+            }]
         st.rerun()
 
 st.title("SMART Goalie")
@@ -215,10 +225,6 @@ if st.session_state["chat_state"] == "view_goals":
                 else:
                     goal_html += "<em>No subtasks yet.</em><br>"
                 goal_html += "<hr>"
-                goal_html += (
-                    f"<a href='?add_tasks_for_goal={goal_id}' target='_self'>"
-                    f"<button style='margin-top: 5px;'>➕ Add More Tasks</button></a><br>"
-                )
             goal_html += "</div>"
 
         st.session_state["chat_thread"].append({
@@ -413,37 +419,31 @@ def run_menu():
 #         st.success("Reflection submitted!")
 
 def run_view_goals():
-    # Only add the chat message if not already rendered
-    # already_rendered = any(
-    #     "Your SMART Goals:" in m["message"] or "You haven’t created any goals" in m["message"]
-    #     for m in st.session_state["chat_thread"]
-    # )
+    goals = get_goals_with_task_counts(st.session_state["user_id"])
 
-    # if not already_rendered:
-    #     user_id = str(st.session_state["user_id"])  # Ensure it's a string
-    #     goals = get_goals(st.session_state["user_id"])
-    #     if not goals:
-    #         goal_html = "<div class='chat-left'>You haven’t created any goals yet.</div>"
-    #     else:
-    #         goal_html = "<div class='chat-left'><strong>Your SMART Goals:</strong><br>"
-    #         for goal_id, goal_text in goals:
-    #             goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
-    #             tasks = get_tasks(goal_id)
-    #             if tasks:
-    #                 for task_id, task_text, completed in tasks:
-    #                     status = "✅" if completed else "⬜️"
-    #                     goal_html += f"{status} {task_text}<br>"
-    #             else:
-    #                 goal_html += "<em>No subtasks yet.</em><br>"
-    #             goal_html += "<hr>"
-    #         goal_html += "</div>"
+    if goals:
+        goal = goals[0] 
+        task_count = goal["task_count"]
+        goal_id = goal["id"]
 
-    #     st.session_state["chat_thread"].append({
-    #         "sender": "Assistant",
-    #         "message": goal_html
-    #     })
-    
+        # Show the Add Task button only if task count <3
+        if 1 <= task_count < 3:
+            if st.button("➕ Add Another Task"):
+                st.session_state["goal_id_being_worked"] = goal_id
+                st.session_state["current_goal"] = goal["goal_text"]
+                st.session_state["tasks_saved"] = []
+                st.session_state["task_entry_stage"] = "suggest"
+                st.session_state["chat_state"] = "add_tasks"
 
+                # Don't re-append this if coming from add_tasks_goal_id!
+                st.session_state["chat_thread"] = [{
+                    "sender": "Assistant",
+                    "message": (
+                        f"You're adding more tasks for your goal:<br><br><b>{goal['goal_text']}</b><br><br>"
+                        "Let's break it down into small weekly steps."
+                    )
+                }]
+                st.rerun()
     if st.button("Back to Menu"):
         st.session_state["chat_state"] = "menu"
         st.rerun()
