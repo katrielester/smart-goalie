@@ -64,51 +64,6 @@ with st.sidebar:
             st.session_state["chat_state"] = "reflection"
             st.rerun()
 
-# with st.sidebar:
-#     st.title("User Panel")
-#     user_id = st.text_input("Enter your Prolific ID")
-    
-#     if st.button("Authenticate"):
-#         if user_id:
-#             st.session_state["authenticated"] = True
-#             st.session_state["user_id"] = user_id
-
-#             user_info = get_user_info(user_id)
-
-#             if user_info:
-#                 print("🔍 Raw user_info from DB:", user_info)
-#                 prolific_code, has_completed_training, db_group = user_info
-#                 st.session_state["group"] = db_group.strip().lower()
-#             else:
-#                 # Use URL param if user doesn't exist in DB
-#                 group_param = st.query_params.get("g", ["2"])[0]
-#                 group_assignment = "treatment" if group_param == "1" else "control"
-#                 create_user(user_id, prolific_code=user_id, group=group_assignment)
-#                 st.session_state["group"] = group_assignment
-
-#             if user_completed_training(user_id):
-#                 st.session_state["chat_thread"] = [{
-#                     "sender": "Assistant",
-#                     "message": "Welcome back! What would you like to do today?"
-#                 }]
-#                 st.session_state["chat_state"] = "menu"
-#             else:
-#                 st.session_state["chat_thread"] = [{
-#                     "sender": "Assistant",
-#                     "message": "Hi! I'm Goalie. Are you ready to learn about SMART goals?"
-#                 }]
-#                 st.session_state["chat_state"] = "intro"
-
-#             # Auto-jump into reflection if week/session params exist and user is treatment
-#             if st.session_state["group"] == "treatment":
-#                 if "week" in st.query_params and "session" in st.query_params:
-#                     st.session_state["chat_state"] = "reflection"
-
-#             st.success("Welcome!")
-#             st.rerun()
-#         else:
-#             st.error("Please provide your Prolific ID.")
-
 with st.sidebar:
     st.title("User Panel")
 
@@ -181,6 +136,7 @@ import streamlit.components.v1 as components
 chat_height_px = 400
 # if st.session_state["chat_state"] not in ["menu", "view_goals"] else 400
 
+# GOAL OVERVIEW INJECTION
 # Inject goal HTML into chat thread if viewing goals
 if st.session_state["chat_state"] == "view_goals":
     if not any(
@@ -193,7 +149,9 @@ if st.session_state["chat_state"] == "view_goals":
             goal_html = "<div class='chat-left'>You haven’t created any goals yet.</div>"
         else:
             goal_html = "<div class='chat-left'><strong>Your SMART Goals:</strong><br>"
-            for goal_id, goal_text in goals:
+            for goal in goals:
+                goal_id = goal["id"]
+                goal_text = goal["goal_text"]
                 goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
                 tasks = get_tasks(goal_id)
                 if tasks:
