@@ -225,7 +225,10 @@ if st.session_state["chat_state"] == "view_goals":
                 goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
                 tasks = get_tasks(goal_id)
                 if tasks:
-                    for task_id, task_text, completed in tasks:
+                    for task in tasks:
+                        task_id = task["id"]
+                        task_text = task["task_text"]
+                        completed = task["completed"]
                         status = "✅" if completed else "⬜️"
                         goal_html += f"{status} {task_text}<br>"
                 else:
