@@ -11,6 +11,9 @@ from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phas
 from phases import goal_setting_flow
 
 def run_goal_setting():
+    if "goal_step" not in st.session_state:
+        st.session_state["goal_step"] = "initial_goal"
+
     step = goal_setting_flow[st.session_state["goal_step"]]
     texts = step["text"]
     if isinstance(texts, str):
@@ -98,7 +101,8 @@ def run_goal_setting():
         st.session_state["goal_id_being_worked"] = goal_id
         st.session_state["task_count"] = 0
         st.session_state["tasks_entered"] = []
-
+        
+        st.write("DEBUG: get_tasks output", get_tasks(goal_id))
         existing_tasks = [t[1] for t in get_tasks(goal_id)]
         suggested = suggest_tasks_for_goal(st.session_state["current_goal"], existing_tasks)
 

@@ -10,6 +10,9 @@ progress_options = ["None", "A little", "Some", "Most", "Completed"]
 progress_numeric = {"None": 0, "A little": 1, "Some": 2, "Most": 3, "Completed": 4}
 
 def run_weekly_reflection():
+    if st.session_state.get("chat_state") != "reflection":
+        st.session_state["chat_state"] = "reflection"
+        st.rerun()
     if st.session_state.get("group") != "treatment":
         st.warning("Reflections are only available for the treatment group.")
         st.stop()
