@@ -52,7 +52,8 @@ def run_weekly_reflection():
         return
     
     st.write(all_goals[0])
-    goal_id, goal_text = all_goals[0]
+    goal_id = all_goals[0]["id"]
+    goal_text = all_goals[0]["goal_text"]
 
     if reflection_exists(user_id, goal_id, week, session):
         st.session_state["chat_thread"].append({
@@ -64,6 +65,7 @@ def run_weekly_reflection():
         return
 
     tasks = get_tasks(goal_id)
+    st.write(tasks)
     if not tasks:
         st.info("You have no tasks for your goal. Add tasks first.")
         return
