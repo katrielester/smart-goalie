@@ -111,45 +111,41 @@ if "did_auth_init" not in st.session_state:
     st.session_state["did_auth_init"] = False
 
 # ------------------------
-# SIDEBAR: Developer Tools
+# DEV AUTH + Session Setup
 # ------------------------
 
-wDEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
+query_params = st.query_params.to_dict()
+prolific_id = query_params.get("PROLIFIC_PID", [None])[0]
 
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
+if "user_id" not in st.session_state:
+    # DEV mode: allow manual override
+    if DEV_MODE:
+        with st.sidebar:
+            st.title("User Panel")
+            st.session_state["user_id_override"] = st.text_input("Dev: Enter Prolific ID", value=st.session_state.get("user_id_override", ""))
+            if st.button("Authenticate (DEV only)", key="dev_auth_btn") and st.session_state["user_id_override"]:
+                st.session_state["user_id"] = st.session_state["user_id_override"]
+                st.rerun()
+    else:
+        # Production mode: must use URL query param
+        if prolific_id:
+            st.session_state["user_id"] = prolific_id
+            st.rerun()
+        else:
+            st.warning("Please authenticate to continue. Missing Prolific ID.")
+            st.stop()
 
-if "user_id_override" not in st.session_state:
-    st.session_state["user_id_override"] = ""
+# Now we have a user_id → initialize session only once
+if not st.session_state.get("initialized"):
+    init_user_session()
 
-# --- Sidebar for auth ---
+# ------------------------
+# SIDEBAR OPTIONS (Dev Only)
+# ------------------------
 with st.sidebar:
     st.title("User Panel")
-
-    # Production: get ID from query param
-    query_params = st.query_params
-    prolific_id = query_params.get("PROLIFIC_PID")
-
-    # Developer mode: allow manual entry
-    if DEV_MODE:
-        st.session_state["user_id_override"] = st.text_input("Dev: Enter Prolific ID", value=st.session_state["user_id_override"])
-        if st.button("Authenticate (DEV only)", key="dev_auth") and st.session_state["user_id_override"]:
-            st.session_state["user_id"] = st.session_state["user_id_override"]
-            st.session_state["authenticated"] = True
-            st.rerun()
-
-    elif prolific_id and not st.session_state["authenticated"]:
-        st.session_state["user_id"] = prolific_id
-        st.session_state["authenticated"] = True
-        st.rerun()
-
-    # Status message
-    if st.session_state["authenticated"]:
-        st.info(f"Authenticated as: {st.session_state['user_id']}")
-    else:
-        st.warning("Please authenticate to continue.")
-
-    # Dev jump buttons
+    st.info(f"Authenticated as: {st.session_state['user_id']}")
+    
     if DEV_MODE:
         if st.button("Dev: Jump to Goal Setting", key="jump_goal_setting"):
             st.session_state["chat_state"] = "goal_setting"
@@ -159,15 +155,6 @@ with st.sidebar:
         if st.button("Dev: Jump to Reflection", key="jump_reflection"):
             st.session_state["chat_state"] = "reflection"
             st.rerun()
-
-
-# ------------------------
-# Initialize Session
-# ------------------------
-
-# Only call after auth is done
-if st.session_state.get("authenticated") and not st.session_state.get("initialized"):
-    init_user_session()
 
 # Catch edge case (safety)
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
