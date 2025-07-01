@@ -64,12 +64,15 @@ def run_weekly_reflection():
         return
 
     if "reflection_step" not in st.session_state:
+        if "chat_thread" not in st.session_state:
+            st.session_state["chat_thread"]=[]
         st.session_state["reflection_step"] = 0
         st.session_state["task_progress"] = {}
         st.session_state["reflection_answers"] = {}
         st.session_state["current_task"] = 0
 
     if st.session_state["reflection_step"] == 0:
+        st.write("Reflection step:", st.session_state.get("reflection_step"))
         last_reflection = get_last_reflection(user_id, goal_id)
         if last_reflection:
             last_content, last_week = last_reflection
