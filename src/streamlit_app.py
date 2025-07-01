@@ -18,53 +18,6 @@ from logger import setup_logger
 
 import os
 
-def init_user_session():
-    if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
-        st.warning("Please authenticate first.")
-        st.stop()
-
-    user_id = st.session_state["user_id"]
-    init_session = "chat_state" not in st.session_state
-
-    user_info = get_user_info(user_id)
-    if user_info:
-        _, _, db_group = user_info
-        assignment = db_group.get("group_assignment", "").strip() if isinstance(db_group, dict) else str(db_group).strip()
-        st.session_state["group"] = "treatment" if assignment == "1" else "control"
-    else:
-        group_param = st.query_params.get("g", ["2"])[0]
-        create_user(user_id, prolific_code=user_id, group=group_param)
-        st.session_state["group"] = "treatment" if group_param == "1" else "control"
-
-    st.write(st.session_state.get("group"))
-
-    if init_session or (
-        st.session_state["group"] == "treatment"
-        and "week" in st.query_params
-        and "session" in st.query_params
-    ):
-        if (
-            st.session_state["group"] == "treatment"
-            and "week" in st.query_params
-            and "session" in st.query_params
-        ):
-            st.session_state["week"] = int(st.query_params["week"])
-            st.session_state["session"] = st.query_params["session"]
-            st.write(st.session_state.get("week"))
-            st.session_state["chat_state"] = "reflection"
-            st.rerun()
-        elif user_completed_training(user_id):
-            st.session_state["chat_state"] = "menu"
-        else:
-            st.session_state["chat_state"] = "intro"
-
-        # Set common session variables
-        st.session_state["chat_thread"] = []
-        st.session_state["smart_step"] = "intro"
-        st.session_state["message_index"] = 0
-        st.session_state["current_goal"] = ""
-        st.session_state["force_task_handled"] = False
-
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
@@ -186,13 +139,38 @@ with st.sidebar:
     #     #     st.rerun()
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
-    init_user_session()
-    
-# if st.session_state.get("authenticated") and not st.session_state["did_auth_init"]:
-#     st.session_state["did_auth_init"] = True  # prevent loop
-#     init_user_session()
-#     st.write("chat_state after init_user_session: ", st.session_state.get("chat_state"))
-#     st.rerun()
+    query_params = st.query_params.to_dict()
+    week = query_params.get("week", [None])[0]
+    session = query_params.get("session", [None])[0]
+
+    user_id = st.session_state["user_id"]
+
+    # Check if user exists in DB
+    user_info = get_user_info(user_id)
+    if not user_info:
+        group = query_params.get("g", ["2"])[0]
+        create_user(user_id, prolific_code=user_id, group=group)
+        st.session_state["group"] = "treatment" if group == "1" else "control"
+    else:
+        _, _, group = user_info
+        st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
+
+    # Routing logic
+    if st.session_state["group"] == "treatment" and week and session:
+        st.session_state["week"] = int(week)
+        st.session_state["session"] = session
+        st.session_state["chat_state"] = "reflection"
+    elif user_completed_training(user_id):
+        st.session_state["chat_state"] = "menu"
+    else:
+        st.session_state["chat_state"] = "intro"
+
+    # Common session vars
+    st.session_state["chat_thread"] = []
+    st.session_state["smart_step"] = "intro"
+    st.session_state["message_index"] = 0
+    st.session_state["current_goal"] = ""
+    st.session_state["force_task_handled"] = False
 
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("Please authenticate first.")
