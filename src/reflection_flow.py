@@ -18,11 +18,14 @@ def run_weekly_reflection():
         st.session_state["user_id"] = query_params.get("user_id")
 
     if "group" not in st.session_state:
-        group_code = get_user_group(st.session_state["user_id"]).strip()
-        st.session_state["group"] = "treatment" if group_code == "1" else "control"
-
-    st.write(get_user_group(st.session_state["user_id"]))
-    st.write(st.session_state.get("group"))
+        group_code_raw = get_user_group(st.session_state["user_id"])
+        group_code = str(group_code_raw).strip()
+        st.write(f"DEBUG: Raw group from DB: {group_code_raw} (converted to '{group_code}')")
+        if group_code == "1":
+            st.session_state["group"] = "treatment"
+        else:
+            st.session_state["group"] = "control"
+            
     if st.session_state.get("group") != "treatment":
         st.warning("Reflections are only available for the treatment group.")
         st.stop()
@@ -262,7 +265,7 @@ def run_weekly_reflection():
 def init_reflection_session():
     if "chat_thread" not in st.session_state:
         st.session_state["chat_thread"] = []
-        
+
     st.session_state["reflection_step"] = 0
     st.session_state["task_progress"] = {}
     st.session_state["reflection_answers"] = {}
