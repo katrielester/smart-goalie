@@ -19,53 +19,49 @@ from logger import setup_logger
 import os
 
 def init_user_session():
-    if st.session_state.get("initialized"):
-        return
-
-    st.session_state["initialized"] = True
-
-    query_params = st.query_params.to_dict()
-    user_id = query_params.get("PROLIFIC_PID", [None])[0]
-    week = query_params.get("week", [None])[0]
-    session = query_params.get("session", [None])[0]
-
-    # Developer override
-    if "user_id_override" in st.session_state and st.session_state["user_id_override"]:
-        user_id = st.session_state["user_id_override"]
-
-    if not user_id:
-        st.warning("Missing user ID. Please provide it via query params or override.")
+    if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+        st.warning("Please authenticate first.")
         st.stop()
 
-    st.session_state["user_id"] = user_id
+    user_id = st.session_state["user_id"]
+    init_session = "chat_state" not in st.session_state
 
-    # Register user if not in DB
     user_info = get_user_info(user_id)
-    if not user_info:
-        group = query_params.get("g", ["2"])[0]
-        create_user(user_id, prolific_code=user_id, group=group)
-        st.session_state["group"] = "treatment" if group == "1" else "control"
+    if user_info:
+        _, _, db_group = user_info
+        assignment = db_group.get("group_assignment", "").strip() if isinstance(db_group, dict) else str(db_group).strip()
+        st.session_state["group"] = "treatment" if assignment == "1" else "control"
     else:
-        _, _, group = user_info
-        st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
+        group_param = st.query_params.get("g", ["2"])[0]
+        create_user(user_id, prolific_code=user_id, group=group_param)
+        st.session_state["group"] = "treatment" if group_param == "1" else "control"
 
-    # Route based on reflection or training
-    if st.session_state["group"] == "treatment" and week and session:
-        st.session_state["week"] = int(week)
-        st.session_state["session"] = session
-        st.session_state["chat_state"] = "reflection"
-    elif user_completed_training(user_id):
-        st.session_state["chat_state"] = "menu"
-    else:
-        st.session_state["chat_state"] = "intro"
+    if init_session or (
+        st.session_state["group"] == "treatment"
+        and "week" in st.query_params
+        and "session" in st.query_params
+    ):
+        if (
+            st.session_state["group"] == "treatment"
+            and "week" in st.query_params
+            and "session" in st.query_params
+        ):
+            st.session_state["week"] = int(st.query_params["week"])
+            st.session_state["session"] = st.query_params["session"]
+            st.write(st.session_state.get("week"))
+            st.session_state["chat_state"] = "reflection"
+            st.rerun()
+        elif user_completed_training(user_id):
+            st.session_state["chat_state"] = "menu"
+        else:
+            st.session_state["chat_state"] = "intro"
 
-    # Common session vars
-    st.session_state["chat_thread"] = []
-    st.session_state["smart_step"] = "intro"
-    st.session_state["message_index"] = 0
-    st.session_state["current_goal"] = ""
-    st.session_state["force_task_handled"] = False
-    
+        # Set common session variables
+        st.session_state["chat_thread"] = []
+        st.session_state["smart_step"] = "intro"
+        st.session_state["message_index"] = 0
+        st.session_state["current_goal"] = ""
+        st.session_state["force_task_handled"] = False
 
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
@@ -110,57 +106,96 @@ else:
 if "did_auth_init" not in st.session_state:
     st.session_state["did_auth_init"] = False
 
-# ------------------------
-# DEV AUTH + Session Setup
-# ------------------------
-
-query_params = st.query_params.to_dict()
-prolific_id = query_params.get("PROLIFIC_PID", [None])[0]
-
-if "user_id" not in st.session_state:
-    # DEV mode: allow manual override
-    if DEV_MODE:
-        with st.sidebar:
-            st.title("User Panel")
-            st.session_state["user_id_override"] = st.text_input("Dev: Enter Prolific ID", value=st.session_state.get("user_id_override", ""))
-            if st.button("Authenticate (DEV only)", key="dev_auth_btn") and st.session_state["user_id_override"]:
-                st.session_state["user_id"] = st.session_state["user_id_override"]
-                st.rerun()
-    else:
-        # Production mode: must use URL query param
-        if prolific_id:
-            st.session_state["user_id"] = prolific_id
-            st.rerun()
-        else:
-            st.warning("Please authenticate to continue. Missing Prolific ID.")
-            st.stop()
-
-# Now we have a user_id → initialize session only once
-if not st.session_state.get("initialized"):
-    init_user_session()
-
-# ------------------------
-# SIDEBAR OPTIONS (Dev Only)
-# ------------------------
 with st.sidebar:
-    st.title("User Panel")
-    st.info(f"Authenticated as: {st.session_state['user_id']}")
-    
     if DEV_MODE:
-        if st.button("Dev: Jump to Goal Setting", key="jump_goal_setting"):
+        if st.button("Dev: Jump to Goal Setting"):
             st.session_state["chat_state"] = "goal_setting"
             st.session_state["message_index"] = 0
             st.rerun()
 
-        if st.button("Dev: Jump to Reflection", key="jump_reflection"):
+        if st.button("Dev: Jump to Reflection"):
             st.session_state["chat_state"] = "reflection"
             st.rerun()
 
-# Catch edge case (safety)
+with st.sidebar:
+    st.title("User Panel")
+
+    query_params = st.query_params
+    prolific_id = query_params.get("PROLIFIC_PID")
+
+    if prolific_id:
+        user_id = prolific_id
+        st.session_state["authenticated"] = True
+        st.session_state["user_id"] = user_id
+        st.info(f"Authenticated as Prolific ID: {user_id}")
+    elif DEV_MODE:
+        user_id = st.text_input("Enter your Prolific ID")
+        if not st.session_state.get("authenticated"):
+            if st.button("Authenticate (DEV only)") and user_id:
+                st.session_state["authenticated"] = True
+                st.session_state["user_id"] = user_id
+                st.rerun()
+        else:
+            st.info(f"Manually authenticated as {st.session_state['user_id']}")
+    else:
+        st.warning("Please access this link via Prolific.")
+        st.stop()
+
+    # if st.session_state.get("authenticated"):
+    #     # DEFER init until info is fetched
+    #     init_session = "chat_state" not in st.session_state
+    #     user_info=get_user_info(user_id)
+
+    #     if user_info:
+    #         prolific_code, has_completed_training, db_group = user_info
+    #         assignment = db_group.get("group_assignment", "").strip() if isinstance(db_group, dict) else str(db_group).strip()
+    #         st.session_state["group"] = "treatment" if assignment =="1" else "control"
+    #     else:
+    #         group_param = st.query_params.get("g", ["2"])[0]
+    #         create_user(user_id, prolific_code=user_id, group=group_param)
+    #         st.session_state["group"] = "treatment" if group_param == "1" else "control"
+
+    #     # DO THIS ONLY ON FIRST LOAD (initialize session state AFTER setting group)
+    #     if init_session:
+    #         if (
+    #             st.session_state["group"] == "treatment"
+    #             and "week" in st.query_params
+    #             and "session" in st.query_params
+    #         ):
+    #             st.session_state["week"] = int(st.query_params["week"])
+    #             st.session_state["session"]= st.query_params["session"]
+    #             st.session_state["chat_state"] = "reflection"
+    #             st.write("Triggering reflection rerun...")
+    #             st.rerun()
+    #         elif user_completed_training(user_id):
+    #             st.session_state["chat_state"] = "menu"
+    #         else:
+    #             st.session_state["chat_state"] = "intro"
+
+    #         # Set the other session state values only once
+    #         st.session_state["chat_thread"] = []
+    #         st.session_state["smart_step"] = "intro"
+    #         st.session_state["message_index"] = 0
+    #         st.session_state["current_goal"] = ""
+        
+
+    #     # if "did_rerun_auth" not in st.session_state:
+    #     #     st.session_state["did_rerun_auth"] = True
+    #     #     st.rerun()
+
+if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
+    init_user_session()
+    
+# if st.session_state.get("authenticated") and not st.session_state["did_auth_init"]:
+#     st.session_state["did_auth_init"] = True  # prevent loop
+#     init_user_session()
+#     st.write("chat_state after init_user_session: ", st.session_state.get("chat_state"))
+#     st.rerun()
+
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("Please authenticate first.")
     st.stop()
-    
+
 #  FORCE TASK ENTRY IF GOAL EXISTS BUT NO TASK
 
 # Only run force-task logic once per session unless reset
@@ -519,6 +554,21 @@ def run_menu():
     #     if st.button("✏️ Weekly Reflection"):
     #         st.session_state["chat_state"] = "reflection"
     #         st.rerun()
+
+# def run_reflection():
+#     st.subheader("Weekly Check-In")
+#     responses = []
+#     for q in weekly_reflection_prompts:
+#         ans = st.text_area(q, key=q)
+#         responses.append(f"{q}\n{ans}\n")
+#     if st.button("Submit Reflection"):
+#         full_reflection = "\n".join(responses)
+#         save_reflection(st.session_state["user_id"], None, full_reflection, week_number=1)
+#         with st.spinner("Summarizing your progress..."):
+#             summary = summarize_reflection(full_reflection)
+#         st.session_state["chat_thread"].append({"sender": "User", "message": full_reflection})
+#         st.session_state["chat_thread"].append({"sender": "Assistant", "message": summary})
+#         st.success("Reflection submitted!")
 
 def run_view_goals():
     goals = get_goals_with_task_counts(st.session_state["user_id"])
