@@ -100,7 +100,9 @@ def run_weekly_reflection():
 
     if 1 <= st.session_state["reflection_step"] <= len(tasks):
         idx = st.session_state["reflection_step"] - 1
-        task_id, task_text, _ = tasks[idx]
+        task = tasks[idx]
+        task_id = task["id"]
+        task_text = task["task_text"]
 
         if f"ask_progress_{task_id}" not in st.session_state:
             st.session_state["chat_thread"].append({
@@ -168,7 +170,9 @@ def run_weekly_reflection():
     elif st.session_state["reflection_step"] == len(tasks) + 2:
         idx = st.session_state.get("update_task_idx", 0)
         if idx < len(tasks):
-            task_id, task_text, _ = tasks[idx]
+            task = tasks[idx]
+            task_id = task["id"]
+            task_text = task["task_text"]
             
             if f"ask_update_{task_id}" not in st.session_state:
                 st.session_state["chat_thread"].append({
@@ -206,7 +210,8 @@ def run_weekly_reflection():
             if st.session_state.get("awaiting_task_edit"):
                 new_text = st.chat_input("Write the new version of this task:")
                 if new_text:
-                    task_id, _, _ = tasks[st.session_state["update_task_idx"]]
+                    task = tasks[st.session_state["update_task_idx"]]
+                    task_id = task["id"]
                     update_task_completion(task_id, True)
                     save_task(goal_id, new_text)
 
@@ -229,7 +234,9 @@ def run_weekly_reflection():
 
     elif st.session_state["reflection_step"] == len(tasks) + 3:
         task_results = []
-        for task_id, task_text, _ in tasks:
+        for task in tasks:
+            task_id = task["id"]
+            task_text = task["task_text"]
             val = st.session_state["task_progress"][task_id]
             label = [k for k, v in progress_numeric.items() if v == val][0]
             task_results.append(f"{task_text}: {label}")
