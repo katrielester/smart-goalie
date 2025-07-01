@@ -138,11 +138,6 @@ with st.sidebar:
         st.warning("Please access this link via Prolific.")
         st.stop()
 
-    if st.session_state.get("authenticated") and not st.session_state["did_auth_init"]:
-        init_user_session()
-        st.session_state["did_auth_init"] = True
-        st.rerun()
-
     # if st.session_state.get("authenticated"):
     #     # DEFER init until info is fetched
     #     init_session = "chat_state" not in st.session_state
@@ -184,6 +179,12 @@ with st.sidebar:
     #     # if "did_rerun_auth" not in st.session_state:
     #     #     st.session_state["did_rerun_auth"] = True
     #     #     st.rerun()
+
+
+if st.session_state.get("authenticated") and not st.session_state["did_auth_init"]:
+    init_user_session()
+    st.session_state["did_auth_init"] = True
+    st.rerun()
 
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("Please authenticate first.")
