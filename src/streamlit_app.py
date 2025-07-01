@@ -177,6 +177,7 @@ with st.sidebar:
                 st.session_state["week"] = int(st.query_params["week"])
                 st.session_state["session"]= st.query_params["session"]
                 st.session_state["chat_state"] = "reflection"
+                st.write("Triggering reflection rerun...")
                 st.rerun()
             elif user_completed_training(user_id):
                 st.session_state["chat_state"] = "menu"

@@ -12,7 +12,6 @@ progress_options = ["None", "A little", "Some", "Most", "Completed"]
 progress_numeric = {"None": 0, "A little": 1, "Some": 2, "Most": 3, "Completed": 4}
 
 def run_weekly_reflection():
-
     query_params = st.query_params.to_dict()
 
     if "user_id" not in st.session_state:
@@ -28,12 +27,11 @@ def run_weekly_reflection():
         st.warning("Reflections are only available for the treatment group.")
         st.stop()
     if st.session_state.get("chat_state") != "reflection":
-        st.session_state["chat_state"] = "reflection"
-        st.rerun()
+        st.warning("You're not currently in reflection mode.")
+        st.stop()
 
     user_id = st.session_state["user_id"]
 
-    query_params = st.query_params.to_dict()
     week = int(query_params.get("week", 1))
     session = query_params.get("session", "a")
 
@@ -64,12 +62,14 @@ def run_weekly_reflection():
         return
 
     if "reflection_step" not in st.session_state:
-        if "chat_thread" not in st.session_state:
-            st.session_state["chat_thread"]=[]
-        st.session_state["reflection_step"] = 0
-        st.session_state["task_progress"] = {}
-        st.session_state["reflection_answers"] = {}
-        st.session_state["current_task"] = 0
+        init_reflection_session()
+        # if "chat_thread" not in st.session_state:
+        #     st.session_state["chat_thread"]=[]
+
+        # st.session_state["reflection_step"] = 0
+        # st.session_state["task_progress"] = {}
+        # st.session_state["reflection_answers"] = {}
+        # st.session_state["current_task"] = 0
 
     if st.session_state["reflection_step"] == 0:
         st.write("Reflection step:", st.session_state.get("reflection_step"))
@@ -258,3 +258,14 @@ def run_weekly_reflection():
             ]:
                 del st.session_state[key]
         st.rerun()
+
+def init_reflection_session():
+    if "chat_thread" not in st.session_state:
+        st.session_state["chat_thread"] = []
+        
+    st.session_state["reflection_step"] = 0
+    st.session_state["task_progress"] = {}
+    st.session_state["reflection_answers"] = {}
+    st.session_state["current_task"] = 0
+    st.session_state["reflection_q_idx"] = 0
+    st.session_state["update_task_idx"] = 0
