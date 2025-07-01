@@ -10,88 +10,114 @@ if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set")
 
 conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-cursor = conn.cursor()
+
+
+def execute_query(query, params=(), fetch="one", commit=False):
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(query, params)
+            if commit:
+                conn.commit()
+            if fetch == "one":
+                return cursor.fetchone()
+            elif fetch == "all":
+                return cursor.fetchall()
+            else:
+                return None
+    except Exception as e:
+        print("Database error:", e)
+        conn.rollback()
+        return None if fetch == "one" else []
+
 
 # -------------------------------
 # Helper functions
 # -------------------------------
 
 def create_user(user_id, prolific_code=None, group="2"):
-    cursor.execute("""
+    execute_query("""
         INSERT INTO users (user_id, prolific_code, group_assignment)
         VALUES (%s, %s, %s)
         ON CONFLICT (user_id) DO NOTHING
-    """, (user_id, prolific_code, group))
-    conn.commit()
+    """, (user_id, prolific_code, group), commit=True)
+
 
 def get_user_info(user_id):
-    cursor.execute("SELECT prolific_code, has_completed_training, group_assignment FROM users WHERE user_id = %s", (user_id,))
-    return cursor.fetchone()
+    return execute_query("""
+        SELECT prolific_code, has_completed_training, group_assignment
+        FROM users WHERE user_id = %s
+    """, (user_id,), fetch="one")
+
 
 def get_user_group(user_id):
-    cursor.execute("SELECT group_assignment FROM users WHERE user_id = %s", (user_id,))
-    row = cursor.fetchone()
+    row = execute_query("SELECT group_assignment FROM users WHERE user_id = %s", (user_id,))
     return row["group_assignment"] if row else None
 
+
 def mark_training_completed(user_id):
-    cursor.execute("UPDATE users SET has_completed_training = TRUE WHERE user_id = %s", (user_id,))
-    conn.commit()
-    update_user_phase(user_id,1)
+    execute_query(
+        "UPDATE users SET has_completed_training = TRUE WHERE user_id = %s",
+        (user_id,), commit=True
+    )
+    update_user_phase(user_id, 1)
+
 
 def user_completed_training(user_id):
-    cursor.execute("SELECT has_completed_training FROM users WHERE user_id = %s", (user_id,))
-    row = cursor.fetchone()
-    if row is None or "has_completed_training" not in row:
-        return False
-    return row["has_completed_training"]
-
-def get_user_phase(user_id):
-    cursor.execute("SELECT phase FROM users WHERE user_id = %s", (user_id,))
-    row = cursor.fetchone()
-    return row["phase"]
-
-def update_user_phase(user_id, new_phase):
-    cursor.execute("UPDATE users SET phase = %s WHERE user_id = %s", (new_phase, user_id))
-    conn.commit()
-
-# 0 = registered but not done onboarding
-# 1 = training done
-# 2 = initial goal and task entered (onboarding done)
-# 3 = first reflection done
-# 4 = second reflection done
-
-def save_message_to_db(user_id, sender, message):
-    cursor.execute(
-        "INSERT INTO chat_history (user_id, sender, message) VALUES (%s, %s, %s)",
-        (user_id, sender, message)
-    )
-    conn.commit()
-
-def get_chat_history(user_id):
-    cursor.execute(
-        "SELECT sender, message FROM chat_history WHERE user_id = %s ORDER BY id",
+    row = execute_query(
+        "SELECT has_completed_training FROM users WHERE user_id = %s",
         (user_id,)
     )
-    return cursor.fetchall()
+    return row and row.get("has_completed_training", False)
+
+
+def get_user_phase(user_id):
+    row = execute_query("SELECT phase FROM users WHERE user_id = %s", (user_id,))
+    return row["phase"] if row else None
+
+
+def update_user_phase(user_id, new_phase):
+    execute_query(
+        "UPDATE users SET phase = %s WHERE user_id = %s",
+        (new_phase, user_id), commit=True
+    )
+
+
+def save_message_to_db(user_id, sender, message):
+    execute_query("""
+        INSERT INTO chat_history (user_id, sender, message)
+        VALUES (%s, %s, %s)
+    """, (user_id, sender, message), commit=True)
+
+
+def get_chat_history(user_id):
+    return execute_query("""
+        SELECT sender, message FROM chat_history
+        WHERE user_id = %s ORDER BY id
+    """, (user_id,), fetch="all")
+
 
 def save_goal(user_id, goal_text):
-    cursor.execute(
-        "INSERT INTO goals (user_id, goal_text) VALUES (%s, %s) RETURNING id",
-        (user_id, goal_text)
-    )
-    conn.commit()
-    return cursor.fetchone()["id"]
+    row = execute_query("""
+        INSERT INTO goals (user_id, goal_text)
+        VALUES (%s, %s)
+        RETURNING id
+    """, (user_id, goal_text), commit=True)
+    return row["id"] if row else None
+
 
 def get_goals(user_id):
-    cursor.execute("SELECT id, goal_text FROM goals WHERE user_id = %s", (user_id,))
-    return cursor.fetchall()
+    return execute_query(
+        "SELECT id, goal_text FROM goals WHERE user_id = %s",
+        (user_id,), fetch="all"
+    )
+
 
 def save_task(goal_id, task_text):
-    cursor.execute(
-        "INSERT INTO tasks (goal_id, task_text) VALUES (%s, %s)",
-        (goal_id, task_text)
-    )
-    conn.commit()
+    execute_query("""
+        INSERT INTO tasks (goal_id, task_text)
+        VALUES (%s, %s)
+    """, (goal_id, task_text), commit=True)
+
 
 def get_tasks(goal_id):
     try:
@@ -99,58 +125,75 @@ def get_tasks(goal_id):
     except ValueError:
         return []
 
-    cursor.execute("SELECT id, task_text, completed FROM tasks WHERE goal_id = %s", (goal_id,))
-    return cursor.fetchall()
+    return execute_query("""
+        SELECT id, task_text, completed FROM tasks
+        WHERE goal_id = %s
+    """, (goal_id,), fetch="all")
+
 
 def update_task_completion(task_id, completed):
-    cursor.execute("UPDATE tasks SET completed = %s WHERE id = %s", (completed, task_id))
-    conn.commit()
+    execute_query("""
+        UPDATE tasks SET completed = %s WHERE id = %s
+    """, (completed, task_id), commit=True)
+
 
 def save_reflection(user_id, goal_id, content, week_number, session_id="a"):
-    cursor.execute("""
+    execute_query("""
         INSERT INTO reflections (user_id, goal_id, reflection_text, week_number, session_id)
         VALUES (%s, %s, %s, %s, %s)
-    """, (user_id, goal_id, content, week_number, session_id))
-    conn.commit()
+    """, (user_id, goal_id, content, week_number, session_id), commit=True)
+
 
 def get_reflections(user_id):
-    cursor.execute("SELECT goal_id, reflection_text, week_number FROM reflections WHERE user_id = %s", (user_id,))
-    return cursor.fetchall()
+    return execute_query("""
+        SELECT goal_id, reflection_text, week_number FROM reflections
+        WHERE user_id = %s
+    """, (user_id,), fetch="all")
+
 
 def user_goals_exist(user_id):
-    cursor.execute("SELECT COUNT(*) FROM goals WHERE user_id = %s", (user_id,))
-    return cursor.fetchone()["count"] > 0
+    row = execute_query("SELECT COUNT(*) FROM goals WHERE user_id = %s", (user_id,))
+    return row and row["count"] > 0
+
 
 def get_last_reflection(user_id, goal_id):
-    cursor.execute("""
+    return execute_query("""
         SELECT reflection_text, week_number FROM reflections
         WHERE user_id = %s AND goal_id = %s
         ORDER BY week_number DESC LIMIT 1
-    """, (user_id, goal_id))
-    return cursor.fetchone()
+    """, (user_id, goal_id), fetch="one")
+
 
 def get_next_week_number(user_id, goal_id):
-    cursor.execute("""
+    row = execute_query("""
         SELECT MAX(week_number) FROM reflections
         WHERE user_id = %s AND goal_id = %s
-    """, (user_id, goal_id))
-    row = cursor.fetchone()
-    return (row["max"] or 0) + 1
+    """, (user_id, goal_id), fetch="one")
+    return (row["max"] or 0) + 1 if row else 1
+
 
 def reflection_exists(user_id, goal_id, week_number, session_id):
-    cursor.execute("""
+    row = execute_query("""
         SELECT 1 FROM reflections
         WHERE user_id = %s AND goal_id = %s AND week_number = %s AND session_id = %s
         LIMIT 1
     """, (user_id, goal_id, week_number, session_id))
-    return cursor.fetchone() is not None
+    return row is not None
+
 
 def get_goals_with_task_counts(user_id):
-    cursor.execute("""
+    return execute_query("""
         SELECT g.id, g.goal_text, COUNT(t.id) AS task_count
         FROM goals g
         LEFT JOIN tasks t ON g.id = t.goal_id
         WHERE g.user_id = %s
         GROUP BY g.id, g.goal_text
-    """, (user_id,))
-    return cursor.fetchall()
+    """, (user_id,), fetch="all")
+
+
+# PHASES
+# 0 = registered but not done onboarding
+# 1 = training done
+# 2 = initial goal and task entered (onboarding done)
+# 3 = first reflection done
+# 4 = second reflection done
