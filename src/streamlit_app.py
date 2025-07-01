@@ -124,13 +124,14 @@ with st.sidebar:
             create_user(user_id, prolific_code=user_id, group=group_assignment)
             st.session_state["group"] = "treatment" if group_param == "1" else "control"
 
-        if (
+        if st.session_state.get("chat_state") == "reflection":
+            pass  # Do NOT override if already going to reflection
+        elif (
             "chat_state" not in st.session_state
             or st.session_state["chat_state"] not in [
-                "smart_training", "goal_setting", "menu", "reflection", "view_goals", "add_tasks"
+                "smart_training", "goal_setting", "menu", "view_goals", "add_tasks"
             ]
         ):
-            # Check for reflection redirection BEFORE falling back to menu
             if (
                 st.session_state.get("group") == "treatment"
                 and "week" in st.query_params
