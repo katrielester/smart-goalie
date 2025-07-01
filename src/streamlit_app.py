@@ -100,6 +100,9 @@ if "chat_state" in st.session_state:
 else:
     chat_height = "60vh"  # fallback if not initialized yet
 
+if "did_auth_init" not in st.session_state:
+    st.session_state["did_auth_init"] = False
+
 with st.sidebar:
     if DEV_MODE:
         if st.button("Dev: Jump to Goal Setting"):
@@ -135,8 +138,9 @@ with st.sidebar:
         st.warning("Please access this link via Prolific.")
         st.stop()
 
-    if st.session_state.get("authenticated"):
+    if st.session_state.get("authenticated") and not st.session_state["did_auth_init"]:
         init_user_session()
+        st.session_state["did_auth_init"] = True
         st.rerun()
 
     # if st.session_state.get("authenticated"):
