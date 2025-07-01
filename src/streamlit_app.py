@@ -36,6 +36,8 @@ def init_user_session():
         create_user(user_id, prolific_code=user_id, group=group_param)
         st.session_state["group"] = "treatment" if group_param == "1" else "control"
 
+    st.write(st.session_state.get("group"))
+
     if init_session or (
         st.session_state["group"] == "treatment"
         and "week" in st.query_params
