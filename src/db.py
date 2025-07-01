@@ -30,7 +30,8 @@ def get_user_info(user_id):
 
 def get_user_group(user_id):
     cursor.execute("SELECT group_assignment FROM users WHERE user_id = %s", (user_id,))
-    return cursor.fetchone()
+    row = cursor.fetchone()
+    return row["group_assignment"] if row else None
 
 def mark_training_completed(user_id):
     cursor.execute("UPDATE users SET has_completed_training = TRUE WHERE user_id = %s", (user_id,))
@@ -40,7 +41,9 @@ def mark_training_completed(user_id):
 def user_completed_training(user_id):
     cursor.execute("SELECT has_completed_training FROM users WHERE user_id = %s", (user_id,))
     row = cursor.fetchone()
-    return row is not None and row["has_completed_training"]
+    if row is None or "has_completed_training" not in row:
+        return False
+    return row["has_completed_training"]
 
 def get_user_phase(user_id):
     cursor.execute("SELECT phase FROM users WHERE user_id = %s", (user_id,))
