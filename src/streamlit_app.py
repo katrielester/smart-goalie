@@ -175,6 +175,7 @@ with st.sidebar:
                 and "session" in st.query_params
             ):
                 st.session_state["chat_state"] = "reflection"
+                st.rerun()
             elif user_completed_training(user_id):
                 st.session_state["chat_state"] = "menu"
             else:
