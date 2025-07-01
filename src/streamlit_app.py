@@ -183,6 +183,7 @@ with st.sidebar:
 
 if st.session_state.get("authenticated") and not st.session_state["did_auth_init"]:
     init_user_session()
+    st.write("🔁 After init_user_session, chat_state:", st.session_state.get("chat_state"))
     st.session_state["did_auth_init"] = True
     st.rerun()
 
@@ -199,7 +200,10 @@ if "force_task_handled" not in st.session_state:
 goals = get_goals_with_task_counts(st.session_state["user_id"])
 
 # Only trigger if there ARE goals and one of them has zero tasks
-if goals and not st.session_state.get("force_task_handled", False):
+if (
+    st.session_state["chat_state"] not in ["reflection", "smart_training", "goal_setting"] 
+    and goals 
+    and not st.session_state.get("force_task_handled", False)):
     incomplete_goal = next((g for g in goals if g["task_count"] == 0), None)
 
     if incomplete_goal:
