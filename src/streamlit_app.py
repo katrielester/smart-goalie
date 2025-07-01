@@ -598,6 +598,7 @@ def run_view_goals():
         st.session_state["chat_state"] = "menu"
         st.rerun()
 
+st.write("chat_state before routing:", st.session_state.get("chat_state"))
 if st.session_state["chat_state"] == "intro":
     run_intro()
 elif st.session_state["chat_state"] == "smart_training":
