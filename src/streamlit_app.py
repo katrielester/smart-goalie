@@ -114,14 +114,14 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         create_user(user_id, prolific_code=user_id, group=group)
         st.session_state["group"] = "treatment" if group == "1" else "control"
     else:
-        _, _, group = user_info
+        group = user_info["group_assignment"]
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
         st.write(st.session_state.get("group"),group)
 
     # Routing logic
     print("Week:", week)
     print("Session:", session)
-    print("Group (from DB or URL):", st.session_state["group"])
+    print("Group (from DB or URL):", st.session_state["group"], group)
 
     if st.session_state["group"] == "treatment" and week and session:
         st.session_state["week"] = int(week)
