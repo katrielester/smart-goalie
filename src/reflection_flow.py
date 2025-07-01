@@ -25,8 +25,11 @@ def run_weekly_reflection():
             st.session_state["group"] = "treatment"
         else:
             st.session_state["group"] = "control"
-            
-    if st.session_state.get("group") != "treatment":
+
+    if "group" not in st.session_state:
+        st.error("❌ Group not set. Something went wrong in session initialization.")
+        st.stop()
+    elif st.session_state["group"] != "treatment":
         st.warning("Reflections are only available for the treatment group.")
         st.stop()
     if st.session_state.get("chat_state") != "reflection":

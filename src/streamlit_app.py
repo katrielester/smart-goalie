@@ -158,6 +158,10 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
 
     # Routing logic
+    print("Week:", week)
+    print("Session:", session)
+    print("Group (from DB or URL):", st.session_state["group"])
+    
     if st.session_state["group"] == "treatment" and week and session:
         st.session_state["week"] = int(week)
         st.session_state["session"] = session
