@@ -92,67 +92,99 @@ with st.sidebar:
         st.warning("Please access this link via Prolific.")
         st.stop()
 
+    # if st.session_state.get("authenticated"):
+    #     # Initialization only after authentication {STABLE}
+    #     if "chat_state" not in st.session_state:
+    #         st.session_state["chat_state"] = "intro"
+    #         st.session_state["chat_thread"] = []
+    #         st.session_state["smart_step"] = "intro"
+    #         st.session_state["message_index"] = 0
+    #         st.session_state["current_goal"] = ""
+    #     user_info = get_user_info(user_id)
+
+    #     if user_info:
+    #         prolific_code, has_completed_training, db_group = user_info
+
+    #         if isinstance(db_group, dict):
+    #             assignment = db_group.get("group_assignment", "").strip()
+    #         else:
+    #             assignment = str(db_group).strip()
+
+    #         st.session_state["group"] = "treatment" if assignment == "1" else "control"
+            
+    #         # Force reflection BEFORE anything else overrides it
+    #         if "chat_state" not in st.session_state:
+    #             if st.session_state["group"] == "treatment":
+    #                 if "week" in st.query_params and "session" in st.query_params:
+    #                     st.session_state["chat_state"] = "reflection"
+    #     else:
+    #         # Use URL param if user doesn't exist in DB
+    #         group_param = st.query_params.get("g", ["2"])[0]
+    #         group_assignment = group_param
+    #         create_user(user_id, prolific_code=user_id, group=group_assignment)
+    #         st.session_state["group"] = "treatment" if group_param == "1" else "control"
+
+    #     if st.session_state.get("chat_state") == "reflection":
+    #         pass  # Do NOT override if already going to reflection
+    #     elif (
+    #         "chat_state" not in st.session_state
+    #         or st.session_state["chat_state"] not in [
+    #             "smart_training", "goal_setting", "menu", "view_goals", "add_tasks"
+    #         ]
+    #     ):
+    #         if (
+    #             st.session_state.get("group") == "treatment"
+    #             and "week" in st.query_params
+    #             and "session" in st.query_params
+    #         ):
+    #             st.session_state["chat_state"] = "reflection"
+    #         elif user_completed_training(user_id):
+    #             if not st.session_state["chat_thread"]:
+    #                 st.session_state["chat_thread"].append({
+    #                     "sender": "Assistant",
+    #                     "message": "Welcome back! What would you like to do today?"
+    #                 })
+    #             st.session_state["chat_state"] = "menu"
+    #         else:
+    #             st.session_state["chat_state"] = "intro"
+                
+    #     # Auto-jump into reflection if week/session params exist and user is treatment
+    #     if st.session_state["group"] == "treatment":
+    #         if "week" in st.query_params and "session" in st.query_params:
+    #             st.session_state["chat_state"] = "reflection"
+
     if st.session_state.get("authenticated"):
-        # Initialization only after authentication
-        if "chat_state" not in st.session_state:
-            st.session_state["chat_state"] = "intro"
-            st.session_state["chat_thread"] = []
-            st.session_state["smart_step"] = "intro"
-            st.session_state["message_index"] = 0
-            st.session_state["current_goal"] = ""
-        user_info = get_user_info(user_id)
+        # DEFER init until info is fetched
+        init_session = "chat_state" not in st.session_state
+        user_info=get_user_info(user_id)
 
         if user_info:
             prolific_code, has_completed_training, db_group = user_info
-
-            if isinstance(db_group, dict):
-                assignment = db_group.get("group_assignment", "").strip()
-            else:
-                assignment = str(db_group).strip()
-
-            st.session_state["group"] = "treatment" if assignment == "1" else "control"
-            
-            # Force reflection BEFORE anything else overrides it
-            if "chat_state" not in st.session_state:
-                if st.session_state["group"] == "treatment":
-                    if "week" in st.query_params and "session" in st.query_params:
-                        st.session_state["chat_state"] = "reflection"
+            assignment = db_group.get("group_assignment", "").strip() if isinstance(db_group, dict) else str(db_group).strip()
+            st.session_state["group"] = "treatment" if assignment =="1" else "control"
         else:
-            # Use URL param if user doesn't exist in DB
             group_param = st.query_params.get("g", ["2"])[0]
-            group_assignment = group_param
-            create_user(user_id, prolific_code=user_id, group=group_assignment)
+            create_user(user_id, prolific_code=user_id, group=group_param)
             st.session_state["group"] = "treatment" if group_param == "1" else "control"
 
-        if st.session_state.get("chat_state") == "reflection":
-            pass  # Do NOT override if already going to reflection
-        elif (
-            "chat_state" not in st.session_state
-            or st.session_state["chat_state"] not in [
-                "smart_training", "goal_setting", "menu", "view_goals", "add_tasks"
-            ]
-        ):
+        # DO THIS ONLY ON FIRST LOAD (initialize session state AFTER setting group)
+        if init_session:
             if (
-                st.session_state.get("group") == "treatment"
+                st.session_state["group"] == "treatment"
                 and "week" in st.query_params
                 and "session" in st.query_params
             ):
                 st.session_state["chat_state"] = "reflection"
             elif user_completed_training(user_id):
-                if not st.session_state["chat_thread"]:
-                    st.session_state["chat_thread"].append({
-                        "sender": "Assistant",
-                        "message": "Welcome back! What would you like to do today?"
-                    })
                 st.session_state["chat_state"] = "menu"
             else:
                 st.session_state["chat_state"] = "intro"
-                
-        # Auto-jump into reflection if week/session params exist and user is treatment
-        if st.session_state["group"] == "treatment":
-            if "week" in st.query_params and "session" in st.query_params:
-                st.session_state["chat_state"] = "reflection"
 
+            # Set the other session state values only once
+            st.session_state["chat_thread"] = []
+            st.session_state["smart_step"] = "intro"
+            st.session_state["message_index"] = 0
+            st.session_state["current_goal"] = ""
         
 
         # if "did_rerun_auth" not in st.session_state:
