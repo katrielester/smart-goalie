@@ -48,7 +48,9 @@ def init_user_session():
         ):
             st.session_state["week"] = int(st.query_params["week"])
             st.session_state["session"] = st.query_params["session"]
+            st.write(st.session_state.get("week"))
             st.session_state["chat_state"] = "reflection"
+            st.rerun()
         elif user_completed_training(user_id):
             st.session_state["chat_state"] = "menu"
         else:
@@ -61,7 +63,6 @@ def init_user_session():
         st.session_state["current_goal"] = ""
         st.session_state["force_task_handled"] = False
 
-        st.write("init function done")
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
