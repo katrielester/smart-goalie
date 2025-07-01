@@ -130,14 +130,17 @@ with st.sidebar:
 with st.sidebar:
     if DEV_MODE:
         st.title("Dev Tools")
-        st.session_state["user_id_override"] = st.text_input("Dev: Enter Prolific ID", value=st.session_state.get("user_id_override", ""))
+        st.session_state["user_id_override"] = st.text_input(
+            "Dev: Enter Prolific ID",
+            value=st.session_state.get("user_id_override", "")
+        )
 
-        if st.button("Dev: Jump to Goal Setting"):
+        if st.button("Dev: Jump to Goal Setting", key="jump_goal_setting"):
             st.session_state["chat_state"] = "goal_setting"
             st.session_state["message_index"] = 0
             st.rerun()
 
-        if st.button("Dev: Jump to Reflection"):
+        if st.button("Dev: Jump to Reflection", key="jump_reflection"):
             st.session_state["chat_state"] = "reflection"
             st.rerun()
 
