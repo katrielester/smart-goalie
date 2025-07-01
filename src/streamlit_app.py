@@ -98,52 +98,12 @@ with st.sidebar:
         st.warning("Please access this link via Prolific.")
         st.stop()
 
-    # if st.session_state.get("authenticated"):
-    #     # DEFER init until info is fetched
-    #     init_session = "chat_state" not in st.session_state
-    #     user_info=get_user_info(user_id)
-
-    #     if user_info:
-    #         prolific_code, has_completed_training, db_group = user_info
-    #         assignment = db_group.get("group_assignment", "").strip() if isinstance(db_group, dict) else str(db_group).strip()
-    #         st.session_state["group"] = "treatment" if assignment =="1" else "control"
-    #     else:
-    #         group_param = st.query_params.get("g", ["2"])[0]
-    #         create_user(user_id, prolific_code=user_id, group=group_param)
-    #         st.session_state["group"] = "treatment" if group_param == "1" else "control"
-
-    #     # DO THIS ONLY ON FIRST LOAD (initialize session state AFTER setting group)
-    #     if init_session:
-    #         if (
-    #             st.session_state["group"] == "treatment"
-    #             and "week" in st.query_params
-    #             and "session" in st.query_params
-    #         ):
-    #             st.session_state["week"] = int(st.query_params["week"])
-    #             st.session_state["session"]= st.query_params["session"]
-    #             st.session_state["chat_state"] = "reflection"
-    #             st.write("Triggering reflection rerun...")
-    #             st.rerun()
-    #         elif user_completed_training(user_id):
-    #             st.session_state["chat_state"] = "menu"
-    #         else:
-    #             st.session_state["chat_state"] = "intro"
-
-    #         # Set the other session state values only once
-    #         st.session_state["chat_thread"] = []
-    #         st.session_state["smart_step"] = "intro"
-    #         st.session_state["message_index"] = 0
-    #         st.session_state["current_goal"] = ""
-        
-
-    #     # if "did_rerun_auth" not in st.session_state:
-    #     #     st.session_state["did_rerun_auth"] = True
-    #     #     st.rerun()
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
-    week = query_params.get("week", [None])[0]
-    session = query_params.get("session", [None])[0]
+    week = query_params.get("week")
+    session = query_params.get("session")
+    st.write("🔍 Init Debug — Week:", week, "| Session:", session)
 
     user_id = st.session_state["user_id"]
 
@@ -156,12 +116,13 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     else:
         _, _, group = user_info
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
+        st.write(st.session_state.get("group"),group)
 
     # Routing logic
     print("Week:", week)
     print("Session:", session)
     print("Group (from DB or URL):", st.session_state["group"])
-    
+
     if st.session_state["group"] == "treatment" and week and session:
         st.session_state["week"] = int(week)
         st.session_state["session"] = session
