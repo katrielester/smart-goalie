@@ -39,7 +39,7 @@ def init_user_session():
     if init_session or (
         st.session_state["group"] == "treatment"
         and "week" in st.query_params
-        and "session" in st.query_paramss
+        and "session" in st.query_params
     ):
         if (
             st.session_state["group"] == "treatment"
@@ -182,9 +182,9 @@ with st.sidebar:
 
 
 if st.session_state.get("authenticated") and not st.session_state["did_auth_init"]:
+    st.session_state["did_auth_init"] = True  # prevent loop
     init_user_session()
-    st.write("🔁 After init_user_session, chat_state:", st.session_state.get("chat_state"))
-    st.session_state["did_auth_init"] = True
+    st.write("chat_state after init_user_session: ", st.session_state.get("chat_state"))
     st.rerun()
 
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
