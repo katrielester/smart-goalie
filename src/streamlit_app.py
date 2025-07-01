@@ -36,7 +36,11 @@ def init_user_session():
         create_user(user_id, prolific_code=user_id, group=group_param)
         st.session_state["group"] = "treatment" if group_param == "1" else "control"
 
-    if init_session:
+    if init_session or (
+        st.session_state["group"] == "treatment"
+        and "week" in st.query_params
+        and "session" in st.query_paramss
+    ):
         if (
             st.session_state["group"] == "treatment"
             and "week" in st.query_params
@@ -131,7 +135,7 @@ with st.sidebar:
         st.warning("Please access this link via Prolific.")
         st.stop()
 
-    if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
+    if st.session_state.get("authenticated"):
         init_user_session()
         st.rerun()
 
