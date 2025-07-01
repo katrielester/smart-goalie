@@ -72,8 +72,6 @@ DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
 logger = setup_logger()
 
-init_user_session()
-
 st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
 
 st.markdown("""
@@ -112,29 +110,47 @@ else:
 if "did_auth_init" not in st.session_state:
     st.session_state["did_auth_init"] = False
 
-with st.sidebar:
-    if DEV_MODE:
-        if st.button("Dev: Jump to Goal Setting"):
-            st.session_state["chat_state"] = "goal_setting"
-            st.session_state["message_index"] = 0
-            st.rerun()
-
-        if st.button("Dev: Jump to Reflection"):
-            st.session_state["chat_state"] = "reflection"
-            st.rerun()
-
 # ------------------------
 # SIDEBAR: Developer Tools
 # ------------------------
 
-with st.sidebar:
-    if DEV_MODE:
-        st.title("Dev Tools")
-        st.session_state["user_id_override"] = st.text_input(
-            "Dev: Enter Prolific ID",
-            value=st.session_state.get("user_id_override", "")
-        )
+wDEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+if "user_id_override" not in st.session_state:
+    st.session_state["user_id_override"] = ""
+
+# --- Sidebar for auth ---
+with st.sidebar:
+    st.title("User Panel")
+
+    # Production: get ID from query param
+    query_params = st.query_params
+    prolific_id = query_params.get("PROLIFIC_PID")
+
+    # Developer mode: allow manual entry
+    if DEV_MODE:
+        st.session_state["user_id_override"] = st.text_input("Dev: Enter Prolific ID", value=st.session_state["user_id_override"])
+        if st.button("Authenticate (DEV only)", key="dev_auth") and st.session_state["user_id_override"]:
+            st.session_state["user_id"] = st.session_state["user_id_override"]
+            st.session_state["authenticated"] = True
+            st.rerun()
+
+    elif prolific_id and not st.session_state["authenticated"]:
+        st.session_state["user_id"] = prolific_id
+        st.session_state["authenticated"] = True
+        st.rerun()
+
+    # Status message
+    if st.session_state["authenticated"]:
+        st.info(f"Authenticated as: {st.session_state['user_id']}")
+    else:
+        st.warning("Please authenticate to continue.")
+
+    # Dev jump buttons
+    if DEV_MODE:
         if st.button("Dev: Jump to Goal Setting", key="jump_goal_setting"):
             st.session_state["chat_state"] = "goal_setting"
             st.session_state["message_index"] = 0
@@ -144,18 +160,14 @@ with st.sidebar:
             st.session_state["chat_state"] = "reflection"
             st.rerun()
 
-    if "user_id" in st.session_state:
-        st.info(f"Authenticated as: {st.session_state['user_id']}")
-    else:
-        st.warning("Waiting for authentication…")
-
 
 # ------------------------
 # Initialize Session
 # ------------------------
 
-# Run session initialization once
-init_user_session()
+# Only call after auth is done
+if st.session_state.get("authenticated") and not st.session_state.get("initialized"):
+    init_user_session()
 
 # Catch edge case (safety)
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
