@@ -50,7 +50,8 @@ def run_weekly_reflection():
     if not all_goals:
         st.info("You have no goals to reflect on yet.")
         return
-
+    
+    st.write(all_goals[0])
     goal_id, goal_text = all_goals[0]
 
     if reflection_exists(user_id, goal_id, week, session):
