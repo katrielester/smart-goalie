@@ -61,6 +61,8 @@ def init_user_session():
         st.session_state["current_goal"] = ""
         st.session_state["force_task_handled"] = False
 
+        st.write("init function done")
+
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
 logger = setup_logger()
