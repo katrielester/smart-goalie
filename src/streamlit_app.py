@@ -174,6 +174,8 @@ with st.sidebar:
                 and "week" in st.query_params
                 and "session" in st.query_params
             ):
+                st.session_state["week"] = int(st.query_params["week"])
+                st.session_state["session"]= st.query_params["session"]
                 st.session_state["chat_state"] = "reflection"
                 st.rerun()
             elif user_completed_training(user_id):
