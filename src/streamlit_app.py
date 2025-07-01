@@ -130,16 +130,22 @@ with st.sidebar:
                 "smart_training", "goal_setting", "menu", "reflection", "view_goals", "add_tasks"
             ]
         ):
-            if st.session_state.get("chat_state") != "reflection":  # prevent overriding reflection
-                if user_completed_training(user_id):
-                    if not st.session_state["chat_thread"]:
-                        st.session_state["chat_thread"].append({
-                            "sender": "Assistant",
-                            "message": "Welcome back! What would you like to do today?"
-                        })
-                    st.session_state["chat_state"] = "menu"
-                else:
-                    st.session_state["chat_state"] = "intro"
+            # Check for reflection redirection BEFORE falling back to menu
+            if (
+                st.session_state.get("group") == "treatment"
+                and "week" in st.query_params
+                and "session" in st.query_params
+            ):
+                st.session_state["chat_state"] = "reflection"
+            elif user_completed_training(user_id):
+                if not st.session_state["chat_thread"]:
+                    st.session_state["chat_thread"].append({
+                        "sender": "Assistant",
+                        "message": "Welcome back! What would you like to do today?"
+                    })
+                st.session_state["chat_state"] = "menu"
+            else:
+                st.session_state["chat_state"] = "intro"
                 
         # Auto-jump into reflection if week/session params exist and user is treatment
         if st.session_state["group"] == "treatment":
