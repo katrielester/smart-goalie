@@ -8,7 +8,7 @@ from db import (
     save_message_to_db, get_chat_history, get_user_info,
     save_goal, save_task, save_reflection,
     get_tasks, get_goals, get_reflections, user_goals_exist,
-    get_goals_with_task_counts, get_user_group
+    get_goals_with_task_counts
 )
 from reflection_flow import run_weekly_reflection
 from goal_flow import run_goal_setting, run_add_tasks
@@ -154,15 +154,8 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         create_user(user_id, prolific_code=user_id, group=group)
         st.session_state["group"] = "treatment" if group == "1" else "control"
     else:
-        _, _, group_info = user_info
-        group_code_raw = get_user_group(st.session_state["user_id"])
-        group_code = str(group_code_raw).strip()
-        st.write(f"DEBUG: Raw group from DB: {group_code_raw} (converted to '{group_code}')")
-        if group_code == "1":
-            st.session_state["group"] = "treatment"
-        else:
-            st.session_state["group"] = "control"
-
+        _, _, group = user_info
+        st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
 
     # Routing logic
     if st.session_state["group"] == "treatment" and week and session:
