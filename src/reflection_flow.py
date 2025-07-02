@@ -128,11 +128,11 @@ def run_weekly_reflection():
             st.rerun()
 
         selected = None
-        with st.container():
-            for option in progress_options:
-                if st.button(option, key=f"{task_id}_{option}"):
-                    selected = option
-                    break
+        cols = st.columns(len(progress_options))
+        for idx, option in enumerate(progress_options):
+            if cols[idx].button(option, key=f"{task_id}_{option}"):
+                selected = option
+                break
 
         if selected:
             st.session_state["chat_thread"].append({
@@ -306,7 +306,7 @@ def run_weekly_reflection():
 
     elif st.session_state["reflection_step"] == len(tasks) + 3:
         task_results = []
-        for task in tasks:
+        for task in tasks:  
             task_id = task["id"]
             task_text = task["task_text"]
             val = st.session_state["task_progress"][task_id]
