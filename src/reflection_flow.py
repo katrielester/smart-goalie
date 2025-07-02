@@ -82,8 +82,10 @@ def run_weekly_reflection():
 
     if st.session_state["reflection_step"] == 0:
         st.write("Reflection step:", st.session_state.get("reflection_step"))
+        
         last_reflection = get_last_reflection(user_id, goal_id)
-        if last_reflection:
+
+        if last_reflection and last_reflection[0] and last_reflection[0].strip():
             last_content, last_week = last_reflection
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
@@ -131,7 +133,7 @@ def run_weekly_reflection():
     elif st.session_state["reflection_step"] == len(tasks) + 1:
         total = sum(st.session_state["task_progress"].values())
         max_possible = 4 * len(tasks)
-        use_success_reflection = total >= 0.75 * max_possible
+        use_success_reflection = total >= 0.65 * max_possible
 
         if use_success_reflection:
             questions = [
