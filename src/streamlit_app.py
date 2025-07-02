@@ -481,22 +481,39 @@ def run_smart_training():
             st.rerun()
 
 def run_menu():
-    if not(user_goals_exist(st.session_state["user_id"])):
+    if "chat_thread" not in st.session_state:
+        st.session_state["chat_thread"] = []
+
+    # Only show this prompt if it's not already the last message from Assistant
+    if not st.session_state["chat_thread"] or (
+        st.session_state["chat_thread"][-1]["sender"] == "Assistant" and
+        "What would you like to do next?" not in st.session_state["chat_thread"][-1]["message"]
+    ):
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": "What would you like to do next? You can view your goal, review training, or create something new."
+        })
+        st.rerun()
+
+    if not user_goals_exist(st.session_state["user_id"]):
         if st.button("➕ Create a New Goal"):
             st.session_state["chat_state"] = "goal_setting"
             st.session_state["goal_step"] = "initial_goal"
             st.session_state["message_index"] = 0
-        st.rerun()
-    if user_goals_exist(st.session_state["user_id"]):
+            st.rerun()
+    else:
         if st.button("✅ View Existing Goal and Tasks"):
             st.session_state["chat_state"] = "view_goals"
             st.rerun()
+
     if user_completed_training(st.session_state["user_id"]):
         if st.button("📚 Review SMART Goal Training"):
             st.session_state["chat_state"] = "smart_training"
             st.session_state["smart_step"] = "intro"
             st.session_state["message_index"] = 0
             st.rerun()
+
+            
     # if st.session_state.get("group") == "treatment" and user_goals_exist(st.session_state["user_id"]):
     #     if st.button("✏️ Weekly Reflection"):
     #         st.session_state["chat_state"] = "reflection"
