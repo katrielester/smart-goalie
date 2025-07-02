@@ -17,7 +17,7 @@ def run_goal_setting():
 
     flow = goal_setting_flow_score if USE_LLM_SCORING else goal_setting_flow;
 
-    step =  flow[st.session_state["goal_step"]]
+    step = goal_setting_flow[st.session_state["goal_step"]]
     texts = step["text"]
     if isinstance(texts, str):
         texts = [texts]
@@ -25,10 +25,16 @@ def run_goal_setting():
     current_index = st.session_state.get("message_index", 0)
 
     if current_index < len(texts):
-        current_text = texts[current_index].replace(
-            "{current_goal}",
-            st.session_state.get("current_goal", "")
+        current_text = texts[current_index]
+        current_text = current_text.replace(
+            "{current_goal}", st.session_state.get("current_goal", "")
         )
+        
+        if USE_LLM_SCORING:
+            current_text = current_text.replace(
+                "{llm_feedback_result}", st.session_state.get("llm_feedback_result", "")
+            )
+        
         st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
         st.session_state["message_index"] += 1
         st.rerun()

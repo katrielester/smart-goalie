@@ -243,7 +243,7 @@ if st.session_state["chat_state"] == "view_goals":
                         goal_html += f"{status} {task_text}<br>"
                 else:
                     goal_html += "<em>No subtasks yet.</em><br>"
-                goal_html += "<hr>"
+                # goal_html += "<hr>"
             goal_html += "</div>"
 
         st.session_state["chat_thread"].append({
