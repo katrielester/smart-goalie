@@ -399,8 +399,8 @@ with st.container():
             function revealMessages(i) {{
                 if (i >= newMessages.length) return;
                 newMessages[i].style.display = "block";
-                chatBox.scarollTop = chatBox.scrollHeight;
-                setTimeout(() => revealMessages(i + 1), 500);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                setTimeout(() => revealMessages(i + 1), 100);
             }}
 
             chatBox.scrollTop = chatBox.scrollHeight;
