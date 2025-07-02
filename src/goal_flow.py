@@ -308,9 +308,7 @@ def show_reflection_explanation():
     st.session_state["chat_thread"].append({
         "sender": "Assistant",
         "message": (
-            "Awesome job setting your goal and tasks! "
-            "Just one last step  take a quick survey to lock it in. "
-            "You’ll get a code at the end to return to Prolific. "
+            "Awesome job setting your goal and tasks! Just one last step  take a quick survey to lock it in. You’ll get a code at the end to return to Prolific. ",
             "<br><br><a href='[QUALTRICS PRE-SURVEY LINK]' target='_blank'>Click here to begin the survey</a>"
         )
     })
