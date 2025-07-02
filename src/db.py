@@ -114,8 +114,8 @@ def get_goals(user_id):
 
 def save_task(goal_id, task_text):
     execute_query("""
-        INSERT INTO tasks (goal_id, task_text)
-        VALUES (%s, %s)
+        INSERT INTO tasks (goal_id, task_text, status)
+        VALUES (%s, %s, 'active')
     """, (goal_id, task_text), commit=True)
 
 def get_tasks(goal_id, active_only=True):
@@ -136,10 +136,23 @@ def update_task_completion(task_id, completed):
 
 
 def save_reflection(user_id, goal_id, content, week_number, session_id="a"):
+    row = execute_query("""
+        INSERT INTO reflections (user_id, goal_id, reflection_text, week_number, session_id, completed)
+        VALUES (%s, %s, %s, %s, %s, TRUE)
+        RETURNING id
+    """, (user_id, goal_id, content, week_number, session_id), fetch="one", commit=True)
+    
+    return row["id"] if row else None
+
+def save_reflection_response(reflection_id, task_id, progress_rating=None, update_type=None, updated_task_text=None, answer_key=None, answer_text=None):
     execute_query("""
-        INSERT INTO reflections (user_id, goal_id, reflection_text, week_number, session_id)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (user_id, goal_id, content, week_number, session_id), commit=True)
+        INSERT INTO reflection_responses (
+            reflection_id, task_id, progress_rating, update_type, updated_task_text, answer_key, answer_text
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (
+        reflection_id, task_id, progress_rating, update_type, updated_task_text, answer_key, answer_text
+    ), commit=True)
 
 
 def get_reflections(user_id):
@@ -170,13 +183,12 @@ def get_next_week_number(user_id, goal_id):
     return (row["max"] or 0) + 1 if row else 1
 
 
-def reflection_exists(user_id, goal_id, week_number, session_id):
-    row = execute_query("""
+def reflection_exists(user_id, goal_id, week_number, session_id="a"):
+    result = execute_query("""
         SELECT 1 FROM reflections
-        WHERE user_id = %s AND goal_id = %s AND week_number = %s AND session_id = %s
-        LIMIT 1
-    """, (user_id, goal_id, week_number, session_id))
-    return row is not None
+        WHERE user_id = %s AND goal_id = %s AND week_number = %s AND session_id = %s AND completed = TRUE
+    """, (user_id, goal_id, week_number, session_id), fetch="one")
+    return result is not None
 
 # count only active tasks
 def get_goals_with_task_counts(user_id):
@@ -198,32 +210,61 @@ def archive_task(task_id, replaced_by_task_id=None, reason=None):
     """, (replaced_by_task_id, reason, task_id), commit=True)
 
 def replace_or_modify_task(goal_id, old_task_id, new_task_text, reason="Replaced"):
-    # Insert new task
-    execute_query("""
+    query = """
+    WITH new_task AS (
         INSERT INTO tasks (goal_id, task_text)
         VALUES (%s, %s)
-    """, (goal_id, new_task_text), commit=True)
+        RETURNING id
+    )
+    UPDATE tasks
+    SET status = 'archived',
+        replaced_by_task_id = (SELECT id FROM new_task),
+        replacement_reason = %s
+    WHERE id = %s
+    RETURNING (SELECT id FROM new_task) AS new_task_id;
+    """
+    result = execute_query(
+        query,
+        (goal_id, new_task_text, reason, old_task_id),
+        fetch="one",
+        commit=True
+    )
+    return result["new_task_id"] if result else None
 
-    # Get new task ID
-    new_task_row = execute_query("""
-        SELECT id FROM tasks
-        WHERE goal_id = %s AND task_text = %s
-        ORDER BY id DESC LIMIT 1
-    """, (goal_id, new_task_text), fetch="one")
-
-    new_task_id = new_task_row["id"] if new_task_row else None
-
-    # Archive old task
+def save_reflection_draft(user_id, goal_id, week_number, session_id, step, task_progress, answers, update_idx, q_idx):
     execute_query("""
-        UPDATE tasks
-        SET status = 'archived',
-            replaced_by_task_id = %s,
-            replacement_reason = %s
-        WHERE id = %s
-    """, (new_task_id, reason, old_task_id), commit=True)
+        INSERT INTO reflection_drafts (
+            user_id, goal_id, week_number, session_id,
+            task_progress, reflection_answers,
+            reflection_step, update_task_idx, reflection_q_idx,
+            updated_at
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+        ON CONFLICT (user_id, goal_id, week_number, session_id)
+        DO UPDATE SET
+            task_progress = EXCLUDED.task_progress,
+            reflection_answers = EXCLUDED.reflection_answers,
+            reflection_step = EXCLUDED.reflection_step,
+            update_task_idx = EXCLUDED.update_task_idx,
+            reflection_q_idx = EXCLUDED.reflection_q_idx,
+            updated_at = NOW()
+    """, (
+        user_id, goal_id, week_number, session_id,
+        json.dumps(task_progress), json.dumps(answers),
+        step, update_idx, q_idx
+    ), commit=True)
 
-    return new_task_id
+def load_reflection_draft(user_id, goal_id, week_number, session_id):
+    return execute_query("""
+        SELECT * FROM reflection_drafts
+        WHERE user_id = %s AND goal_id = %s AND week_number = %s AND session_id = %s
+    """, (user_id, goal_id, week_number, session_id), fetch="one")
 
+def delete_reflection_draft(user_id, goal_id, week_number, session_id):
+    execute_query("""
+        DELETE FROM reflection_drafts
+        WHERE user_id = %s AND goal_id = %s AND week_number = %s AND session_id = %s
+    """, (user_id, goal_id, week_number, session_id), commit=True)
 
 # PHASES
 # 0 = registered but not done onboarding

@@ -4,7 +4,8 @@ import streamlit as st
 from db import (
     get_goals, get_tasks, save_reflection, update_task_completion,
     save_task, get_last_reflection, get_next_week_number, reflection_exists,
-    get_user_phase, update_user_phase, get_user_group, replace_or_modify_task
+    get_user_phase, update_user_phase, get_user_group, replace_or_modify_task,
+    save_reflection_response, save_reflection_draft, load_reflection_draft, delete_reflection_draft
 )
 from llama_utils import summarize_reflection
 
@@ -71,7 +72,19 @@ def run_weekly_reflection():
         return
 
     if "reflection_step" not in st.session_state:
-        init_reflection_session()
+        draft = load_reflection_draft(user_id, goal_id, week, session)
+
+        if draft:
+            st.session_state["reflection_step"] = draft["reflection_step"]
+            st.session_state["task_progress"] = draft["task_progress"] or {}
+            st.session_state["reflection_answers"] = draft["reflection_answers"] or {}
+            st.session_state["update_task_idx"] = draft["update_task_idx"]
+            st.session_state["reflection_q_idx"] = draft["reflection_q_idx"]
+            if "chat_thread" not in st.session_state:
+                st.session_state["chat_thread"] = []
+        else:
+            init_reflection_session()
+
         # if "chat_thread" not in st.session_state:
         #     st.session_state["chat_thread"]=[]
 
@@ -82,7 +95,7 @@ def run_weekly_reflection():
 
     if st.session_state["reflection_step"] == 0:
         st.write("Reflection step:", st.session_state.get("reflection_step"))
-        
+
         last_reflection = get_last_reflection(user_id, goal_id)
 
         if last_reflection and last_reflection[0] and last_reflection[0].strip():
@@ -128,6 +141,17 @@ def run_weekly_reflection():
             })
             st.session_state["task_progress"][task_id] = progress_numeric[selected]
             st.session_state["reflection_step"] += 1
+            save_reflection_draft(
+                user_id=user_id,
+                goal_id=goal_id,
+                week_number=week,
+                session_id=session,
+                step=st.session_state["reflection_step"],
+                task_progress=st.session_state.get("task_progress", {}),
+                answers=st.session_state.get("reflection_answers", {}),
+                update_idx=st.session_state.get("update_task_idx", 0),
+                q_idx=st.session_state.get("reflection_q_idx", 0)
+            )
             st.rerun()
 
     elif st.session_state["reflection_step"] == len(tasks) + 1:
@@ -161,6 +185,17 @@ def run_weekly_reflection():
             st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
             st.session_state["reflection_answers"][key] = user_input
             q_idx += 1
+            save_reflection_draft(
+                user_id=user_id,
+                goal_id=goal_id,
+                week_number=week,
+                session_id=session,
+                step=st.session_state["reflection_step"],
+                task_progress=st.session_state.get("task_progress", {}),
+                answers=st.session_state.get("reflection_answers", {}),
+                update_idx=st.session_state.get("update_task_idx", 0),
+                q_idx=st.session_state.get("reflection_q_idx", 0)
+            )
             if q_idx < len(questions):
                 st.session_state["reflection_q_idx"] = q_idx
                 st.rerun()
@@ -199,6 +234,18 @@ def run_weekly_reflection():
                 })
                 st.session_state[f"update_choice_{task_id}"] = selected
 
+                save_reflection_draft(
+                    user_id=user_id,
+                    goal_id=goal_id,
+                    week_number=week,
+                    session_id=session,
+                    step=st.session_state["reflection_step"],
+                    task_progress=st.session_state.get("task_progress", {}),
+                    answers=st.session_state.get("reflection_answers", {}),
+                    update_idx=st.session_state.get("update_task_idx", 0),
+                    q_idx=st.session_state.get("reflection_q_idx", 0)
+                )
+
                 if selected in ["Modify", "Replace"]:
                     st.session_state["awaiting_task_edit"] = True
                 else:
@@ -229,10 +276,32 @@ def run_weekly_reflection():
 
                     st.session_state["awaiting_task_edit"] = False
                     st.session_state["update_task_idx"] += 1
+                    save_reflection_draft(
+                        user_id=user_id,
+                        goal_id=goal_id,
+                        week_number=week,
+                        session_id=session,
+                        step=st.session_state["reflection_step"],
+                        task_progress=st.session_state.get("task_progress", {}),
+                        answers=st.session_state.get("reflection_answers", {}),
+                        update_idx=st.session_state.get("update_task_idx", 0),
+                        q_idx=st.session_state.get("reflection_q_idx", 0)
+                    )
                     st.rerun()
         else:
             st.session_state["reflection_step"] += 1
             st.session_state["update_task_idx"] = 0
+            save_reflection_draft(
+                user_id=user_id,
+                goal_id=goal_id,
+                week_number=week,
+                session_id=session,
+                step=st.session_state["reflection_step"],
+                task_progress=st.session_state.get("task_progress", {}),
+                answers=st.session_state.get("reflection_answers", {}),
+                update_idx=st.session_state.get("update_task_idx", 0),
+                q_idx=st.session_state.get("reflection_q_idx", 0)
+            )
             st.rerun()
 
     elif st.session_state["reflection_step"] == len(tasks) + 3:
@@ -257,9 +326,28 @@ def run_weekly_reflection():
                 f"OUTCOME: {answers.get('outcome')}<br>OBSTACLE: {answers.get('obstacle')}<br>PLAN: {answers.get('plan')}<br>"
             )
 
-        save_reflection(user_id, goal_id, reflection_text, week_number=week, session=session)
+        reflection_id = save_reflection(user_id, goal_id, reflection_text, week_number=week, session_id=session)
+
+        # Save task progress
+        for task in tasks:
+            task_id = task["id"]
+            rating = st.session_state["task_progress"][task_id]
+            save_reflection_response(reflection_id, task_id=task_id, progress_rating=rating)
+
+        # Save open-text question answers
+        for key, answer in st.session_state["reflection_answers"].items():
+            save_reflection_response(reflection_id, answer_key=key, answer_text=answer)
 
         update_user_phase(user_id, phase + 1)
+
+        active_tasks = get_tasks(goal_id)
+        if not active_tasks:
+            st.warning("⚠️ You have no active tasks left. Please add new tasks before the next reflection.")
+            if st.button("➕ Add Tasks Now"):
+                st.session_state["chat_state"] = "add_tasks"
+                st.rerun()
+
+        delete_reflection_draft(user_id, goal_id, week, session)
 
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
@@ -288,3 +376,4 @@ def init_reflection_session():
     st.session_state["current_task"] = 0
     st.session_state["reflection_q_idx"] = 0
     st.session_state["update_task_idx"] = 0
+    st.session_state["awaiting_task_edit"] = False

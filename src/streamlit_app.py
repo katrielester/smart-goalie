@@ -526,7 +526,7 @@ def run_view_goals():
         goal_id = goal["id"]
 
         # Show the Add Task button only if task count <3
-        if 1 <= task_count < 3:
+        if task_count < 3:
             if st.button("➕ Add Another Task"):
                 st.session_state["goal_id_being_worked"] = goal_id
                 st.session_state["current_goal"] = goal["goal_text"]
