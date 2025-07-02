@@ -61,6 +61,8 @@ def run_weekly_reflection():
             "sender": "Assistant",
             "message": f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>.<br><br>Thanks!"
         })
+        if st.button("⬅️ Return to Main Menu"):
+            st.session_state["chat_state"] = "menu"
         if st.button("⬅️ Return to Prolific"):
             st.stop()
         return
@@ -257,7 +259,16 @@ def run_weekly_reflection():
                     st.rerun()
             
             if st.session_state.get("awaiting_task_edit"):
-                new_text = st.chat_input("Write the new version of this task:")
+                # Show assistant message asking for new version
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "✍️ Please write the new version of this task."
+                })
+                st.session_state["awaiting_task_edit"] = "awaiting_input"
+                st.rerun()
+
+            elif st.session_state.get("awaiting_task_edit") == "awaiting_input":
+                new_text = st.chat_input("Type your updated task here...")
                 if new_text:
                     task = tasks[st.session_state["update_task_idx"]]
                     task_id = task["id"]
@@ -267,7 +278,7 @@ def run_weekly_reflection():
 
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
-                        "message": f"✅ Task updated to: '{new_text}'"
+                        "message": f"✅ Task updated to: '<b>{new_text}</b>'"
                     })
                     st.session_state["chat_thread"].append({
                         "sender": "User",
@@ -276,6 +287,7 @@ def run_weekly_reflection():
 
                     st.session_state["awaiting_task_edit"] = False
                     st.session_state["update_task_idx"] += 1
+
                     save_reflection_draft(
                         user_id=user_id,
                         goal_id=goal_id,
@@ -288,6 +300,36 @@ def run_weekly_reflection():
                         q_idx=st.session_state.get("reflection_q_idx", 0)
                     )
                     st.rerun()
+                # if new_text:
+                #     task = tasks[st.session_state["update_task_idx"]]
+                #     task_id = task["id"]
+                #     reason = "Modified" if st.session_state[f"update_choice_{task_id}"] == "Modify" else "Replaced"
+
+                #     new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
+
+                #     st.session_state["chat_thread"].append({
+                #         "sender": "Assistant",
+                #         "message": f"✅ Task updated to: '{new_text}'"
+                #     })
+                #     st.session_state["chat_thread"].append({
+                #         "sender": "User",
+                #         "message": new_text
+                #     })
+
+                #     st.session_state["awaiting_task_edit"] = False
+                #     st.session_state["update_task_idx"] += 1
+                #     save_reflection_draft(
+                #         user_id=user_id,
+                #         goal_id=goal_id,
+                #         week_number=week,
+                #         session_id=session,
+                #         step=st.session_state["reflection_step"],
+                #         task_progress=st.session_state.get("task_progress", {}),
+                #         answers=st.session_state.get("reflection_answers", {}),
+                #         update_idx=st.session_state.get("update_task_idx", 0),
+                #         q_idx=st.session_state.get("reflection_q_idx", 0)
+                #     )
+                #     st.rerun()
         else:
             st.session_state["reflection_step"] += 1
             st.session_state["update_task_idx"] = 0

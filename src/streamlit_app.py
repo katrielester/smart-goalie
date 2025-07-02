@@ -103,7 +103,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     query_params = st.query_params.to_dict()
     week = query_params.get("week")
     session = query_params.get("session")
-    st.write("🔍 Init Debug — Week:", week, "| Session:", session)
+    print("Init Debug — Week:", week, "| Session:", session)
 
     user_id = st.session_state["user_id"]
 
@@ -548,7 +548,7 @@ def run_view_goals():
         st.session_state["chat_state"] = "menu"
         st.rerun()
 
-st.write("chat_state before routing:", st.session_state.get("chat_state"))
+print("chat_state before routing:", st.session_state.get("chat_state"))
 if "chat_state" not in st.session_state:
     st.stop()
 

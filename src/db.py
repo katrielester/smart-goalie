@@ -146,7 +146,7 @@ def save_reflection(user_id, goal_id, content, week_number, session_id="a"):
     
     return row["id"] if row else None
 
-def save_reflection_response(reflection_id, task_id, progress_rating=None, update_type=None, updated_task_text=None, answer_key=None, answer_text=None):
+def save_reflection_response(reflection_id, task_id=None, progress_rating=None, update_type=None, updated_task_text=None, answer_key=None, answer_text=None):
     execute_query("""
         INSERT INTO reflection_responses (
             reflection_id, task_id, progress_rating, update_type, updated_task_text, answer_key, answer_text

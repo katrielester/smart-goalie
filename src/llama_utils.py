@@ -306,3 +306,127 @@ def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     3. ...
     """
     return smart_wrapper(prompt, goal_text, "tasks")
+
+# CHECK SMART FEEDBACK
+def check_smart_feedback(goal_text, dimension):
+    if dimension == "specific":
+        prompt = f"""
+You are a goal support assistant.
+
+Your task is to give one short, friendly sentence of feedback on how *specific* the goal below is.
+
+Focus only on whether the goal clearly identifies one concrete focus or outcome (not vague like do better or get on track).
+
+Guidelines:
+- Do not score or critique.
+- Do not give suggestions or rewrite the goal.
+- Do not comment on whether it is measurable, achievable, or time-bound.
+- Assume the goal should be high-level (to be completed in ~2 weeks and broken into smaller tasks).
+
+Examples of feedback:
+- Looks clear and focused — nice work!
+- Good start! Try to clarify the outcome a bit more."
+- "Nice effort! You might want to zoom in on one focus."
+
+[Goal]
+{goal_text}
+[/Goal]
+"""
+    
+    elif dimension == "measurable":
+        prompt = f"""
+You are a goal support assistant.
+
+Your task is to give one short, friendly sentence of feedback on how *measurable* the goal below is.
+
+Focus only on whether there's a way to track progress — like frequency, quantity, or visible progress.
+
+Guidelines:
+- Do not score or critique.
+- Do not suggest revisions or changes.
+- Do not comment on whether the goal is specific, achievable, or time-bound.
+- Assume the goal should be high-level (about 2 weeks of effort, with smaller tasks later).
+
+Examples of feedback:
+- Great, there's a clear way to track progress here.
+- Nice! You could add how often or how much to aim for.
+- Good start, let's consider adding a simple way to check your progress.
+
+[Goal]
+{goal_text}
+[/Goal]
+"""
+    elif dimension == "achievable":
+        prompt = f"""
+You are a goal support assistant.
+
+Your task is to give one short, friendly sentence of feedback on how *achievable* the goal below is.
+
+Focus only on whether the goal seems realistic within ~2 weeks, given someone's time, energy, and situation.
+
+Guidelines:
+- Do not score or criticize.
+- Do not offer suggestions or rewrite the goal.
+- Do not comment on whether the goal is measurable or specific.
+- Assume the goal will be broken into smaller weekly tasks.
+
+Examples of feedback:
+- Nice, it looks balanced and doable!
+- Solid start, let's make sure it fits your current time and energy.
+- This feels meaningful, ust check that it's realistic for 2 weeks.
+
+[Goal]
+{goal_text}
+[/Goal]
+"""
+    elif dimension == "relevant":
+        prompt = f"""
+You are a goal support assistant.
+
+Your task is to give one short, friendly sentence of feedback on how *personally relevant* the goal below is.
+
+Focus only on whether it seems tied to a value, interest, or current priority for the user.
+
+Guidelines:
+- Do not score or evaluate.
+- Do not give suggestions or assumptions about personal context.
+- Do not comment on other SMART traits like measurability or specificity.
+- Assume the goal is intended to guide ~2 weeks of effort.
+
+Examples of feedback:
+- Looks like a great fit for your current focus. Keep it up!
+- Nice goal, want to add why this matters to you?
+- You're on the right track! A quick 'why' could add more clarity.
+
+[Goal]
+{goal_text}
+[/Goal]
+"""
+
+    elif dimension == "timebound":
+        prompt = f"""
+You are a goal support assistant.
+
+Your task is to give one short, friendly sentence of feedback on whether the goal has a clear *timeframe*.
+
+Focus only on whether the goal includes a deadline, schedule, or timeframe that gives it momentum.
+
+Guidelines:
+- Do not score or critique.
+- Do not suggest edits or rewrites.
+- Do not comment on how specific, measurable, or achievable the goal is.
+- The timeframe should fit a two-week span, but not be overly rigid or detailed.
+
+Examples of feedback:
+- Great! The timeframe gives this goal structure.
+- Good start, consider adding when or how long to work on this.
+- Looks good! Just make sure it fits your next two weeks.
+
+[Goal]
+{goal_text}
+[/Goal]
+"""
+    else:
+        return "Invalid SMART dimension."
+
+    return smart_wrapper(prompt.strip(), goal_text, f"check_{dimension}")

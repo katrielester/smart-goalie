@@ -5,16 +5,19 @@ from llama_utils import (
     suggest_specific_fix, suggest_measurable_fix,
     suggest_achievable_fix, suggest_relevant_fix,
     suggest_timebound_fix, suggest_tasks_for_goal,
-    extract_goal_variants
+    extract_goal_variants, check_smart_feedback
 )
 from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phase
-from phases import goal_setting_flow
+from phases import goal_setting_flow, goal_setting_flow_score
 
 def run_goal_setting():
+    USE_LLM_SCORING=False;
     if "goal_step" not in st.session_state:
         st.session_state["goal_step"] = "initial_goal"
 
-    step = goal_setting_flow[st.session_state["goal_step"]]
+    flow = goal_setting_flow_score if USE_LLM_SCORING else goal_setting_flow;
+
+    step =  flow[st.session_state["goal_step"]]
     texts = step["text"]
     if isinstance(texts, str):
         texts = [texts]
@@ -50,6 +53,27 @@ def run_goal_setting():
             st.session_state["current_goal"] = user_input
             st.session_state["goal_step"] = step["next"]
             st.session_state["message_index"] = 0
+            st.rerun()
+
+    elif "llm_feedback" in step:
+        dimension = step["llm_feedback"]
+        goal = st.session_state.get("current_goal", "")
+
+        if "llm_feedback_pending" not in st.session_state:
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "Analyzing your goal…"
+            })
+            st.session_state["llm_feedback_pending"] = True
+            st.rerun()
+
+        else:
+            feedback = check_smart_feedback(goal, dimension).strip()
+            st.session_state["chat_thread"][-1]["message"] = feedback
+            st.session_state["goal_step"] = step["next"]
+            del st.session_state["llm_feedback_pending"]
+            st.session_state["message_index"] = 0
+            st.session_state["llm_feedback_result"] = feedback
             st.rerun()
 
     elif "fix_with_llm" in step:
@@ -138,47 +162,44 @@ def run_goal_setting():
 
 def run_add_tasks():
     print("DEBUG: run_add_tasks() triggered")
+    print("→ task_entry_stage:", st.session_state["task_entry_stage"])
     goal_id = st.session_state.get("goal_id_being_worked")
 
     if "tasks_saved" not in st.session_state:
         st.session_state["tasks_saved"] = []
 
     if "task_entry_stage" not in st.session_state:
-        st.session_state["task_entry_stage"] = "suggest"  # can be 'suggest', 'entry', 'confirm'
+        st.session_state["task_entry_stage"] = "suggest"
 
-        if st.session_state["task_entry_stage"] == "suggest":
-            if "suggestion_pending" not in st.session_state:
-                # Step 1: Add a brief message so the user sees something while LLM works
-                st.session_state["chat_thread"].append({
-                    "sender": "Assistant",
-                    "message": "Thinking of task suggestions for you… ✍️"
-                })
-                st.session_state["suggestion_pending"] = True
-                st.rerun()
+    # ✅ Always run this if in suggest stage (even after rerun)
+    if st.session_state["task_entry_stage"] == "suggest":
+        if "suggestion_pending" not in st.session_state:
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "Thinking of task suggestions for you… ✍️"
+            })
+            st.session_state["suggestion_pending"] = True
+            st.rerun()
+        else:
+            existing_tasks = [t["task_text"] for t in get_tasks(goal_id)]
+            current_goal = st.session_state.get("current_goal", "")
+            try:
+                suggested = extract_goal_variants(suggest_tasks_for_goal(current_goal, existing_tasks))
+            except:
+                suggested = (
+                    "1. Break down your goal into a 30-minute session<br>"
+                    "2. Block calendar time to work on it<br>"
+                    "3. Set a reminder to check your progress"
+                )
 
-            else:
-                # Step 2: LLM call happens here, now that placeholder is shown
-                existing_tasks = [t["task_text"] for t in get_tasks(goal_id)]
-                current_goal = st.session_state.get("current_goal", "")
-                try:
-                    suggested = extract_goal_variants(suggest_tasks_for_goal(current_goal, existing_tasks))
-                except:
-                    suggested = (
-                        "1. Break down your goal into a 30-minute session<br>"
-                        "2. Block calendar time to work on it<br>"
-                        "3. Set a reminder to check your progress"
-                    )
-
-                # Step 3: Replace "thinking…" message with real output
-                st.session_state["chat_thread"][-1] = {
-                    "sender": "Assistant",
-                    "message": f"Here are some task ideas based on your goal:<br><br>{suggested}<br><br>"
-                            "Type one of these or add your own!"
-                }
-
-                st.session_state["task_entry_stage"] = "entry"
-                del st.session_state["suggestion_pending"]
-                st.rerun()
+            st.session_state["chat_thread"][-1] = {
+                "sender": "Assistant",
+                "message": f"Here are some task ideas based on your goal:<br><br>{suggested}<br><br>"
+                        "Type one of these or add your own!"
+            }
+            st.session_state["task_entry_stage"] = "entry"
+            del st.session_state["suggestion_pending"]
+            st.rerun()
 
     elif st.session_state["task_entry_stage"] == "entry":
         task_input = st.chat_input("Type a small task you'd like to do")

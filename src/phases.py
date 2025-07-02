@@ -423,3 +423,228 @@ goal_setting_flow = {
         "complete": True
     }
 }
+
+goal_setting_flow_score = {
+    "initial_goal": {
+        "text": [
+            "Let’s get started! You’ll choose one goal to focus on for the next 2 weeks.",
+            "Think of something meaningful you’d like to work toward. not a quick task, but a mini project or habit."
+        ],
+        "input_type": "text",
+        "next": "check_specific"
+    },
+
+    "check_specific": {
+        "text": [
+            "Let’s check how <b>specific</b> it is..."
+        ],
+        "llm_feedback": "specific",
+        "next": "specific_improve_decision"
+    },
+
+    "specific_improve_decision": {
+        "text": [
+            "Your current goal: {current_goal}",
+            "{llm_feedback}",
+            "Would you like to improve this before we continue?"
+        ],
+        "buttons": ["Yes", "No"],
+        "next": {"Yes": "fix_specific", "No": "check_measurable"}
+    },
+
+    "fix_specific": {
+        "text": [
+            "Here are a few ways to make your goal more specific:"
+        ],
+        "fix_with_llm": "specific",
+        "next": "input_specific"
+    },
+
+    "input_specific": {
+        "text": [
+            "Here’s your current goal: {current_goal}",
+            "Try rewriting your goal using the suggestions above.",
+            "✏️ You'll be working on this for 2 weeks, so keep it focused, but broad enough to break into smaller tasks later."
+        ],
+        "input_type": "text",
+        "next": "check_measurable"
+    },
+
+    "check_measurable": {
+        "text": [
+            "Now let’s see if your goal is <b>measurable</b>.",
+            "Can you track progress in some way, like frequency, quantity, or milestones?"
+        ],
+        "llm_feedback": "measurable",
+        "next": "measurable_improve_decision"
+    },
+
+    "measurable_improve_decision": {
+        "text": [
+            "Your current goal: {current_goal}",
+            "{llm_feedback}",
+            "Would you like to improve this part?"
+        ],
+        "buttons": ["Yes", "No"],
+        "next": {"Yes": "fix_measurable", "No": "check_achievable"}
+    },
+
+    "fix_measurable": {
+        "text": [
+            "Here are a few ways to make your goal more measurable:"
+        ],
+        "fix_with_llm": "measurable",
+        "next": "input_measurable"
+    },
+
+    "input_measurable": {
+        "text": [
+            "Here’s your current goal: {current_goal}",
+            "Try rewriting your goal to include a way to measure progress.",
+            "Still keep it broad enough to span the full 2 weeks."
+        ],
+        "input_type": "text",
+        "next": "check_achievable"
+    },
+
+    "check_achievable": {
+        "text": [
+            "Let’s check if this feels <b>achievable</b> for you right now.",
+            "It should feel realistic, something you can work on steadily over 2 weeks."
+        ],
+        "llm_feedback": "achievable",
+        "next": "achievable_improve_decision"
+    },
+
+    "achievable_improve_decision": {
+        "text": [
+            "Your current goal: {current_goal}",
+            "{llm_feedback}",
+            "Want to adjust this part before moving on?"
+        ],
+        "buttons": ["Yes", "No"],
+        "next": {"Yes": "fix_achievable", "No": "check_relevant"}
+    },
+
+    "fix_achievable": {
+        "text": [
+            "Here are a few ways to make your goal more achievable:"
+        ],
+        "fix_with_llm": "achievable",
+        "next": "input_achievable"
+    },
+
+    "input_achievable": {
+        "text": [
+            "Try rewriting your goal to feel more doable over the next two weeks.",
+            "Your current goal: {current_goal}",
+        ],
+        "input_type": "text",
+        "next": "check_relevant"
+    },
+
+    "check_relevant": {
+        "text": [
+            "Now let’s check if this goal feels relevant to you.",
+            "Does it connect to something you care about or want to improve right now?"
+        ],
+        "llm_feedback": "relevant",
+        "next": "relevant_improve_decision"
+    },
+
+    "relevant_improve_decision": {
+        "text": [
+            "Your current goal: {current_goal}",
+            "{llm_feedback}",
+            "Would you like to make this feel more personal?"
+        ],
+        "buttons": ["Yes", "No"],
+        "next": {"Yes": "fix_relevant", "No": "check_timebound"}
+    },
+
+    "fix_relevant": {
+        "text": [
+            "Here are a few ways to make your goal feel more personally meaningful:"
+        ],
+        "fix_with_llm": "relevant",
+        "next": "input_relevant"
+    },
+
+    "input_relevant": {
+        "text": [
+            "Your current goal: {current_goal}",
+            "Try updating your goal so it connects more clearly to your values or priorities."
+        ],
+        "input_type": "text",
+        "next": "check_timebound"
+    },
+
+    "check_timebound": {
+        "text": [
+            "Almost done! Let’s make sure your goal has a timeframe.",
+            "Does it include a timeline, deadline, or pace for steady progress?"
+        ],
+        "llm_feedback": "timebound",
+        "next": "timebound_improve_decision"
+    },
+
+    "timebound_improve_decision": {
+        "text": [
+            "Your current goal: {current_goal}",
+            "{llm_feedback}",
+            "Would you like to add or adjust the timeframe?"
+        ],
+        "buttons": ["Yes", "No"],
+        "next": {"Yes": "fix_timebound", "No": "finalize_goal"}
+    },
+
+    "fix_timebound": {
+        "text": [
+            "Here are a few ways to add a simple timeframe to your goal:"
+        ],
+        "fix_with_llm": "timebound",
+        "next": "input_timebound"
+    },
+
+    "input_timebound": {
+        "text": [
+            "Your current goal: {current_goal}",
+            "Try rewriting your goal with a timeframe that fits the 2-week period."
+        ],
+        "input_type": "text",
+        "next": "finalize_goal"
+    },
+
+    "finalize_goal": {
+        "text": [
+            "Here’s your finalized goal:",
+            "{current_goal}"
+        ],
+        "buttons": ["Save Goal", "Edit Manually"],
+        "next": {"Save Goal": "save_goal", "Edit Manually": "edit_goal"}
+    },
+
+    "edit_goal": {
+        "text": [
+            "Please type your updated version of the goal below."
+        ],
+        "input_type": "text",
+        "next": "finalize_edit_goal"
+    },
+
+    "finalize_edit_goal": {
+        "text": [
+            "Here’s your updated goal:",
+            "{current_goal}"
+        ],
+        "buttons": ["Save Goal", "Edit Manually"],
+        "next": {"Save Goal": "save_goal", "Edit Manually": "edit_goal"}
+    },
+
+    "save_goal": {
+        "text": [
+            "Your goal has been saved! Great work."
+        ],
+        "complete": True
+    }
+}
