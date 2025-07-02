@@ -116,7 +116,7 @@ def run_goal_setting():
                     "<b>Here’s how it works:</b><br>"
                     "- You’ll set up to 3 small tasks to complete this week<br>"
                     "- These tasks should help you make progress on your goal<br>"
-                    "- You’ll reflect on your progress twice this week (midweek and weekend)"
+                    "- You’ll reflect on your progress twice each week (midweek and weekend)"
                     "<br><br>"
                     "Try to keep your tasks small, realistic, and clearly tied to this week’s focus."
                 )
@@ -200,6 +200,18 @@ def run_add_tasks():
     elif st.session_state["task_entry_stage"] == "confirm":
         col1, col2 = st.columns([1, 1])
         if col1.button("✅ Yes, save task"):
+            existing_active_tasks = get_tasks(goal_id)
+            if len(existing_active_tasks) >= 3:
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": (
+                        "⚠️ You already have 3 active tasks for this goal.<br>"
+                        "Please replace or archive one during your next reflection before adding more."
+                    )
+                })
+                st.session_state["chat_state"] = "menu"
+                del st.session_state["task_entry_stage"]
+                st.rerun()
             task = st.session_state.pop("candidate_task")
             save_task(goal_id, task)
             st.session_state["force_task_handled"] = False
@@ -260,14 +272,14 @@ def show_reflection_explanation():
     group = st.session_state.get("group")
     if group == "treatment":
         msg = (
-            "You’re all set! Over the next two weeks, you’ll receive reflection prompts here in this chat twice a week, "
-            "around midweek and weekend. You’ll reflect on your SMART goal and the weekly tasks you just created.\n\n"
-            "These check-ins will help you stay on track. Looking forward to seeing your progress!"
+            "You’re all set! Over the next two weeks, you’ll receive reflection prompts here in this chat roughly twice a week. "
+            "These check-ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n"
+            "Looking forward to seeing your progress!"
         )
     else:
         msg = (
-            "You’re all set! Over the next two weeks, you’ll receive reminder messages via Prolific twice a week. "
-            "You can reflect on your goal however you’d like — it’s up to you.\n\nThanks again for participating!"
+            "You’re all set! Over the next two weeks, you’ll receive reminder messages via Prolific around twice a week. "
+            "You can reflect on your goal however you’d like, i’s up to you.\n\nThanks again for participating!"
         )
 
     st.session_state["chat_thread"].append({"sender": "Assistant", "message": msg})
@@ -275,8 +287,9 @@ def show_reflection_explanation():
     st.session_state["chat_thread"].append({
         "sender": "Assistant",
         "message": (
-            "Now that you've set your goal and weekly tasks, "
-            "please take a quick pre-survey to help us understand your baseline."
-            "<br><br><a href='[PROLIFIC PRE-SURVEY LINK]' target='_blank'>Click here to begin the pre-survey</a>"
+            "Awesome job setting your goal and tasks! "
+            "Just one last step  take a quick survey to lock it in. "
+            "You’ll get a code at the end to return to Prolific. "
+            "<br><br><a href='[QUALTRICS PRE-SURVEY LINK]' target='_blank'>Click here to begin the survey</a>"
         )
     })

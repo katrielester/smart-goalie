@@ -118,17 +118,15 @@ def save_task(goal_id, task_text):
         VALUES (%s, %s)
     """, (goal_id, task_text), commit=True)
 
-
-def get_tasks(goal_id):
-    try:
-        goal_id = int(goal_id)
-    except ValueError:
-        return []
-
-    return execute_query("""
+def get_tasks(goal_id, active_only=True):
+    ...
+    query = """
         SELECT id, task_text, completed FROM tasks
         WHERE goal_id = %s
-    """, (goal_id,), fetch="all")
+    """
+    if active_only:
+        query += " AND status = 'active'"
+    return execute_query(query, (goal_id,), fetch="all")
 
 
 def update_task_completion(task_id, completed):
@@ -180,15 +178,51 @@ def reflection_exists(user_id, goal_id, week_number, session_id):
     """, (user_id, goal_id, week_number, session_id))
     return row is not None
 
-
+# count only active tasks
 def get_goals_with_task_counts(user_id):
     return execute_query("""
         SELECT g.id, g.goal_text, COUNT(t.id) AS task_count
         FROM goals g
-        LEFT JOIN tasks t ON g.id = t.goal_id
+        LEFT JOIN tasks t ON g.id = t.goal_id AND t.status = 'active'
         WHERE g.user_id = %s
         GROUP BY g.id, g.goal_text
     """, (user_id,), fetch="all")
+
+def archive_task(task_id, replaced_by_task_id=None, reason=None):
+    execute_query("""
+        UPDATE tasks
+        SET status = 'archived',
+            replaced_by_task_id = %s,
+            replacement_reason = %s
+        WHERE id = %s
+    """, (replaced_by_task_id, reason, task_id), commit=True)
+
+def replace_or_modify_task(goal_id, old_task_id, new_task_text, reason="Replaced"):
+    # Insert new task
+    execute_query("""
+        INSERT INTO tasks (goal_id, task_text)
+        VALUES (%s, %s)
+    """, (goal_id, new_task_text), commit=True)
+
+    # Get new task ID
+    new_task_row = execute_query("""
+        SELECT id FROM tasks
+        WHERE goal_id = %s AND task_text = %s
+        ORDER BY id DESC LIMIT 1
+    """, (goal_id, new_task_text), fetch="one")
+
+    new_task_id = new_task_row["id"] if new_task_row else None
+
+    # Archive old task
+    execute_query("""
+        UPDATE tasks
+        SET status = 'archived',
+            replaced_by_task_id = %s,
+            replacement_reason = %s
+        WHERE id = %s
+    """, (new_task_id, reason, old_task_id), commit=True)
+
+    return new_task_id
 
 
 # PHASES

@@ -156,14 +156,14 @@ if (
     st.session_state["chat_state"] not in ["reflection", "smart_training", "goal_setting"] 
     and goals 
     and not st.session_state.get("force_task_handled", False)):
-    incomplete_goal = next((g for g in goals if g["task_count"] == 0), None)
+    goal_with_no_active_tasks = next((g for g in goals if g["task_count"] == 0), None)
 
-    if incomplete_goal:
+    if goal_with_no_active_tasks:
         # Prevent infinite rerun loop BEFORE rerun
         st.session_state["force_task_handled"] = True
 
-        st.session_state["goal_id_being_worked"] = incomplete_goal["id"]
-        st.session_state["current_goal"] = incomplete_goal["goal_text"]
+        st.session_state["goal_id_being_worked"] = goal_with_no_active_tasks["id"]
+        st.session_state["current_goal"] = goal_with_no_active_tasks["goal_text"]
         st.session_state["tasks_saved"] = []
         st.session_state["task_entry_stage"] = "suggest"
         st.session_state["chat_state"] = "add_tasks"
@@ -171,7 +171,7 @@ if (
             "sender": "Assistant",
             "message": (
                 "Welcome back! It looks like you've set a goal but haven't added any weekly tasks yet:<br><br>"
-                f"<b>{incomplete_goal['goal_text']}</b><br><br>"
+                f"<b>{goal_with_no_active_tasks['goal_text']}</b><br><br>"
                 "Let's start by adding your first task to help you move forward this week."
             )
         }]
@@ -233,7 +233,7 @@ if st.session_state["chat_state"] == "view_goals":
                 goal_id = goal["id"]
                 goal_text = goal["goal_text"]
                 goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
-                tasks = get_tasks(goal_id)
+                tasks = get_tasks(goal_id, active_only=True)
                 if tasks:
                     for task in tasks:
                         task_id = task["id"]

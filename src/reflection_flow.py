@@ -4,7 +4,7 @@ import streamlit as st
 from db import (
     get_goals, get_tasks, save_reflection, update_task_completion,
     save_task, get_last_reflection, get_next_week_number, reflection_exists,
-    get_user_phase, update_user_phase, get_user_group
+    get_user_phase, update_user_phase, get_user_group, replace_or_modify_task
 )
 from llama_utils import summarize_reflection
 
@@ -20,7 +20,7 @@ def run_weekly_reflection():
     if "group" not in st.session_state:
         group_code_raw = get_user_group(st.session_state["user_id"])
         group_code = str(group_code_raw).strip()
-        st.write(f"DEBUG: Raw group from DB: {group_code_raw} (converted to '{group_code}')")
+        # st.write(f"DEBUG: Raw group from DB: {group_code_raw} (converted to '{group_code}')")
         if group_code == "1":
             st.session_state["group"] = "treatment"
         else:
@@ -51,7 +51,7 @@ def run_weekly_reflection():
         st.info("You have no goals to reflect on yet.")
         return
     
-    st.write(all_goals[0])
+    # st.write(all_goals[0])
     goal_id = all_goals[0]["id"]
     goal_text = all_goals[0]["goal_text"]
 
@@ -65,7 +65,7 @@ def run_weekly_reflection():
         return
 
     tasks = get_tasks(goal_id)
-    st.write(tasks)
+    # st.write(tasks)
     if not tasks:
         st.info("You have no tasks for your goal. Add tasks first.")
         return
@@ -206,14 +206,15 @@ def run_weekly_reflection():
                     })
                     st.session_state["update_task_idx"] += 1
                     st.rerun()
-
+            
             if st.session_state.get("awaiting_task_edit"):
                 new_text = st.chat_input("Write the new version of this task:")
                 if new_text:
                     task = tasks[st.session_state["update_task_idx"]]
                     task_id = task["id"]
-                    update_task_completion(task_id, True)
-                    save_task(goal_id, new_text)
+                    reason = "Modified" if st.session_state[f"update_choice_{task_id}"] == "Modify" else "Replaced"
+
+                    new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
 
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
