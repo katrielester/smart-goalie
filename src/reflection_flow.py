@@ -110,8 +110,9 @@ def run_weekly_reflection():
 
         last_reflection = get_last_reflection(user_id, goal_id)
 
-        if last_reflection and last_reflection[0] and last_reflection[0].strip():
-            last_content, last_week = last_reflection
+        if last_reflection and last_reflection.get("reflection_text", "").strip():
+            last_content = last_reflection["reflection_text"]
+            last_week = last_reflection["week_number"]
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{last_content.strip()}"
