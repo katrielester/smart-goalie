@@ -324,9 +324,9 @@ Guidelines:
 - Assume the goal should be high-level (to be completed in ~2 weeks and broken into smaller tasks).
 
 Examples of feedback:
-- Looks clear and focused — nice work!
-- Good start! Try to clarify the outcome a bit more."
-- "Nice effort! You might want to zoom in on one focus."
+- Looks clear and focused, nice work!
+- Good start! Try to clarify the outcome a bit more.
+- Nice effort! You might want to zoom in on one focus.
 
 [Goal]
 {goal_text}
