@@ -56,7 +56,20 @@ def fake_response(goal_text, type_):
             "2. Schedule a first step<br>"
             "3. Identify one small, specific task to complete by Friday"
         )
+    elif type_ == "check_specific":
+        return "Good start! Try to clarify the outcome a bit more."
 
+    elif type_ == "check_measurable":
+        return "Nice! You could add how often or how much to aim for."
+
+    elif type_ == "check_achievable":
+        return "Solid start, let's make sure it fits your current time and energy."
+
+    elif type_ == "check_relevant":
+        return "Nice goal, want to add why this matters to you?"
+
+    elif type_ == "check_timebound":
+        return "Good start, consider adding when or how long to work on this."
     return "No fallback guidance available for this type."
 
 def smart_wrapper(prompt, goal_text, type_):
@@ -373,7 +386,7 @@ Guidelines:
 Examples of feedback:
 - Nice, it looks balanced and doable!
 - Solid start, let's make sure it fits your current time and energy.
-- This feels meaningful, ust check that it's realistic for 2 weeks.
+- This feels meaningful, just check that it's realistic for 2 weeks.
 
 [Goal]
 {goal_text}

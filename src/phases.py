@@ -41,27 +41,19 @@ smart_training_flow = {
             "I'll show you a method called SMART goals. Ready to dive in?"
         ],
         "buttons": ["Let’s do this!"],
-        "next": {"Let’s do this!": "smart_definition"}
+        "next": {"Let’s do this!": "smart_intro"}
     },
-    "smart_definition": {
-        "text": [
-            "SMART stands for Specific, Measurable, Achievable, Relevant, and Time-bound.",
-            "Want to watch a short 1-minute animation before we continue?"
-        ],
-        "buttons": ["Yes, show me", "No, let's keep going"],
-        "next": {
-            "Yes, show me": "smart_video",
-            "No, let's keep going": "specific_intro"
-        }
-    },
-    "smart_video": {
-        "text": [
-            "Here’s the video:<br><a href=\"https://www.youtube.com/watch?v=yA53yhiOe04&ab_channel=FlikliTV\" target=\"_blank\" style=\"color:#4ea8ff;\">Watch: SMART Goals Explained (1 min)</a>",
-            "When you’re ready, we’ll break it down together."
-        ],
-        "buttons": ["I'm ready"],
-        "next": {"I'm ready": "specific_intro"}
-    },
+    "smart_intro": {
+    "text": [
+        "SMART stands for Specific, Measurable, Achievable, Relevant, and Time-bound.",
+        "Watch this short 1-minute video before we continue:",
+        "<a href=\"https://www.youtube.com/watch?v=yA53yhiOe04&ab_channel=FlikliTV\" target=\"_blank\" style=\"color:#4ea8ff;\">Watch: SMART Goals Explained</a>"
+    ],
+    "buttons": ["I've watched it"],
+    "next": {
+        "I've watched it": "specific_intro"
+    }
+},
     "specific_intro": {
         "text": [
             "For this experiment, you’ll set one meaningful goal: something that will take at least two weeks to make progress on. We’ll use the SMART framework to help shape it.",
