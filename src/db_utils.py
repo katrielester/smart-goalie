@@ -1,14 +1,10 @@
-#  db_utils.py
+# db_utils.py
 
-import sqlite3
 import pandas as pd
-import json
-
-# Connect to the same database
-conn = sqlite3.connect("goal_planner.db")
+from db import conn  # This brings in your existing global connection
 
 def export_chat_history(user_id, format="csv"):
-    query = "SELECT * FROM chat_history WHERE user_id = ?"
+    query = "SELECT * FROM chat_history WHERE user_id = %s"
     df = pd.read_sql_query(query, conn, params=(user_id,))
 
     if format == "csv":
@@ -19,12 +15,12 @@ def export_chat_history(user_id, format="csv"):
         raise ValueError("Unsupported format. Use 'csv' or 'json'.")
 
 def export_goals_tasks(user_id, format="csv"):
-    goals_query = "SELECT * FROM goals WHERE user_id = ?"
+    goals_query = "SELECT * FROM goals WHERE user_id = %s"
     tasks_query = """
         SELECT tasks.* 
         FROM tasks 
         JOIN goals ON tasks.goal_id = goals.id 
-        WHERE goals.user_id = ?
+        WHERE goals.user_id = %s
     """
 
     goals_df = pd.read_sql_query(goals_query, conn, params=(user_id,))
@@ -40,7 +36,7 @@ def export_goals_tasks(user_id, format="csv"):
         raise ValueError("Unsupported format. Use 'csv' or 'json'.")
 
 def export_reflections(user_id, format="csv"):
-    query = "SELECT * FROM reflections WHERE user_id = ?"
+    query = "SELECT * FROM reflections WHERE user_id = %s"
     df = pd.read_sql_query(query, conn, params=(user_id,))
 
     if format == "csv":
@@ -49,5 +45,3 @@ def export_reflections(user_id, format="csv"):
         df.to_json(f"reflections_{user_id}.json", orient="records", indent=2)
     else:
         raise ValueError("Unsupported format. Use 'csv' or 'json'.")
-
-        
