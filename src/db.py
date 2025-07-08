@@ -121,7 +121,6 @@ def save_task(goal_id, task_text):
     """, (goal_id, task_text), commit=True)
 
 def get_tasks(goal_id, active_only=True):
-    ...
     query = """
         SELECT id, task_text, completed FROM tasks
         WHERE goal_id = %s
