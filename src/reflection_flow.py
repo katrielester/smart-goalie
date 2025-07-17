@@ -357,7 +357,24 @@ def run_weekly_reflection():
             )
             st.rerun()
 
+    # Goal Alignment Reflection
     elif st.session_state["reflection_step"] == len(tasks) + 3:
+        if "ask_alignment" not in st.session_state:
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "🧭 Thinking about your tasks and your goal, do you feel your current tasks still <b>match the goal well</b>?<br><br>Feel free to share your thoughts — whether they align well, or if anything feels a bit off."
+            })
+            st.session_state["ask_alignment"] = True
+            st.rerun()
+
+        user_input = st.chat_input("Type your answer here...")
+        if user_input:
+            st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
+            st.session_state["reflection_answers"]["task_alignment"] = user_input
+            st.session_state["reflection_step"] += 1
+            st.rerun()
+
+    elif st.session_state["reflection_step"] == len(tasks) + 4:
         task_results = []
         for task in tasks:  
             task_id = task["id"]
@@ -368,15 +385,18 @@ def run_weekly_reflection():
         progress_str = "<br>".join(task_results)
 
         answers = st.session_state["reflection_answers"]
+        alignment = answers.get("task_alignment", None)
         if "what" in answers:
             reflection_text = (
                 f"Task Progress:<br>{progress_str}<br><br>"
-                f"WHAT: {answers.get('what')}<br>SO WHAT: {answers.get('so_what')}<br>NOW WHAT: {answers.get('now_what')}<br>"
+                + (f"ALIGNMENT: {alignment}<br><br>" if alignment else "")
+                + f"WHAT: {answers.get('what')}<br>SO WHAT: {answers.get('so_what')}<br>NOW WHAT: {answers.get('now_what')}<br>"
             )
         else:
             reflection_text = (
                 f"Task Progress:<br>{progress_str}<br><br>"
-                f"OUTCOME: {answers.get('outcome')}<br>OBSTACLE: {answers.get('obstacle')}<br>PLAN: {answers.get('plan')}<br>"
+                + (f"ALIGNMENT: {alignment}<br><br>" if alignment else "")
+                + f"OUTCOME: {answers.get('outcome')}<br>OBSTACLE: {answers.get('obstacle')}<br>PLAN: {answers.get('plan')}<br>"
             )
 
         reflection_id = save_reflection(user_id, goal_id, reflection_text, week_number=week, session_id=session)

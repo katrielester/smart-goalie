@@ -286,6 +286,29 @@ Return only the summary. End with a short positive note (e.g., "See you next tim
 """
     return smart_wrapper(prompt, reflection_text, "summary")
 
+def summarize_goal_reflection(goal, alignment_answer, confidence_answer):
+    prompt = f"""
+You are a supportive progress coach helping users reflect on their SMART goal pursuit.
+
+Based on the user's input below, summarize their reflection in a warm, friendly tone. 
+
+1. Keep it short: 1–2 sentences max.
+2. Mention whether their current tasks still align with the goal.
+3. Acknowledge if they feel confident or uncertain.
+4. End with encouragement like “Keep it up!” or “You’ve got this!”
+
+SMART Goal: {goal}
+
+Do the tasks still align with the goal?  
+User: {alignment_answer}
+
+How confident do they feel about continuing with this goal?  
+User: {confidence_answer}
+
+Now write the summary:
+"""
+    return smart_wrapper(prompt.strip(), alignment_answer + confidence_answer, "summary")
+
 def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     existing_tasks = existing_tasks or []
     existing_list = "<br>".join(f"- {task}" for task in existing_tasks) if existing_tasks else "None"
