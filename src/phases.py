@@ -493,7 +493,7 @@ goal_setting_flow_score = {
     "input_measurable": {
         "text": [
             "📝 Here's your current goal: <i>{current_goal}</i>",
-            "Try rewriting your goal to include a way to measure progress.",
+            "<b>Try rewriting your goal to include a way to measure progress.</b>",
             "Still keep it broad enough to span the full 2 weeks."
         ],
         "input_type": "text",
@@ -529,7 +529,7 @@ goal_setting_flow_score = {
 
     "input_achievable": {
         "text": [
-            "Try rewriting your goal to feel more doable over the next two weeks.",
+            "<b>Try rewriting your goal to feel more doable over the next two weeks.</b>",
             "📝 Your current goal: <i>{current_goal}</i>"
         ],
         "input_type": "text",
@@ -566,7 +566,7 @@ goal_setting_flow_score = {
     "input_relevant": {
         "text": [
             "📝 Your current goal: <i>{current_goal}</i>",
-            "Try updating your goal so it connects more clearly to your values or priorities."
+            "<b>Try updating your goal so it connects more clearly to your values or priorities.</b>"
         ],
         "input_type": "text",
         "next": "check_timebound"
@@ -602,7 +602,7 @@ goal_setting_flow_score = {
     "input_timebound": {
         "text": [
             "📝 Your current goal: <i>{current_goal}</i>",
-            "Try rewriting your goal with a timeframe that fits the 2-week period."
+            "<b>Try rewriting your goal with a timeframe that fits the 2-week period.</b>"
         ],
         "input_type": "text",
         "next": "finalize_goal"

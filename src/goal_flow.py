@@ -68,7 +68,7 @@ def run_goal_setting():
         if "llm_feedback_pending" not in st.session_state:
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "Analyzing your goal…"
+                "message": "🔎 Analyzing your goal…"
             })
             st.session_state["llm_feedback_pending"] = True
             st.rerun()
@@ -89,7 +89,7 @@ def run_goal_setting():
         if "llm_typing" not in st.session_state:
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "Typing..."
+                "message": "✍️ Typing..."
             })
             st.session_state["llm_typing"] = True
             st.rerun()

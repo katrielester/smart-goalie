@@ -151,9 +151,9 @@ if "force_task_handled" not in st.session_state:
 
 goals = get_goals_with_task_counts(st.session_state["user_id"])
 
-# Only trigger if there ARE goals and one of them has zero tasks
+# Only trigger when we are back at menu AND there is a goal with no tasks
 if (
-    st.session_state["chat_state"] not in ["reflection", "smart_training", "goal_setting"] 
+    st.session_state.get("chat_state") == "menu" 
     and goals 
     and not st.session_state.get("force_task_handled", False)):
     goal_with_no_active_tasks = next((g for g in goals if g["task_count"] == 0), None)
