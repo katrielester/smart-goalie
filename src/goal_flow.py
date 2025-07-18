@@ -32,7 +32,7 @@ def run_goal_setting():
         
         if USE_LLM_SCORING:
             current_text = current_text.replace(
-                "{llm_feedback_result}", st.session_state.get("llm_feedback_result", "")
+                "{llm_feedback}", st.session_state.get("llm_feedback_result", "")
             )
         
         st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})

@@ -420,7 +420,8 @@ goal_setting_flow_score = {
     "initial_goal": {
         "text": [
             "Let’s get started! You’ll choose one goal to focus on for the next 2 weeks.",
-            "Think of something meaningful you’d like to work toward. not a quick task, but a mini project or habit."
+            "Think of something meaningful you’d like to work toward. not a quick task, but a mini project or habit.",
+            "<br><br><b>👉 Please type your goal below to continue.</b>"
         ],
         "input_type": "text",
         "next": "check_specific"
