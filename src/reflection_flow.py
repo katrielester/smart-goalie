@@ -10,8 +10,20 @@ from db import (
 from llama_utils import summarize_reflection, suggest_tasks_with_context
 import json
 
-progress_options = ["None", "A little", "Some", "Most", "Completed"]
-progress_numeric = {"None": 0, "A little": 1, "Some": 2, "Most": 3, "Completed": 4}
+progress_options = [
+    "Not started",
+    "Started, minimal progress",
+    "Halfway done",
+    "Mostly completed",
+    "Fully completed"
+]
+progress_numeric = {
+    "Not started": 0,
+    "Started, minimal progress": 1,
+    "Halfway done": 2,
+    "Mostly completed": 3,
+    "Fully completed": 4,
+}
 
 def run_weekly_reflection():
     query_params = st.query_params.to_dict()
@@ -145,40 +157,96 @@ def run_weekly_reflection():
         task_id = task["id"]
         task_text = task["task_text"]
 
+        # 1️⃣ Ask for progress if not already asked
         if f"ask_progress_{task_id}" not in st.session_state:
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": f"How much progress did you make on the following task?<br><br><b>{task_text}</b>"
+                "message": f"How much progress did you make on this task?<br><br><b>{task_text}</b>"
             })
             st.session_state[f"ask_progress_{task_id}"] = True
             st.rerun()
 
+        # 2️⃣ Show side-by-side buttons for the 5 options
         selected = None
         cols = st.columns(len(progress_options))
-        for idx, option in enumerate(progress_options):
-            if cols[idx].button(option, key=f"{task_id}_{option}"):
+        for i, option in enumerate(progress_options):
+            if cols[i].button(option, key=f"{task_id}_{option}"):
                 selected = option
                 break
 
-        if selected:
+        if selected and not st.session_state.get(f"justifying_{task_id}"):
+            # echo user choice
             st.session_state["chat_thread"].append({
                 "sender": "User",
                 "message": selected
             })
+            # store numeric rating
             st.session_state["task_progress"][task_id] = progress_numeric[selected]
-            st.session_state["reflection_step"] += 1
-            save_reflection_draft(
-                user_id=user_id,
-                goal_id=goal_id,
-                week_number=week,
-                session_id=session,
-                step=st.session_state["reflection_step"],
-                task_progress=st.session_state.get("task_progress", {}),
-                answers=st.session_state.get("reflection_answers", {}),
-                update_idx=st.session_state.get("update_task_idx", 0),
-                q_idx=st.session_state.get("reflection_q_idx", 0)
-            )
+
+            # 3️⃣ Immediately ask for a brief justification
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "What have you completed so far, and what still needs to be done?"
+            })
+            st.session_state[f"justifying_{task_id}"] = True
             st.rerun()
+
+        # 4️⃣ Capture the user’s justification before moving on
+        if st.session_state.get(f"justifying_{task_id}") and f"justified_{task_id}" not in st.session_state:
+            justification = st.chat_input("Type your answer here…")
+            if justification:
+                # echo user justification
+                st.session_state["chat_thread"].append({
+                    "sender": "User",
+                    "message": justification
+                })
+                # save it under reflection_answers
+                st.session_state["reflection_answers"][f"justification_{task_id}"] = justification
+
+                # mark as done and move to next task
+                st.session_state[f"justified_{task_id}"] = True
+                st.session_state["reflection_step"] += 1
+
+                save_reflection_draft(
+                    user_id=user_id,
+                    goal_id=goal_id,
+                    week_number=week,
+                    session_id=session,
+                    step=st.session_state["reflection_step"],
+                    task_progress=st.session_state.get("task_progress", {}),
+                    answers=st.session_state.get("reflection_answers", {}),
+                    update_idx=st.session_state.get("update_task_idx", 0),
+                    q_idx=st.session_state.get("reflection_q_idx", 0)
+                )
+
+                st.rerun()
+
+        # selected = None
+        # cols = st.columns(len(progress_options))
+        # for idx, option in enumerate(progress_options):
+        #     if cols[idx].button(option, key=f"{task_id}_{option}"):
+        #         selected = option
+        #         break
+
+        # if selected:
+        #     st.session_state["chat_thread"].append({
+        #         "sender": "User",
+        #         "message": selected
+        #     })
+        #     st.session_state["task_progress"][task_id] = progress_numeric[selected]
+        #     st.session_state["reflection_step"] += 1
+        #     save_reflection_draft(
+        #         user_id=user_id,
+        #         goal_id=goal_id,
+        #         week_number=week,
+        #         session_id=session,
+        #         step=st.session_state["reflection_step"],
+        #         task_progress=st.session_state.get("task_progress", {}),
+        #         answers=st.session_state.get("reflection_answers", {}),
+        #         update_idx=st.session_state.get("update_task_idx", 0),
+        #         q_idx=st.session_state.get("reflection_q_idx", 0)
+        #     )
+        #     st.rerun()
 
     elif st.session_state["reflection_step"] == len(tasks) + 1:
         total = sum(st.session_state["task_progress"].values())
@@ -230,7 +298,24 @@ def run_weekly_reflection():
                 st.session_state["reflection_q_idx"] = 0
                 st.rerun()
 
+    # Goal Alignment Reflection
     elif st.session_state["reflection_step"] == len(tasks) + 2:
+        if "ask_alignment" not in st.session_state:
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "🧭 Thinking about your tasks and your goal, do you feel your current tasks still <b>match the goal well</b>?<br><br>Feel free to share your thoughts, whether they align well, or if anything feels a bit off."
+            })
+            st.session_state["ask_alignment"] = True
+            st.rerun()
+
+        user_input = st.chat_input("Type your answer here...")
+        if user_input:
+            st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
+            st.session_state["reflection_answers"]["task_alignment"] = user_input
+            st.session_state["reflection_step"] += 1
+            st.rerun()
+
+    elif st.session_state["reflection_step"] == len(tasks) + 3:
         idx = st.session_state.get("update_task_idx", 0)
         if idx < len(tasks):
             task = tasks[idx]
@@ -338,7 +423,7 @@ def run_weekly_reflection():
                         task_progress=st.session_state.get("task_progress", {}),
                         answers=st.session_state.get("reflection_answers", {}),
                         update_idx=st.session_state.get("update_task_idx", 0),
-                        q_idx=st.session_state.get("reflection_q_idx", 0)
+                        q_idx=q_idx
                     )
                     st.rerun()
                 # if new_text:
@@ -385,23 +470,6 @@ def run_weekly_reflection():
                 update_idx=st.session_state.get("update_task_idx", 0),
                 q_idx=st.session_state.get("reflection_q_idx", 0)
             )
-            st.rerun()
-
-    # Goal Alignment Reflection
-    elif st.session_state["reflection_step"] == len(tasks) + 3:
-        if "ask_alignment" not in st.session_state:
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": "🧭 Thinking about your tasks and your goal, do you feel your current tasks still <b>match the goal well</b>?<br><br>Feel free to share your thoughts — whether they align well, or if anything feels a bit off."
-            })
-            st.session_state["ask_alignment"] = True
-            st.rerun()
-
-        user_input = st.chat_input("Type your answer here...")
-        if user_input:
-            st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
-            st.session_state["reflection_answers"]["task_alignment"] = user_input
-            st.session_state["reflection_step"] += 1
             st.rerun()
 
     elif st.session_state["reflection_step"] == len(tasks) + 4:
