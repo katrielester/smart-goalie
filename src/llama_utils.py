@@ -120,6 +120,9 @@ Revise the goal to make it more specific.
 - Keep it short (under 12 words)
 - Should be breakable into 2 to 3 subtasks
 - Do not phrase it like a task
+- Only make small adjustments.
+- Keep the original meaning and structure as much as possible.
+- Avoid rewriting the entire goal.
 
 Example:
 Not good: Be more productive
@@ -143,6 +146,9 @@ Revise the goal to make it more measurable.
 - Do not use numbers or percentages
 - Keep it goal level, not a performance metric
 - Keep it short (under 12 words)
+- Only make small adjustments.
+- Keep the original meaning and structure as much as possible.
+- Avoid rewriting the entire goal.
 
 Example:
 Not good: Complete five interviews per week
@@ -165,6 +171,9 @@ Revise the goal to make it more achievable.
 - Keep it doable within 2 weeks
 - Stay at the goal level (not tasks)
 - Keep it short (under 12 words)
+- Only make small adjustments.
+- Keep the original meaning and structure as much as possible.
+- Avoid rewriting the entire goal.
 
 Example: Build a routine for consistent time planning
 
@@ -185,6 +194,9 @@ Revise the goal to make it more personally relevant.
 - Add a short reason or benefit (in brackets is okay)
 - Keep it short (under 12 words)
 - Phrase it as a high-level goal
+- Only make small adjustments.
+- Keep the original meaning and structure as much as possible.
+- Avoid rewriting the entire goal.
 
 Example: Strengthen planning skills (to reduce daily stress)
 
@@ -205,6 +217,9 @@ Revise the goal to make it more time-bound.
 - Add a timeframe (e.g., 2 weeks, end of month), but not a specific date
 - Keep it high-level (not a checklist item)
 - Keep it under 12 words
+- Only make small adjustments.
+- Keep the original meaning and structure as much as possible.
+- Avoid rewriting the entire goal.
 
 Example: Improve work planning by the end of the month
 
@@ -351,7 +366,7 @@ def check_smart_feedback(goal_text, dimension):
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give only ONE short, friendly sentence of feedback on how specific the goal is.
+Your task is to give only ONE short, friendly sentence of feedback on how specific the goal is, without rewriting or fixing it.
 
 Focus only on whether the goal clearly identifies one main focus or outcome. Avoid vague goals like 'do better'.
 
@@ -364,7 +379,7 @@ Guidelines:
 
 Examples:
 - Looks clear and focused, nice work!
-- Great start. Try narrowing it to one main focus.
+- This goal seemss to broad to act on clearly.
 
 [Goal]
 {goal_text}
@@ -375,7 +390,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give one short, friendly sentence of feedback on how measurable the goal is.
+Your task is to give one short, friendly sentence of feedback on how measurable the goal is, without rewriting or fixing it.
 
 Focus only on whether there is a way to track progress like frequency, quantity, or visible milestones.
 
@@ -399,7 +414,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give one short, friendly sentence of feedback on how achievable the goal is.
+Your task is to give one short, friendly sentence of feedback on how achievable the goal is, without rewriting or fixing it.
 
 Focus only on whether the goal seems realistic for someone to complete in about 2 weeks.
 
@@ -423,7 +438,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give one short, friendly sentence of feedback on how personally relevant the goal is.
+Your task is to give one short, friendly sentence of feedback on how personally relevant the goal is, without rewriting or fixing it.
 
 Focus only on whether the goal connects to a value, interest, or current priority.
 
@@ -447,7 +462,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give one short, friendly sentence of feedback on whether the goal includes a timeframe.
+Your task is to give one short, friendly sentence of feedback on whether the goal includes a timeframe, without rewriting or fixing it.
 
 Focus only on whether the goal mentions a deadline, schedule, or time span.
 

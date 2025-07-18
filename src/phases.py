@@ -421,7 +421,7 @@ goal_setting_flow_score = {
         "text": [
             "Let’s get started! You’ll choose one goal to focus on for the next 2 weeks.",
             "Think of something meaningful you’d like to work toward. Not a quick task, but a mini project or habit.",
-            "<br><br><b>👉 Please type your goal below to continue.</b>"
+            "<b>👉 Please type your goal below to continue.</b>"
         ],
         "input_type": "text",
         "next": "check_specific"
@@ -437,7 +437,7 @@ goal_setting_flow_score = {
 
     "specific_improve_decision": {
         "text": [
-            "Your current goal: {current_goal}",
+            "📝 Your current goal: <i>{current_goal}</i>",
             "{llm_feedback}",
             "Would you like to improve this before we continue?"
         ],
@@ -455,8 +455,8 @@ goal_setting_flow_score = {
 
     "input_specific": {
         "text": [
-            "Here’s your current goal: {current_goal}",
-            "Try rewriting your goal using the suggestions above.",
+            "📝 Your current goal: <i>{current_goal}</i>",
+            "<b>Try rewriting your goal using the suggestions above.</b>",
             "✏️ You'll be working on this for 2 weeks, so keep it focused, but broad enough to break into smaller tasks later."
         ],
         "input_type": "text",
@@ -474,7 +474,7 @@ goal_setting_flow_score = {
 
     "measurable_improve_decision": {
         "text": [
-            "Your current goal: {current_goal}",
+            "📝 Your current goal: <i>{current_goal}</i>",
             "{llm_feedback}",
             "Would you like to improve this part?"
         ],
@@ -492,7 +492,7 @@ goal_setting_flow_score = {
 
     "input_measurable": {
         "text": [
-            "Here’s your current goal: {current_goal}",
+            "📝 Here's your current goal: <i>{current_goal}</i>",
             "Try rewriting your goal to include a way to measure progress.",
             "Still keep it broad enough to span the full 2 weeks."
         ],
@@ -511,7 +511,7 @@ goal_setting_flow_score = {
 
     "achievable_improve_decision": {
         "text": [
-            "Your current goal: {current_goal}",
+            "📝 Your current goal: <i>{current_goal}</i>",
             "{llm_feedback}",
             "Want to adjust this part before moving on?"
         ],
@@ -530,7 +530,7 @@ goal_setting_flow_score = {
     "input_achievable": {
         "text": [
             "Try rewriting your goal to feel more doable over the next two weeks.",
-            "Your current goal: {current_goal}",
+            "📝 Your current goal: <i>{current_goal}</i>"
         ],
         "input_type": "text",
         "next": "check_relevant"
@@ -547,7 +547,7 @@ goal_setting_flow_score = {
 
     "relevant_improve_decision": {
         "text": [
-            "Your current goal: {current_goal}",
+            "📝 Your current goal: <i>{current_goal}</i>",
             "{llm_feedback}",
             "Would you like to make this feel more personal?"
         ],
@@ -565,7 +565,7 @@ goal_setting_flow_score = {
 
     "input_relevant": {
         "text": [
-            "Your current goal: {current_goal}",
+            "📝 Your current goal: <i>{current_goal}</i>",
             "Try updating your goal so it connects more clearly to your values or priorities."
         ],
         "input_type": "text",
@@ -583,7 +583,7 @@ goal_setting_flow_score = {
 
     "timebound_improve_decision": {
         "text": [
-            "Your current goal: {current_goal}",
+            "📝 Your current goal: <i>{current_goal}</i>",
             "{llm_feedback}",
             "Would you like to add or adjust the timeframe?"
         ],
@@ -601,7 +601,7 @@ goal_setting_flow_score = {
 
     "input_timebound": {
         "text": [
-            "Your current goal: {current_goal}",
+            "📝 Your current goal: <i>{current_goal}</i>",
             "Try rewriting your goal with a timeframe that fits the 2-week period."
         ],
         "input_type": "text",
@@ -610,7 +610,7 @@ goal_setting_flow_score = {
 
     "finalize_goal": {
         "text": [
-            "Here’s your finalized goal:",
+            "👍 Here’s your finalized goal:",
             "{current_goal}"
         ],
         "buttons": ["Save Goal", "Edit Manually"],

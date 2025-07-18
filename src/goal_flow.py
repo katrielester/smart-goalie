@@ -75,11 +75,11 @@ def run_goal_setting():
 
         else:
             feedback = check_smart_feedback(goal, dimension).strip()
-            st.session_state["chat_thread"][-1]["message"] = feedback
+            # st.session_state["chat_thread"][-1]["message"] = feedback
+            st.session_state["llm_feedback_result"] = feedback
             st.session_state["goal_step"] = step["next"]
             del st.session_state["llm_feedback_pending"]
             st.session_state["message_index"] = 0
-            st.session_state["llm_feedback_result"] = feedback
             st.rerun()
 
     elif "fix_with_llm" in step:
@@ -112,7 +112,7 @@ def run_goal_setting():
             current_goal = st.session_state.get("current_goal", "")
 
             st.session_state["chat_thread"][-1]["message"] = (
-                f"{formatted_variants}<br><br>"
+                f"{formatted_variants}<br>"
             )
 
             del st.session_state["llm_typing"]
