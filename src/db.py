@@ -84,11 +84,15 @@ def update_user_phase(user_id, new_phase):
     )
 
 
-def save_message_to_db(user_id, sender, message):
-    execute_query("""
-        INSERT INTO chat_history (user_id, sender, message)
-        VALUES (%s, %s, %s)
-    """, (user_id, sender, message), commit=True)
+def save_message_to_db(user_id, sender, message, timestamp):
+    execute_query(
+        """
+        INSERT INTO chat_history (user_id, sender, message, timestamp)
+        VALUES (%s, %s, %s, %s)
+        """,
+        (user_id, sender, message, timestamp),
+        commit=True
+    )
 
 
 def get_chat_history(user_id):

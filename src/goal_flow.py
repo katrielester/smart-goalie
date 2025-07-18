@@ -9,6 +9,7 @@ from llama_utils import (
 )
 from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phase
 from phases import goal_setting_flow, goal_setting_flow_score
+from chat_thread import ChatThread
 
 def run_goal_setting():
     USE_LLM_SCORING=True;

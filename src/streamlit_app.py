@@ -15,6 +15,7 @@ from goal_flow import run_goal_setting, run_add_tasks
 from phases import smart_training_flow
 from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
 from logger import setup_logger
+from chat_thread import ChatThread
 
 import os
 
@@ -133,7 +134,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.session_state["chat_state"] = "intro"
 
     # Common session vars
-    st.session_state["chat_thread"] = []
+    st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
     st.session_state["smart_step"] = "intro"
     st.session_state["message_index"] = 0
     st.session_state["current_goal"] = ""
@@ -167,14 +168,16 @@ if (
         st.session_state["tasks_saved"] = []
         st.session_state["task_entry_stage"] = "suggest"
         st.session_state["chat_state"] = "add_tasks"
-        st.session_state["chat_thread"] = [{
+        ct = ChatThread(st.session_state["user_id"])
+        ct.append({
             "sender": "Assistant",
             "message": (
                 "Welcome back! It looks like you've set a goal but haven't added any weekly tasks yet:<br><br>"
                 f"<b>{goal_with_no_active_tasks['goal_text']}</b><br><br>"
                 "Let's start by adding your first task to help you move forward this week."
             )
-        }]
+        })
+        st.session_state["chat_thread"] = ct
 
         st.rerun()
 
@@ -197,13 +200,15 @@ if vals:
         # Only add message if not already in chat
         already_has_prompt = any("adding more tasks for your goal" in m["message"] for m in st.session_state["chat_thread"])
         if not already_has_prompt:
-            st.session_state["chat_thread"] = [{
+            ct = ChatThread(st.session_state["user_id"])
+            ct.append({
                 "sender": "Assistant",
-                "message": (
-                    f"You're adding more tasks for your goal:<br><br><b>{goal['goal_text']}</b><br><br>"
-                    "Let's break it down into small weekly steps."
-                )
-            }]
+                    "message": (
+                        f"You're adding more tasks for your goal:<br><br><b>{goal['goal_text']}</b><br><br>"
+                        "Let's break it down into small weekly steps."
+                    )
+            })
+            st.session_state["chat_thread"] = ct
         st.rerun()
 
 st.title("SMART Goalie")
@@ -497,7 +502,7 @@ def run_smart_training():
 
 def run_menu():
     if "chat_thread" not in st.session_state:
-        st.session_state["chat_thread"] = []
+        st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
 
     # Only show this prompt if it's not already the last message from Assistant
     if not st.session_state["chat_thread"] or (
@@ -594,14 +599,16 @@ def run_view_goals():
             st.session_state["tasks_saved"]      = []
             st.session_state["task_entry_stage"] = "suggest"
             st.session_state["chat_state"]       = "add_tasks"
-            st.session_state["chat_thread"] = [{
+            ct = ChatThread(st.session_state["user_id"])
+            ct.append({
                 "sender": "Assistant",
                 "message": (
                     f"You're adding more tasks for your goal:<br><br>"
                     f"<b>{goal_text}</b><br><br>"
                     "Let's break it down into small weekly steps."
                 )
-            }]
+            })
+            st.session_state["chat_thread"] = ct
             run_add_tasks()
             st.stop()
 

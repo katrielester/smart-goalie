@@ -9,6 +9,7 @@ from db import (
 )
 from llama_utils import summarize_reflection, suggest_tasks_with_context
 import json
+from chat_thread import ChatThread
 
 progress_options = [
     "Not started",
@@ -72,7 +73,7 @@ def run_weekly_reflection():
     if reflection_exists(user_id, goal_id, week, session):
         if "reflection_acknowledged" not in st.session_state:
             if "chat_thread" not in st.session_state:
-                st.session_state["chat_thread"] = []
+                st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>.<br><br>Thanks!"
@@ -118,7 +119,7 @@ def run_weekly_reflection():
             st.session_state["update_task_idx"] = draft["update_task_idx"]
             st.session_state["reflection_q_idx"] = draft["reflection_q_idx"]
             if "chat_thread" not in st.session_state:
-                st.session_state["chat_thread"] = []
+                st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
         else:
             init_reflection_session()
 
@@ -547,7 +548,7 @@ def run_weekly_reflection():
 
 def init_reflection_session():
     if "chat_thread" not in st.session_state:
-        st.session_state["chat_thread"] = []
+        st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
 
     st.session_state["reflection_step"] = 0
     st.session_state["task_progress"] = {}
