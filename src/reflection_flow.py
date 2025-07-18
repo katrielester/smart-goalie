@@ -282,7 +282,7 @@ def run_weekly_reflection():
                     st.session_state["update_task_idx"] += 1
                     st.rerun()
 
-            if st.session_state.get("awaiting_task_edit"):
+            if st.session_state.get("awaiting_task_edit") is True:
                 # reuse goal_text you set at top of run_weekly_reflection()
                 reflection_answers = st.session_state.get("reflection_answers", {})
                 existing_tasks     = [t["task_text"] for t in tasks]
