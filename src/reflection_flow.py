@@ -7,7 +7,7 @@ from db import (
     get_user_phase, update_user_phase, get_user_group, replace_or_modify_task,
     save_reflection_response, save_reflection_draft, load_reflection_draft, delete_reflection_draft
 )
-from llama_utils import summarize_reflection
+from llama_utils import summarize_reflection, suggest_tasks_with_context
 
 progress_options = ["None", "A little", "Some", "Most", "Completed"]
 progress_numeric = {"None": 0, "A little": 1, "Some": 2, "Most": 3, "Completed": 4}
@@ -268,9 +268,26 @@ def run_weekly_reflection():
                     })
                     st.session_state["update_task_idx"] += 1
                     st.rerun()
-            
+
             if st.session_state.get("awaiting_task_edit"):
-                # Show assistant message asking for new version
+                # reuse goal_text you set at top of run_weekly_reflection()
+                reflection_answers = st.session_state.get("reflection_answers", {})
+                existing_tasks     = [t["task_text"] for t in tasks]
+                
+                # call with reflection + existing tasks
+                suggestions = suggest_tasks_with_context(
+                    goal_text,
+                    reflection_answers,
+                    existing_tasks
+                )
+                if suggestions:
+                    st.session_state["chat_thread"].append({
+                        "sender": "Assistant",
+                        "message": (
+                        "💡 Based on your goal and what you just reflected, here are some fresh task ideas:<br><br>" + suggestions
+                        )
+                    })
+                # now ask them to write their updated task
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
                     "message": "✍️ Please write the new version of this task."
@@ -406,7 +423,7 @@ def run_weekly_reflection():
             task_id = task["id"]
             rating = st.session_state["task_progress"][task_id]
             save_reflection_response(reflection_id, task_id=task_id, progress_rating=rating)
-
+                
         # Save open-text question answers
         for key, answer in st.session_state["reflection_answers"].items():
             save_reflection_response(reflection_id, answer_key=key, answer_text=answer)

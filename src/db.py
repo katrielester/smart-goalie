@@ -267,6 +267,39 @@ def delete_reflection_draft(user_id, goal_id, week_number, session_id):
         WHERE user_id = %s AND goal_id = %s AND week_number = %s AND session_id = %s
     """, (user_id, goal_id, week_number, session_id), commit=True)
 
+def get_last_reflection_meta(user_id, goal_id):
+    """
+    Return the most‐recent reflection’s id and week_number 
+    (so we can count its responses), or None.
+    """
+    return execute_query(
+        """
+        SELECT id, week_number
+          FROM reflections
+         WHERE user_id = %s
+           AND goal_id = %s
+         ORDER BY id DESC
+         LIMIT 1
+        """,
+        (user_id, goal_id),
+        fetch="one",
+    )
+
+
+def get_reflection_responses(reflection_id):
+    """
+    Return all the progress_rating rows for one reflection.
+    """
+    return execute_query(
+        """
+        SELECT progress_rating
+          FROM reflection_responses
+         WHERE reflection_id = %s
+        """,
+        (reflection_id,),
+        fetch="all",
+    )
+
 # PHASES
 # 0 = registered but not done onboarding
 # 1 = training done

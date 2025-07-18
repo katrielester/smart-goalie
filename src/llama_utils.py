@@ -343,6 +343,48 @@ def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     """
     return smart_wrapper(prompt, goal_text, "tasks")
 
+def suggest_tasks_with_context(goal_text, reflection_answers=None, existing_tasks=None):
+    reflection_context = ""
+    if reflection_answers:
+        for k, v in reflection_answers.items():
+            reflection_context += f"{k.upper()}: {v}\n"
+
+    existing_tasks = existing_tasks or []
+    existing_list = "<br>".join(f"- {task}" for task in existing_tasks) if existing_tasks else "None"
+
+    prompt = f"""
+You help users break down SMART goals into short, concrete weekly tasks.
+
+The user's SMART goal is:
+[Goal]
+{goal_text}
+[/Goal]
+
+Reflection context (to inspire useful ideas):
+{reflection_context.strip()}
+
+Tasks already added (do not repeat or rephrase these):
+{existing_list}
+
+Suggest exactly 3 new weekly tasks. Each task should:
+- Be actionable and specific (describe the exact action)
+- Fit into a single sentence, under 15 words
+- Be achievable within one week
+- Include a time, quantity, or duration if relevant
+
+Avoid:
+- Rambling or multiple steps per task
+- Repeating existing tasks
+- Generic phrasing like "try to..." or "maybe"
+
+Respond with only the 3 tasks, in this format:
+
+1. ...
+2. ...
+3. ...
+"""
+    return smart_wrapper(prompt, goal_text, "tasks")
+
 # CHECK SMART FEEDBACK
 def check_smart_feedback(goal_text, dimension):
     if dimension == "specific":

@@ -7,8 +7,8 @@ from db import (
     create_user, user_completed_training, mark_training_completed,
     save_message_to_db, get_chat_history, get_user_info,
     save_goal, save_task, save_reflection,
-    get_tasks, get_goals, get_reflections, user_goals_exist,
-    get_goals_with_task_counts
+    get_tasks, get_goals, user_goals_exist,
+    get_goals_with_task_counts, get_last_reflection_meta, get_reflection_responses
 )
 from reflection_flow import run_weekly_reflection
 from goal_flow import run_goal_setting, run_add_tasks
@@ -250,6 +250,22 @@ if st.session_state["chat_state"] == "view_goals":
             "sender": "Assistant",
             "message": goal_html
         })
+        # now show “X of Y tasks done last week”
+        meta = get_last_reflection_meta(user_id, goal_id)
+        if meta:
+            responses = get_reflection_responses(meta["id"])
+            total_tasks = len(tasks)
+            done = sum(1 for r in responses if r["progress_rating"] == 4)
+            summary_html = (
+                "<div class='chat-left'>"
+                f"<b>Last Reflection (Week {meta['week_number']}):</b><br>"
+                f"✅ You completed {done}/{total_tasks} tasks."
+                "</div>"
+            )
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": summary_html
+            })
 
 # STABLE VER
 # chat_bubble_html = "".join([
@@ -533,6 +549,7 @@ def run_menu():
 #         st.session_state["chat_thread"].append({"sender": "User", "message": full_reflection})
 #         st.session_state["chat_thread"].append({"sender": "Assistant", "message": summary})
 #         st.success("Reflection submitted!")
+
 
 def run_view_goals():
     goals = get_goals_with_task_counts(st.session_state["user_id"])
