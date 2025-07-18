@@ -178,15 +178,14 @@ if (
 
         st.rerun()
 
-add_tasks_goal_id = st.query_params.get("add_tasks_for_goal")
-
-if add_tasks_goal_id:
-    try:
-        goal_id = int(add_tasks_goal_id)
+vals = st.query_params.get("add_tasks_for_goal", [])
+if vals:
+    try:       
+        goal_id = int(vals[0])
         goal_list = get_goals(st.session_state["user_id"])
         goal = next((g for g in goal_list if g["id"] == goal_id), None)
-    except Exception:
-        goal = None
+    except ValueError:
+        goal_id = None
 
     if goal:
         st.session_state["goal_id_being_worked"] = goal_id
@@ -510,20 +509,22 @@ def run_menu():
             "message": "What would you like to do next? You can view your goal, review training, or create something new."
         })
         st.rerun()
+    
+    col1,col2= st.columns(2)
 
     if not user_goals_exist(st.session_state["user_id"]):
-        if st.button("➕ Create a New Goal"):
+        if col1.button("➕ Create a New Goal"):
             st.session_state["chat_state"] = "goal_setting"
             st.session_state["goal_step"] = "initial_goal"
             st.session_state["message_index"] = 0
             st.rerun()
     else:
-        if st.button("✅ View Existing Goal and Tasks"):
+        if col1.button("✅ View Existing Goal and Tasks"):
             st.session_state["chat_state"] = "view_goals"
             st.rerun()
 
     if user_completed_training(st.session_state["user_id"]):
-        if st.button("📚 Review SMART Goal Training"):
+        if col2.button("📚 Review SMART Goal Training"):
             st.session_state["chat_state"] = "smart_training"
             st.session_state["smart_step"] = "intro"
             st.session_state["message_index"] = 0
@@ -531,6 +532,7 @@ def run_menu():
 
 
 def run_view_goals():
+    col1,col2=st.columns([1,1])
     user_id = st.session_state["user_id"]
     # Grab the one goal
     goals = get_goals_with_task_counts(user_id)
@@ -586,7 +588,7 @@ def run_view_goals():
 
     # “Add Another Task” button (if < 3 tasks)
     if len(tasks) < 3:
-        if st.button("➕ Add Another Task"):
+        if col1.button("➕ Add Another Task"):
             st.session_state["goal_id_being_worked"] = goal_id
             st.session_state["current_goal"]     = goal_text
             st.session_state["tasks_saved"]      = []
@@ -604,7 +606,7 @@ def run_view_goals():
             st.stop()
 
     # Menu button
-    if st.button("⬅️ Back to Menu"):
+    if col2.button("⬅️ Back to Menu"):
         st.session_state["chat_state"] = "menu"
         st.rerun()
 

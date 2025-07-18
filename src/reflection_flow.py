@@ -8,6 +8,7 @@ from db import (
     save_reflection_response, save_reflection_draft, load_reflection_draft, delete_reflection_draft
 )
 from llama_utils import summarize_reflection, suggest_tasks_with_context
+import json
 
 progress_options = ["None", "A little", "Some", "Most", "Completed"]
 progress_numeric = {"None": 0, "A little": 1, "Some": 2, "Most": 3, "Completed": 4}
@@ -67,12 +68,13 @@ def run_weekly_reflection():
             st.session_state["reflection_acknowledged"] = True
             st.rerun()
 
-        if st.button("⬅️ Return to Main Menu"):
+        col1, col2 = st.columns(2)
+        if col1.button("⬅️ Return to Main Menu"):
             st.session_state["chat_state"] = "menu"
             del st.session_state["reflection_acknowledged"]
             st.rerun()
 
-        if st.button("⬅️ Return to Prolific"):
+        if col2.button("⬅️ Return to Prolific"):
             st.stop()
 
         return
@@ -88,8 +90,19 @@ def run_weekly_reflection():
 
         if draft:
             st.session_state["reflection_step"] = draft["reflection_step"]
-            st.session_state["task_progress"] = draft["task_progress"] or {}
-            st.session_state["reflection_answers"] = draft["reflection_answers"] or {}
+            
+            raw_prog = draft["task_progress"]
+            if isinstance(raw_prog, str):
+                st.session_state["task_progress"] = json.loads(raw_prog)
+            else:
+                st.session_state["task_progress"] = raw_prog or {}
+            
+            raw_ans = draft["reflection_answers"]
+            if isinstance(raw_ans, str):
+                st.session_state["reflection_answers"] = json.loads(raw_ans)
+            else:
+                st.session_state["reflection_answers"] = raw_ans or {}
+
             st.session_state["update_task_idx"] = draft["update_task_idx"]
             st.session_state["reflection_q_idx"] = draft["reflection_q_idx"]
             if "chat_thread" not in st.session_state:
@@ -439,10 +452,18 @@ def run_weekly_reflection():
 
         delete_reflection_draft(user_id, goal_id, week, session)
 
+        summary = summarize_reflection(reflection_text)
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": summary
+        })
+        
+
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
             "message": "✅ Thanks for reflecting! Your responses are saved."
         })
+        
         st.success("Reflection submitted and saved!")
 
         if st.button("⬅️ Return to Main Menu"):

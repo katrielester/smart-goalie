@@ -1,17 +1,18 @@
 # llama_utils.py
 
-import requests
+import requests, re
 
 # LLM_API_URL = "http://213.173.102.150:11434/api/generate"
 LLM_API_URL = "https://498spxjyhd6q36-11434.proxy.runpod.net/api/generate"
 
 import os
 
-FAKE_MODE = os.getenv("FAKE_MODE", "true").lower() == "true"
+FAKE_MODE = False
+# FAKE_MODE = os.getenv("FAKE_MODE", "true").lower() == "true"
 
 def extract_goal_variants(response_text):
-    lines = response_text.strip().splitlines()
-    variants = [line.strip() for line in lines if line.strip().startswith(("1.", "2.", "3."))]
+    parts = re.split(r"<br\s*/?>", response_text)
+    variants = [p.strip() for p in parts if p.strip().startswith(("1.","2.","3."))]
     return "<br>".join(variants)
 
 def fake_response(goal_text, type_):
@@ -52,9 +53,9 @@ def fake_response(goal_text, type_):
         )
     elif type_ == "tasks":
         return (
-            "1. Break the goal into parts<br>"
-            "2. Schedule a first step<br>"
-            "3. Identify one small, specific task to complete by Friday"
+            f"1. Break '{goal_text}' into smaller, manageable parts<br>"
+            "2. Schedule your first step for this week<br>"
+            "3. Pick one simple, concrete action to complete by Friday"
         )
     elif type_ == "check_specific":
         return "Good start! Try to clarify the outcome a bit more."
@@ -75,189 +76,146 @@ def fake_response(goal_text, type_):
 def smart_wrapper(prompt, goal_text, type_):
     if FAKE_MODE:
         return fake_response(goal_text, type_)
+    
+    temp = 0.3 if type_.startswith("check_") else 0.7
+
+    if type_ in ("specific", "measurable", "achievable", "relevant", "timebound"):
+        # single‐sentence suggestions, under 12 words,  36 tokens max
+        max_toks = 25
+    elif type_.startswith("check_"):
+        # feedback
+        max_toks = 60
+    else:
+        # summaries, tasks, etc.
+        max_toks = 150
+
+    payload = {
+        "model":       "mistral",
+        "prompt":      prompt.strip(),
+        "stream":      False,
+        "temperature": temp,
+        "max_tokens":  max_toks,
+        "stop":        ["\n\n"]
+    }
 
     try:
-        response = requests.post(
-            LLM_API_URL,
-            json={
-                "model": "mistral",
-                "prompt": prompt.strip(),
-                "stream": False
-            },
-            timeout=30
-        )
+        response = requests.post(LLM_API_URL, json=payload, timeout=60)
         response.raise_for_status()
-        return response.json().get("response", "").strip()
+    except requests.HTTPError as he:
+        print("❌ LLM HTTPError:", he, "\nResponse body:", response.text)
+        return fake_response(goal_text, type_)
     except Exception as e:
-        print(f"(Error generating response: {e})")
+        print("❌ LLM request failed:", e)
         return fake_response(goal_text, type_)
 
+    text = response.json().get("response", "").strip()
+    # Convert any internal newlines to HTML breaks for your app:
+    return text.replace("\n", "<br>")
+
 def suggest_specific_fix(goal_text):
-        prompt = f"""
-    You are a goal refinement assistant.
+    prompt = f"""
+Revise the goal to make it more specific.
 
-    Your task: Revise the goal below to make it more specific, using minimal edits.
+- Keep it high level, not a task or step
+- Keep it short (under 12 words)
+- Should be breakable into 2 to 3 subtasks
+- Do not phrase it like a task
 
-    Guidelines:
-    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later)
-    - Make it more concrete and focused (avoid vague phrases like "do better").
-    - Do NOT shrink it into a short-term task or add detailed steps.
+Example:
+Not good: Be more productive
+Better: Improve focus during work hours
 
-    Each revision must be:
-    - A single sentence
-    - Under 15 words
+Goal:
+{goal_text}
 
-    Examples:
-
-    Original: Do better in interviews  
-    Specific: Improve my interview skills by practicing behavioral questions
-
-    Original: Get healthier  
-    Specific: Improve my health by building a consistent exercise routine
-
-    Now revise the goal below:
-
-    [Goal]  
-    {goal_text}  
-    [/Goal]
-
-    Return only 3 revised versions, numbered like this:
-    1. ...
-    2. ...
-    3. ...
-    """
-        return smart_wrapper(prompt, goal_text, "specific")
+Return only 3 revised versions:
+1. ...
+2. ...
+3. ...
+"""
+    return smart_wrapper(prompt, goal_text, "specific")
 
 def suggest_measurable_fix(goal_text):
     prompt = f"""
-    You are a goal refinement assistant.
+Revise the goal to make it more measurable.
 
-    Your task: Make the goal more measurable using minimal edits while keeping it high-level.
+- Include a way to track progress
+- Do not use numbers or percentages
+- Keep it goal level, not a performance metric
+- Keep it short (under 12 words)
 
-    Guidelines:
-    - Add a way to track progress (e.g., frequency, quantity, or visible milestone).
-    - Do NOT turn the goal into a one-time task or a detailed plan.
-    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later)
-    
-    Each version must be:
-    - A single sentence
-    - Under 15 words
+Example:
+Not good: Complete five interviews per week
+Better: Track job interview preparation regularly
 
-    Examples:
+Goal:
+{goal_text}
 
-    Original: Learn a new skill  
-    Measurable: Learn a new skill by completing progress-based online lessons
-
-    Now revise the goal below:
-
-    [Goal]  
-    {goal_text}  
-    [/Goal]
-
-    Return only 3 revised versions, numbered like this:
-    1. ...
-    2. ...
-    3. ...
-    """
+Return only 3 revised versions:
+1. ...
+2. ...
+3. ...
+"""
     return smart_wrapper(prompt, goal_text, "measurable")
 
 def suggest_achievable_fix(goal_text):
     prompt = f"""
-    You are a goal refinement assistant.
+Revise the goal to make it more achievable.
 
-    Your task: Make the goal more achievable using minimal edits without turning it into a weekly task.
+- Keep it doable within 2 weeks
+- Stay at the goal level (not tasks)
+- Keep it short (under 12 words)
 
-    Guidelines:
-    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later)
-    - Adjust the scale to fit someone’s current time, energy, or situation.
-    - Do NOT break it down into step-by-step tasks.
+Example: Build a routine for consistent time planning
 
-    Each version must be:
-    - A single sentence
-    - Under 15 words
+Goal:
+{goal_text}
 
-    Examples:
-
-    Original: Become fluent in Spanish  
-    Achievable: Complete beginner Spanish lessons to start building fluency
-
-    Now revise the goal below:
-
-    [Goal]  
-    {goal_text}  
-    [/Goal]
-
-    Return only 3 revised versions, numbered like this:
-    1. ...
-    2. ...
-    3. ...
-    """
+Return only 3 revised versions:
+1. ...
+2. ...
+3. ...
+"""
     return smart_wrapper(prompt, goal_text, "achievable")
 
 def suggest_relevant_fix(goal_text):
     prompt = f"""
-    You are a goal refinement assistant.
+Revise the goal to make it more personally relevant.
 
-    Your task: Make the goal more personally meaningful to the person with minimal edits.
+- Add a short reason or benefit (in brackets is okay)
+- Keep it short (under 12 words)
+- Phrase it as a high-level goal
 
-    Guidelines:
-    - Add a reason the goal matters (e.g. values, priorities, or long-term benefit).
-    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later).
-    - Do NOT turn it into a personal story or detailed explanation.
+Example: Strengthen planning skills (to reduce daily stress)
 
-    Each version must be:
-    - A single sentence
-    - Under 15 words
+Goal:
+{goal_text}
 
-    Examples:
-
-    Original: Learn data entry  
-    Relevant: Learn data entry to access flexible online work opportunities
-
-    Now revise the goal below:
-
-    [Goal]  
-    {goal_text}  
-    [/Goal]
-
-    Return only 3 revised versions, numbered like this:
-    1. ...
-    2. ...
-    3. ...
-    """
+Return only 3 revised versions:
+1. ...
+2. ...
+3. ...
+"""
     return smart_wrapper(prompt, goal_text, "relevant")
 
 def suggest_timebound_fix(goal_text):
     prompt = f"""
-    You are a goal refinement assistant.
+Revise the goal to make it more time-bound.
 
-    Your task: Add a realistic timeframe to the goal with minimal edits.
+- Add a timeframe (e.g., 2 weeks, end of month), but not a specific date
+- Keep it high-level (not a checklist item)
+- Keep it under 12 words
 
-    Guidelines:
-    - Include a realistic timeframe, schedule, or deadline.
-    - Keep the goal high-level (should take ~2 weeks of effort and can be broken into 2–3 weekly tasks later)
-    - Do NOT break the goal into smaller steps like one-time tasks or detailed plan.
+Example: Improve work planning by the end of the month
 
-    Each revision must be:
-    - A single sentence
-    - Under 15 words
+Goal:
+{goal_text}
 
-    Examples:
-
-    Original: Improve my typing speed  
-    Time-bound: Improve my typing speed over the next 2 weeks
-
-    Now revise the goal below:
-
-    [Goal]  
-    {goal_text}  
-    [/Goal]
-
-    Return 3 revised versions, numbered like this:
-    1. ...
-    2. ...
-    3. ...
-    """
+Return only 3 revised versions:
+1. ...
+2. ...
+3. ...
+"""
     return smart_wrapper(prompt, goal_text, "timebound")
 
 # def refine_goal(raw_goal):
@@ -276,8 +234,9 @@ You are a supportive goal coach.
 Your task is to summarize the user's weekly reflection in a warm and encouraging tone.
 
 1. Keep the summary short (1–2 sentences).
-2. Focus on any progress made — even small steps.
+2. Focus on any progress made, even small steps.
 3. If the user is struggling, highlight their effort and suggest they keep going.
+4. Paraphrase rather than quote the user's exact words.
 
 Reflection:
 {reflection_text}
@@ -326,12 +285,13 @@ def suggest_tasks_for_goal(goal_text, existing_tasks=None):
 
     Suggest exactly 3 new weekly tasks. Each task should:
     - Be actionable and specific (describe the exact action)
-    - Fit into a single sentence, under 15 words
+    - Each task must be concise, under 12 words
     - Be achievable within one week
     - Include a time, quantity, or duration if relevant
 
     Avoid:
     - Rambling or multiple steps per task
+    - Evaluation-heavy instructions
     - Repeating existing tasks
     - Generic phrasing like "try to..." or "maybe"
 
@@ -368,7 +328,7 @@ Tasks already added (do not repeat or rephrase these):
 
 Suggest exactly 3 new weekly tasks. Each task should:
 - Be actionable and specific (describe the exact action)
-- Fit into a single sentence, under 15 words
+- Fit into a single sentence, under 12 words
 - Be achievable within one week
 - Include a time, quantity, or duration if relevant
 
@@ -397,9 +357,11 @@ Focus only on whether the goal clearly identifies one concrete focus or outcome 
 
 Guidelines:
 - Do not score or critique.
-- Do not give suggestions or rewrite the goal.
+- Never rewrite the goal. Feedback should not suggest how to fix it.
 - Do not comment on whether it is measurable, achievable, or time-bound.
 - Assume the goal should be high-level (to be completed in ~2 weeks and broken into smaller tasks).
+- Keep your feedback short and friendly (1–2 sentences and under 20 words).
+- Avoid hedging or passive phrases (like “could be”, “might want to”).
 
 Examples of feedback:
 - Looks clear and focused, nice work!
@@ -421,9 +383,11 @@ Focus only on whether there's a way to track progress — like frequency, quanti
 
 Guidelines:
 - Do not score or critique.
-- Do not suggest revisions or changes.
+- Never rewrite the goal. Feedback should not suggest how to fix it.
 - Do not comment on whether the goal is specific, achievable, or time-bound.
 - Assume the goal should be high-level (about 2 weeks of effort, with smaller tasks later).
+- Keep your feedback short and friendly (1–2 sentences and under 20 words).
+- Avoid hedging or passive phrases (like “could be”, “might want to”).
 
 Examples of feedback:
 - Great, there's a clear way to track progress here.
@@ -444,9 +408,11 @@ Focus only on whether the goal seems realistic within ~2 weeks, given someone's 
 
 Guidelines:
 - Do not score or criticize.
-- Do not offer suggestions or rewrite the goal.
+- Never rewrite the goal. Feedback should not suggest how to fix it.
 - Do not comment on whether the goal is measurable or specific.
 - Assume the goal will be broken into smaller weekly tasks.
+- Keep your feedback short and friendly (1–2 sentences and under 20 words).
+- Avoid hedging or passive phrases (like “could be”, “might want to”).
 
 Examples of feedback:
 - Nice, it looks balanced and doable!
@@ -467,9 +433,12 @@ Focus only on whether it seems tied to a value, interest, or current priority fo
 
 Guidelines:
 - Do not score or evaluate.
-- Do not give suggestions or assumptions about personal context.
+- Never rewrite the goal. Feedback should not suggest how to fix it.
+- Never make assumptions about personal context.
 - Do not comment on other SMART traits like measurability or specificity.
 - Assume the goal is intended to guide ~2 weeks of effort.
+- Keep your feedback short and friendly (1–2 sentences and under 20 words).
+- Avoid hedging or passive phrases (like “could be”, “might want to”).
 
 Examples of feedback:
 - Looks like a great fit for your current focus. Keep it up!
@@ -491,9 +460,11 @@ Focus only on whether the goal includes a deadline, schedule, or timeframe that 
 
 Guidelines:
 - Do not score or critique.
-- Do not suggest edits or rewrites.
+- Never rewrite the goal. Feedback should not suggest how to fix it.
 - Do not comment on how specific, measurable, or achievable the goal is.
 - The timeframe should fit a two-week span, but not be overly rigid or detailed.
+- Keep your feedback short and friendly (1–2 sentences and under 20 words).
+- Avoid hedging or passive phrases (like “could be”, “might want to”).
 
 Examples of feedback:
 - Great! The timeframe gives this goal structure.
