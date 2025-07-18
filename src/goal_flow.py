@@ -11,13 +11,13 @@ from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phas
 from phases import goal_setting_flow, goal_setting_flow_score
 
 def run_goal_setting():
-    USE_LLM_SCORING=False;
+    USE_LLM_SCORING=True;
     if "goal_step" not in st.session_state:
         st.session_state["goal_step"] = "initial_goal"
 
     flow = goal_setting_flow_score if USE_LLM_SCORING else goal_setting_flow;
 
-    step = goal_setting_flow[st.session_state["goal_step"]]
+    step = flow[st.session_state["goal_step"]]
     texts = step["text"]
     if isinstance(texts, str):
         texts = [texts]
@@ -161,7 +161,7 @@ def run_goal_setting():
                 "message": "Now it’s your turn! What’s one small task you’d like to add first?"
             }
         ])
-        st.session_state["task_entry_stage"] = "await_user_input"
+        st.session_state["task_entry_stage"] = "entry"
         st.session_state["chat_state"] = "add_tasks"
         st.rerun()
 
@@ -314,7 +314,7 @@ def show_reflection_explanation():
     st.session_state["chat_thread"].append({
         "sender": "Assistant",
         "message": (
-            "Awesome job setting your goal and tasks! Just one last step, please take a quick survey to lock it in. You’ll get a code at the end to return to Prolific.",
+            "Awesome job setting your goal and tasks! Just one last step, please take a quick survey to lock it in. You’ll get a code at the end to return to Prolific. "
             "<br><br><a href='[QUALTRICS PRE-SURVEY LINK]' target='_blank'>Click here to begin the survey</a>"
         )
     })
