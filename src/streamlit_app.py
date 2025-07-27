@@ -590,8 +590,11 @@ def run_view_goals():
             "sender": "Assistant",
             "message": summary_html
         })
+        
+        if "view_goals_shown" not in st.session_state:
+            st.session_state["view_goals_shown"] = True
+            st.rerun()
 
-    st.rerun()
 
     # “Add Another Task” button (if < 3 tasks)
     if len(tasks) < 3:

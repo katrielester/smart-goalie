@@ -91,6 +91,7 @@ def save_message_to_db(user_id, sender, message, timestamp):
         VALUES (%s, %s, %s, %s)
         """,
         (user_id, sender, message, timestamp),
+        fetch=None,
         commit=True
     )
 
