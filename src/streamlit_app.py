@@ -537,6 +537,9 @@ def run_menu():
 
 
 def run_view_goals():
+    if st.session_state.get("view_goals_rendered"):
+        return
+    
     col1,col2=st.columns([1,1])
     user_id = st.session_state["user_id"]
     # Grab the one goal
@@ -547,6 +550,7 @@ def run_view_goals():
             "sender": "Assistant",
             "message": "You haven’t created any goals yet."
         })
+        st.session_state["view_goals_rendered"] =  True
         return
 
     goal      = goals[0]
@@ -595,6 +599,8 @@ def run_view_goals():
             st.session_state["view_goals_shown"] = True
             st.rerun()
 
+    st.session_state["view_goals_rendered"] =  True
+
 
     # “Add Another Task” button (if < 3 tasks)
     if len(tasks) < 3:
@@ -620,6 +626,7 @@ def run_view_goals():
     # Menu button
     if col2.button("⬅️ Back to Menu"):
         st.session_state["chat_state"] = "menu"
+        del st.session_state["view_goals_rendered"]
         st.rerun()
 
 print("chat_state before routing:", st.session_state.get("chat_state"))
