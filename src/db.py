@@ -296,7 +296,7 @@ def get_reflection_responses(reflection_id):
     """
     return execute_query(
         """
-        SELECT progress_rating
+        SELECT task_id, progress_rating
           FROM reflection_responses
          WHERE reflection_id = %s
         """,

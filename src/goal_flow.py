@@ -141,6 +141,10 @@ def run_goal_setting():
             },
             {
                 "sender": "Assistant",
+                "message": "🔸 Weekly Task Planning 🔸"
+            },
+            {
+                "sender": "Assistant",
                 "message": (
                     "You’ll now break your goal into weekly tasks. "
                     "<br><br>"

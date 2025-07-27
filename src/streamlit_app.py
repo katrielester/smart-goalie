@@ -574,9 +574,9 @@ def run_view_goals():
     # Pull last reflection metadata & responses
     meta = get_last_reflection_meta(user_id, goal_id)
     if meta:
-        responses = get_reflection_responses(meta["id"])
-        # filter only the task‐progress rows
-        task_rows = [r for r in responses if r.get("task_id") is not None]
+        rows = get_reflection_responses(meta["id"])
+        # pick only the task‑ratings (where task_id is not null)
+        task_rows = [r for r in rows if r["task_id"] is not None]
         done  = sum(1 for r in task_rows if r["progress_rating"] == 4)
         total = len(task_rows)
 
@@ -590,6 +590,8 @@ def run_view_goals():
             "sender": "Assistant",
             "message": summary_html
         })
+
+    st.rerun()
 
     # “Add Another Task” button (if < 3 tasks)
     if len(tasks) < 3:

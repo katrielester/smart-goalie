@@ -143,10 +143,13 @@ def run_weekly_reflection():
                 "sender": "Assistant",
                 "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{last_content.strip()}"
             })
-
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
-            "message": f"Let’s check in on how your goal is going:<br><br><b>{goal_text}</b><br><br>I'll walk you through your tasks one by one — just answer honestly, no pressure."
+            "message": "🔸 Reflection Time 🔸"
+        })
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": f"Let’s check in on how your goal is going:<br><br><b>{goal_text}</b><br><br>I'll walk you through your tasks one by one. Just answer honestly, no pressure."
         })
 
         st.session_state["reflection_step"] = 1
