@@ -302,6 +302,8 @@ def run_add_tasks():
 
 def show_reflection_explanation():
     group = st.session_state.get("group")
+    gr_code = 1 if group == "treatment" else 0
+    user_id = st.session_state.get("user_id")
     if group == "treatment":
         msg = (
             "You’re all set! Over the next two weeks, you’ll receive reflection prompts here in this chat roughly twice a week. "
@@ -315,11 +317,16 @@ def show_reflection_explanation():
         )
 
     st.session_state["chat_thread"].append({"sender": "Assistant", "message": msg})
+
+    survey_url = (
+        "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
+        f"?user_id={user_id}&group={gr_code}"
+        )
     
     st.session_state["chat_thread"].append({
         "sender": "Assistant",
         "message": (
             "Awesome job setting your goal and tasks! Just one last step, please take a quick survey to lock it in. You’ll get a code at the end to return to Prolific. "
-            "<br><br><a href='[QUALTRICS PRE-SURVEY LINK]' target='_blank'>Click here to begin the survey</a>"
+            f"<br><br><a href='{survey_url}' target='_blank'>Click here to begin the survey</a>"
         )
     })
