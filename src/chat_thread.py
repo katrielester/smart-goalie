@@ -29,3 +29,11 @@ class ChatThread(list):
             "message":   entry["message"],
             "timestamp": ts
         })
+
+    def extend(self, entries):
+        for e in entries:
+            self.append(e)
+
+    def __iadd__(self, entries):
+        self.extend(entries)
+        return self
