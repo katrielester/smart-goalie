@@ -42,13 +42,11 @@ def set_state(**kwargs):
     save_session_state(st.session_state["user_id"], to_save)
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
-
-
-params = st.experimental_get_query_params()
+params = st.query_params
 if "healthz" in params:
-    st.experimental_set_query_params()  # clear params
-    st.write("")                        # empty body = 200 OK
+    st.write("")  
     st.stop()
+    
 
 logger = setup_logger()
 
