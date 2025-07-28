@@ -1,0 +1,8 @@
+[browser]
+# Ping the server every 300 seconds (5 minutes) instead of 60
+serverKeepAlivePingInterval = 300
+
+[server]
+# (Optional in prod) turn off file‑watching so no auto reloads on save
+runOnSave = false
+fileWatcherType = "none"
