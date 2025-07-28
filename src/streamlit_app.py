@@ -158,7 +158,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
                 "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
                 f"?user_id={user_info['prolific_code']}&group={gr_code}"
             )
-        st.markdown("---")
+        st.markdown(user_info["has_completed_presurvey"])
         st.markdown(f"""
         **1.** Click the link below to open the pre‑survey in a new tab  
         **2.** Complete it, then come back and click **“I completed it!”**
