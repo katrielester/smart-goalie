@@ -6,7 +6,8 @@ from psycopg2.extras import RealDictCursor
 
 import json
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = "postgresql://smart_goalie_db_user:C2FCtmsiG3XKlApXVBtDO73noloz72LR@dpg-d19rim95pdvs73a49kn0-a.frankfurt-postgres.render.com/smart_goalie_db"
+# DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set")
@@ -304,6 +305,25 @@ def get_reflection_responses(reflection_id):
         (reflection_id,),
         fetch="all",
     )
+
+def get_session_state(user_id):
+    row = execute_query(
+       "SELECT session_state FROM user_sessions WHERE user_id = %s",
+       (user_id,),
+       fetch="one"
+    )
+    return row["session_state"] if row else {}
+
+def save_session_state(user_id, state_dict):
+    js = json.dumps(state_dict)
+    execute_query("""
+        INSERT INTO user_sessions(user_id, session_state)
+             VALUES (%s, %s)
+        ON CONFLICT (user_id) DO UPDATE
+          SET session_state = EXCLUDED.session_state,
+              updated_at    = NOW()
+    """, (user_id, js), commit=True)
+
 
 # PHASES
 # 0 = registered but not done onboarding

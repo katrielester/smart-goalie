@@ -326,12 +326,15 @@ def show_reflection_explanation():
     tasks = [t["task_text"] for t in get_tasks(st.session_state["goal_id_being_worked"])]
     content = build_goal_tasks_text(goal, tasks)
 
-    st.download_button(
-        label="📄 Download your goal & tasks",
-        data=content,
-        file_name="my_smart_goal.txt",
-        mime="text/plain",
-    )
+    # st.download_button(
+    #     label="📄 Download your goal & tasks",
+    #     data=content,
+    #     file_name="my_smart_goal.txt",
+    #     mime="text/plain",
+    # )
+    # stash the download content and turn-on our “show it” flag
+    st.session_state["show_download"] = True
+    st.session_state["download_content"] = content
 
     # 3) Finally, send them to Qualtrics
     survey_url = (

@@ -3,12 +3,14 @@
 import streamlit as st
 import time
 from datetime import datetime
+from db_utils import build_goal_tasks_text
 from db import (
     create_user, user_completed_training, mark_training_completed,
     save_message_to_db, get_chat_history, get_user_info,
     save_goal, save_task, save_reflection,
     get_tasks, get_goals, user_goals_exist,
-    get_goals_with_task_counts, get_last_reflection_meta, get_reflection_responses
+    get_goals_with_task_counts, get_last_reflection_meta, get_reflection_responses,
+    get_session_state, save_session_state
 )
 from reflection_flow import run_weekly_reflection
 from goal_flow import run_goal_setting, run_add_tasks
@@ -19,6 +21,25 @@ from chat_thread import ChatThread
 
 import os
 
+def set_state(**kwargs):
+    # 1️⃣ update Streamlit
+    for k, v in kwargs.items():
+        st.session_state[k] = v
+
+    # 2️⃣ pick exactly the keys you actually want to persist
+    keys_to_save = [
+        "chat_state",
+        "message_index",
+        "current_goal",
+        "task_entry_stage",
+        # add any other st.session_state keys you need restored on reload…
+    ]
+
+    # 3️⃣ build your JSON dict
+    to_save = {k: st.session_state.get(k) for k in keys_to_save}
+
+    # 4️⃣ write it back to your new user_sessions table
+    save_session_state(st.session_state["user_id"], to_save)
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
@@ -87,6 +108,13 @@ with st.sidebar:
         st.session_state["authenticated"] = True
         st.session_state["user_id"] = user_id
         st.info(f"Authenticated as Prolific ID: {user_id}")
+
+        saved = get_session_state(st.session_state["user_id"])
+        for k, v in saved.items():
+            # only set if not already in session_state
+            if k not in st.session_state:
+                st.session_state[k] = v
+
     elif DEV_MODE:
         user_id = st.text_input("Enter your Prolific ID")
         if not st.session_state.get("authenticated"):
@@ -131,9 +159,10 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.session_state["session"] = session
         st.session_state["chat_state"] = "reflection"
     elif user_completed_training(user_id):
-        st.session_state["chat_state"] = "menu"
+        # st.session_state["chat_state"] = "menu"
+        set_state(chat_state="menu")
     else:
-        st.session_state["chat_state"] = "intro"
+        set_state(chat_state="intro")
 
     # Common session vars
     st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
@@ -169,7 +198,7 @@ if (
         st.session_state["current_goal"] = goal_with_no_active_tasks["goal_text"]
         st.session_state["tasks_saved"] = []
         st.session_state["task_entry_stage"] = "suggest"
-        st.session_state["chat_state"] = "add_tasks"
+        set_state(chat_state="add_tasks")
         ct = ChatThread(st.session_state["user_id"])
         ct.append({
             "sender": "Assistant",
@@ -197,7 +226,7 @@ if vals:
         st.session_state["current_goal"] = goal["goal_text"]
         st.session_state["tasks_saved"] = []
         st.session_state["task_entry_stage"] = "suggest"
-        st.session_state["chat_state"] = "add_tasks"
+        set_state(chat_state="add_tasks")
 
         # Only add message if not already in chat
         already_has_prompt = any("adding more tasks for your goal" in m["message"] for m in st.session_state["chat_thread"])
@@ -432,7 +461,17 @@ with st.container():
     </html>
     """, height=chat_height_px, scrolling=False)
 
-    # EXPERIMENTAL VER END #
+# if we’ve been told to show a download, render it here in the normal Streamlit UI
+if st.session_state.get("show_download"):
+    st.download_button(
+        label="📄 Download your goal & tasks",
+        data=st.session_state["download_content"],
+        file_name="my_smart_goal.txt",
+        mime="text/plain",
+    )
+
+    # EXPERIMENTAL VER END 
+
 
 
 def run_intro():
@@ -447,9 +486,9 @@ def run_intro():
     if st.session_state.get("chat_state") == "intro":
         if st.button("Yes, let's start!", key="start_training_btn"):
             st.session_state["chat_thread"].append({"sender": "User", "message": "Yes, let's start!"})
-            st.session_state["chat_state"] = "smart_training"
+            set_state(chat_state= "smart_training", message_index = 0)
             st.session_state["smart_step"] = "intro"
-            st.session_state["message_index"] = 0
+            # st.session_state["message_index"] = 0
             st.rerun()
 
 def run_smart_training():
@@ -497,9 +536,9 @@ def run_smart_training():
         elif step.get("complete"):
             if not(user_completed_training(st.session_state["user_id"])):
                 mark_training_completed(st.session_state["user_id"])
-            st.session_state["chat_state"] = "goal_setting"
+            set_state(chat_state= "goal_setting", message_index = 0)
             st.session_state["goal_step"] = "initial_goal"
-            st.session_state["message_index"] = 0
+            # st.session_state["message_index"] = 0
             st.rerun()
 
 def run_menu():
@@ -584,7 +623,7 @@ def run_view_goals():
             st.rerun()
 
     # 2) now always render the two columns of buttons
-    col1, col2 = st.columns([1,1])
+    col1, col2, col3 = st.columns([1,1,1])
     if goals and len(tasks) < 3 and col1.button("➕ Add Another Task"):
         st.session_state.update({
             "chat_state":"add_tasks",
@@ -608,6 +647,19 @@ def run_view_goals():
     if col2.button("⬅️ Back to Menu"):
         st.session_state["chat_state"] = "menu"
         st.rerun()
+    
+    with col3:
+        # build a simple text file: goal on top, then each active task
+        download_content = build_goal_tasks_text(
+            goal_text,
+            [ t["task_text"] for t in tasks ]  # even if tasks is empty, this will still work
+            )
+        st.download_button(
+            label="📄 Download Goal & Tasks",
+            data=download_content,
+            file_name="my_smart_goal.txt",
+            mime="text/plain",
+            )
 
 
 
