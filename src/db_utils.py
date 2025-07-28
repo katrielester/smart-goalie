@@ -3,6 +3,23 @@
 import pandas as pd
 from db import conn  # This brings in your existing global connection
 
+
+# At the top of goal_flow.py (or in a shared utils module)
+def build_goal_tasks_text(goal, tasks):
+    """
+    Build a clean text blob for download.
+    """
+    lines = [
+        "Your SMART Goal:",
+        goal,
+        "",
+        "Weekly Tasks:"
+    ]
+    for t in tasks:
+        lines.append(f"- {t}")
+    return "\n".join(lines)
+
+
 def export_chat_history(user_id, format="csv"):
     query = "SELECT * FROM chat_history WHERE user_id = %s"
     df = pd.read_sql_query(query, conn, params=(user_id,))

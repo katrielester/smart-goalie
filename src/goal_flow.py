@@ -10,6 +10,7 @@ from llama_utils import (
 from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phase
 from phases import goal_setting_flow, goal_setting_flow_score
 from chat_thread import ChatThread
+from db_utils import build_goal_tasks_text
 
 def run_goal_setting():
     USE_LLM_SCORING=True;
@@ -304,29 +305,43 @@ def show_reflection_explanation():
     group = st.session_state.get("group")
     gr_code = 1 if group == "treatment" else 0
     user_id = st.session_state.get("user_id")
+
+    # 1) Reflection explanation message
     if group == "treatment":
         msg = (
             "You’re all set! Over the next two weeks, you’ll receive reflection prompts here in this chat roughly twice a week. "
-            "These check-ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n"
+            "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n"
             "Looking forward to seeing your progress!"
         )
     else:
         msg = (
             "You’re all set! Over the next two weeks, you’ll receive reminder messages via Prolific around twice a week. "
-            "You can reflect on your goal however you’d like, i’s up to you.\n\nThanks again for participating!"
+            "You can reflect on your goal however you’d like, it’s up to you.\n\nThanks again for participating!"
         )
 
     st.session_state["chat_thread"].append({"sender": "Assistant", "message": msg})
 
+    # 2) Download button – only shows once they truly have their final tasks
+    goal = st.session_state["current_goal"]
+    tasks = [t["task_text"] for t in get_tasks(st.session_state["goal_id_being_worked"])]
+    content = build_goal_tasks_text(goal, tasks)
+
+    st.download_button(
+        label="📄 Download your goal & tasks",
+        data=content,
+        file_name="my_smart_goal.txt",
+        mime="text/plain",
+    )
+
+    # 3) Finally, send them to Qualtrics
     survey_url = (
         "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
         f"?user_id={user_id}&group={gr_code}"
-        )
-    
+    )
     st.session_state["chat_thread"].append({
         "sender": "Assistant",
         "message": (
-            "Awesome job setting your goal and tasks! Just one last step, please take a quick survey to lock it in. You’ll get a code at the end to return to Prolific. "
+            "One last step: please take a quick survey to lock it in and get your Prolific code. "
             f"<br><br><a href='{survey_url}' target='_blank'>Click here to begin the survey</a>"
         )
     })
