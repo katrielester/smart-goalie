@@ -151,7 +151,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
     goals   = get_goals_with_task_counts(user_id)
 
-    if goals and (user_info["has_completed_presurvey"]==True):
+    if goals and (user_info["has_completed_presurvey"]==False):
         st.title("📝 Pre-Survey Required")
         st.warning("You haven’t completed the pre-survey yet. Please do that first to continue.")
         gr_code = 1 if str(user_info["group_assignment"]).strip() == "1" else 0
