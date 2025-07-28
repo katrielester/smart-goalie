@@ -12,11 +12,11 @@ DATABASE_URL = "postgresql://smart_goalie_db_user:C2FCtmsiG3XKlApXVBtDO73noloz72
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set")
 
-conn_ = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+
 
 def execute_query(query, params=(), fetch="one", commit=False):
-    # open a fresh connection
-    with psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor) as conn:
+    try:
         with conn.cursor() as cursor:
             cursor.execute(query, params)
             if commit:
@@ -27,22 +27,10 @@ def execute_query(query, params=(), fetch="one", commit=False):
                 return cursor.fetchall()
             else:
                 return None
-# def execute_query(query, params=(), fetch="one", commit=False):
-#     try:
-#         with conn.cursor() as cursor:
-#             cursor.execute(query, params)
-#             if commit:
-#                 conn.commit()
-#             if fetch == "one":
-#                 return cursor.fetchone()
-#             elif fetch == "all":
-#                 return cursor.fetchall()
-#             else:
-#                 return None
-#     except Exception as e:
-#         print("Database error:", e)
-#         conn.rollback()
-#         return None if fetch == "one" else []
+    except Exception as e:
+        print("Database error:", e)
+        conn.rollback()
+        return None if fetch == "one" else []
 
 
 # -------------------------------
