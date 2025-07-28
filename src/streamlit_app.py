@@ -578,6 +578,8 @@ def run_view_goals():
                     "</div>"
                 )
                 st.session_state["chat_thread"].append({"sender":"Assistant","message":summary})
+            
+            st.rerun()
 
     # 2) now always render the two columns of buttons
     col1, col2 = st.columns([1,1])
