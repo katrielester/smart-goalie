@@ -525,6 +525,7 @@ def run_menu():
             st.rerun()
     else:
         if col1.button("✅ View Existing Goal and Tasks"):
+            st.session_state["trigger_view_goals"] = True
             st.session_state["chat_state"] = "view_goals"
             st.rerun()
 
@@ -537,97 +538,83 @@ def run_menu():
 
 
 def run_view_goals():
-    if st.session_state.get("view_goals_rendered"):
-        return
-    
-    col1,col2=st.columns([1,1])
     user_id = st.session_state["user_id"]
-    # Grab the one goal
+    # look up once, for both bubbles & buttons
     goals = get_goals_with_task_counts(user_id)
     if not goals:
-        # no goal at all
         st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": "You haven’t created any goals yet."
+            "sender":"Assistant",
+            "message":"You haven’t created any goals yet."
         })
-        st.session_state["view_goals_rendered"] =  True
         return
 
     goal      = goals[0]
     goal_id   = goal["id"]
     goal_text = goal["goal_text"]
-    # Fetch active tasks for that goal
-    tasks = get_tasks(goal_id, active_only=True)
+    tasks     = get_tasks(goal_id, active_only=True)
 
-    # Build the HTML bubble for goal + tasks
-    html = "<div class='chat-left'>"
-    html += f"<strong>Your SMART Goal:</strong><br>{goal_text}<br><br>"
-    if tasks:
-        for t in tasks:
-            status = "✅" if t["completed"] else "⬜️"
-            html += f"{status} {t['task_text']}<br>"
-    else:
-        html += "<em>No subtasks yet.</em><br>"
-    html += "</div>"
+    # did they just click “View Existing Goal and Tasks”?
+    triggered = st.session_state.pop("trigger_view_goals", False)
 
-    st.session_state["chat_thread"].append({
-        "sender": "Assistant",
-        "message": html
-    })
+    if triggered:
+        # build & append the two chat bubbles just once
+        html = "<div class='chat-left'>"
+        html += f"<strong>Your SMART Goal:</strong><br>{goal_text}<br><br>"
+        if tasks:
+            for t in tasks:
+                status = "✅" if t["completed"] else "⬜️"
+                html += f"{status} {t['task_text']}<br>"
+        else:
+            html += "<em>No subtasks yet.</em><br>"
+        html += "</div>"
 
-    # Pull last reflection metadata & responses
-    meta = get_last_reflection_meta(user_id, goal_id)
-    if meta:
-        rows = get_reflection_responses(meta["id"])
-        # pick only the task‑ratings (where task_id is not null)
-        task_rows = [r for r in rows if r["task_id"] is not None]
-        done  = sum(1 for r in task_rows if r["progress_rating"] == 4)
-        total = len(task_rows)
-
-        summary_html = (
-            "<div class='chat-left'>"
-            f"<b>Last Reflection (Week {meta['week_number']}):</b><br>"
-            f"✅ You completed {done}/{total} tasks."
-            "</div>"
-        )
         st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": summary_html
+            "sender":"Assistant","message":html
         })
-        
-        if "view_goals_shown" not in st.session_state:
-            st.session_state["view_goals_shown"] = True
-            st.rerun()
 
-    st.session_state["view_goals_rendered"] =  True
-
-
-    # “Add Another Task” button (if < 3 tasks)
-    if len(tasks) < 3:
-        if col1.button("➕ Add Another Task"):
-            st.session_state["goal_id_being_worked"] = goal_id
-            st.session_state["current_goal"]     = goal_text
-            st.session_state["tasks_saved"]      = []
-            st.session_state["task_entry_stage"] = "suggest"
-            st.session_state["chat_state"]       = "add_tasks"
-            ct = ChatThread(st.session_state["user_id"])
-            ct.append({
-                "sender": "Assistant",
-                "message": (
-                    f"You're adding more tasks for your goal:<br><br>"
-                    f"<b>{goal_text}</b><br><br>"
-                    "Let's break it down into small weekly steps."
-                )
+        meta = get_last_reflection_meta(user_id, goal_id)
+        if meta:
+            rows = get_reflection_responses(meta["id"])
+            done  = sum(1 for r in rows if r.get("task_id") and r["progress_rating"]==4)
+            total = len([r for r in rows if r.get("task_id")])
+            summary = (
+                "<div class='chat-left'>"
+                f"<b>Last Reflection (Week {meta['week_number']}):</b><br>"
+                f"✅ You completed {done}/{total} tasks."
+                "</div>"
+            )
+            st.session_state["chat_thread"].append({
+                "sender":"Assistant","message":summary
             })
-            st.session_state["chat_thread"] = ct
-            run_add_tasks()
-            st.stop()
 
-    # Menu button
+    # now your two columns & buttons always render
+    col1, col2 = st.columns([1,1])
+
+    if len(tasks) < 3 and col1.button("➕ Add Another Task"):
+        st.session_state.update({
+            "goal_id_being_worked": goal_id,
+            "current_goal": goal_text,
+            "tasks_saved": [],
+            "task_entry_stage": "suggest",
+            "chat_state": "add_tasks",
+        })
+        # reset chat_thread to just this prompt:
+        ct = ChatThread(user_id)
+        ct.append({
+            "sender":"Assistant",
+            "message":(
+                f"You're adding more tasks for your goal:<br><br><b>{goal_text}</b><br><br>"
+                "Let's break it down into small weekly steps."
+            )
+        })
+        st.session_state["chat_thread"] = ct
+        run_add_tasks()
+        st.stop()
+
     if col2.button("⬅️ Back to Menu"):
         st.session_state["chat_state"] = "menu"
-        del st.session_state["view_goals_rendered"]
         st.rerun()
+
 
 print("chat_state before routing:", st.session_state.get("chat_state"))
 if "chat_state" not in st.session_state:
