@@ -152,22 +152,24 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     goals   = get_goals_with_task_counts(user_id)
     if goals and user_info["has_completed_presurvey"]:
         st.title("📝 Pre-Survey Required")
-        st.warning("You haven’t completed the pre-urvey yet. Please do that first to continue.")
+        st.warning("You haven’t completed the pre-survey yet. Please do that first to continue.")
         gr_code = 1 if str(user_info["group_assignment"]).strip() == "1" else 0
         survey_url = (
                 "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
                 f"?user_id={user_info['prolific_code']}&group={gr_code}"
             )
+        st.markdown("---")
         st.markdown(f"""
-        1. Click below to open the pre-survey in a new tab  
-        2. Complete it, then come back and click **I completed it!**
-        """)
-        if st.button("🚀 Open Pre-Survey"):
-            st.markdown(f"""<script>window.open("{survey_url}", "_blank")</script>""",
-                        unsafe_allow_html=True)
+        **1.** Click the link below to open the pre‑survey in a new tab  
+        **2.** Complete it, then come back and click **“I completed it!”**
 
-        # stop here until they flip the flag
+        [🚀 Open Pre‑Survey here]({survey_url})  
+        """)
+        # then your “I completed it!” button
+        if st.button("✅ I completed it!"):
+            st.experimental_rerun()  # on reload you'll see has_completed_presurvey=True
         st.stop()
+
 
     # Routing logic
     print("Week:", week)
