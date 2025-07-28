@@ -1,8 +1,12 @@
 [browser]
-# Ping the server every 300 seconds (5 minutes) instead of 60
-serverKeepAlivePingInterval = 300
+# Disable the automatic WebSocket keep‑alive pings,
+# so the client won’t ever trigger a reload.
+serverEnableKeepAlive = false
+
+# (Optional) If you still want pings but less frequently:
+# serverKeepAlivePingInterval = 300
 
 [server]
-# (Optional in prod) turn off file‑watching so no auto reloads on save
+# Turn off dev‑mode file watching in production
 runOnSave = false
 fileWatcherType = "none"
