@@ -29,6 +29,12 @@ from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
 from logger import setup_logger
 from chat_thread import ChatThread
 
+
+st.write("CWD:", os.getcwd())
+st.write("Dir listing:", os.listdir())
+st.stop()
+
+
 def set_state(**kwargs):
     # 1️⃣ update Streamlit
     for k, v in kwargs.items():
