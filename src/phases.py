@@ -6,8 +6,8 @@ smart_training_flow = {
             "Great! I’ll walk you through how to set a strong goal and help you track your progress over time.",
             "Are you ready to get started?"
         ],
-        "buttons": ["Yes", "No"],
-        "next": {"Yes": "goal_intro", "No": "exit"}
+        "buttons": ["Yes"],
+        "next": {"Yes": "goal_intro"}
     },
     "goal_intro": {
         "text": [
@@ -29,11 +29,11 @@ smart_training_flow = {
     },
     "smart_intro1": {
         "text": [
-            "That's great! I'm here to help you take it to the next level."
+            "That's great! I'm here to help you take it to the next level.",
             "To do that, we’ll use something called SMART goals. Ready to dive in?"
         ],
         "buttons": ["Let’s do this!"],
-        "next": {"Let’s do this!": "smart_definition"}
+        "next": {"Let’s do this!": "smart_intro"}
     },
     "smart_intro2": {
         "text": [
@@ -293,7 +293,7 @@ goal_setting_flow = {
     },
     "fix_measurable": {
         "text": [
-            "Let’s add a way to track progress Just a small adjustment! <br> Here are a few ways you might make it more measurable:"
+            "Let’s add a way to track progress, just a small adjustment! <br> Here are a few ways you might make it more measurable:"
         ],
         "fix_with_llm": "measurable",
         "next": "input_measurable"
