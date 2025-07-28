@@ -149,6 +149,26 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
         st.write(st.session_state.get("group"),group)
 
+    goals   = get_goals_with_task_counts(user_id)
+    if goals and user_info["has_completed_presurvey"]:
+        st.title("📝 Pre-Survey Required")
+        st.warning("You haven’t completed the pre-urvey yet. Please do that first to continue.")
+        gr_code = 1 if str(user_info["group_assignment"]).strip() == "1" else 0
+        survey_url = (
+                "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
+                f"?user_id={user_info['prolific_code']}&group={gr_code}"
+            )
+        st.markdown(f"""
+        1. Click below to open the pre-survey in a new tab  
+        2. Complete it, then come back and click **I completed it!**
+        """)
+        if st.button("🚀 Open Pre-Survey"):
+            st.markdown(f"""<script>window.open("{survey_url}", "_blank")</script>""",
+                        unsafe_allow_html=True)
+
+        # stop here until they flip the flag
+        st.stop()
+
     # Routing logic
     print("Week:", week)
     print("Session:", session)

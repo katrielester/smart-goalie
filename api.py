@@ -33,7 +33,6 @@ async def update_status(data: StatusUpdate):
     success = update_flag(data.prolific_id, data.stage)
     return {"success": success}
 
-
 @app.get("/api/update_status")
 async def update_status_get(prolific_id: str, stage: str):
     success = update_flag(prolific_id, stage)

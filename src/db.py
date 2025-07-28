@@ -47,7 +47,7 @@ def create_user(user_id, prolific_code=None, group="0"):
 
 def get_user_info(user_id):
     return execute_query("""
-        SELECT prolific_code, has_completed_training, group_assignment
+        SELECT prolific_code, has_completed_training, group_assignment, has_completed_presurvey, has_completed_postsurvey
         FROM users WHERE user_id = %s
     """, (user_id,), fetch="one")
 
