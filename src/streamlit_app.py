@@ -1,6 +1,16 @@
 #streamlit_app.py
-
 import streamlit as st
+import os
+
+# 1) configure the page BEFORE anything else:
+st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
+
+# 2) super‑light healthz handler:
+if st.query_params.get("healthz") is not None:
+    st.write("")  # 200 OK
+    st.stop()     # skip the rest
+
+
 import time
 from datetime import datetime
 from db_utils import build_goal_tasks_text
@@ -18,8 +28,6 @@ from phases import smart_training_flow
 from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
 from logger import setup_logger
 from chat_thread import ChatThread
-
-import os
 
 def set_state(**kwargs):
     # 1️⃣ update Streamlit
@@ -42,15 +50,11 @@ def set_state(**kwargs):
     save_session_state(st.session_state["user_id"], to_save)
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
-params = st.query_params
-if "healthz" in params:
-    st.write("")  
-    st.stop()
-    
+
 
 logger = setup_logger()
 
-st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
+# st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
 
 st.markdown("""
     <style>
