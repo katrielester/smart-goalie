@@ -109,11 +109,11 @@ with st.sidebar:
         st.session_state["user_id"] = user_id
         st.info(f"Authenticated as Prolific ID: {user_id}")
 
-        saved = get_session_state(st.session_state["user_id"])
-        for k, v in saved.items():
-            # only set if not already in session_state
-            if k not in st.session_state:
-                st.session_state[k] = v
+        # saved = get_session_state(st.session_state["user_id"])
+        # for k, v in saved.items():
+        #     # only set if not already in session_state
+        #     if k not in st.session_state:
+        #         st.session_state[k] = v
 
     elif DEV_MODE:
         user_id = st.text_input("Enter your Prolific ID")
