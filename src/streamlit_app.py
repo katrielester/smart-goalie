@@ -112,7 +112,8 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     # Check if user exists in DB
     user_info = get_user_info(user_id)
     if not user_info:
-        group = query_params.get("g", ["2"])[0]
+        # default to control = "0"
+        group = query_params.get("g", ["0"])[0]
         create_user(user_id, prolific_code=user_id, group=group)
         st.session_state["group"] = "treatment" if group == "1" else "control"
     else:
