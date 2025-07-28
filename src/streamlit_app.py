@@ -43,6 +43,13 @@ def set_state(**kwargs):
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
+
+params = st.experimental_get_query_params()
+if "healthz" in params:
+    st.experimental_set_query_params()  # clear params
+    st.write("")                        # empty body = 200 OK
+    st.stop()
+
 logger = setup_logger()
 
 st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
