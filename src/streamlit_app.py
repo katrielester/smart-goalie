@@ -30,9 +30,9 @@ from logger import setup_logger
 from chat_thread import ChatThread
 
 
-st.write("CWD:", os.getcwd())
-st.write("Dir listing:", os.listdir())
-st.stop()
+# st.write("CWD:", os.getcwd())
+# st.write("Dir listing:", os.listdir())
+# st.stop()
 
 
 def set_state(**kwargs):
