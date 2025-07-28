@@ -168,6 +168,10 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # then your “I completed it!” button
         if st.button("✅ I completed it!"):
             st.experimental_rerun()  # on reload you'll see has_completed_presurvey=True
+        
+        if "chat_thread" not in st.session_state:
+            st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
+
         st.stop()
 
 
@@ -331,8 +335,11 @@ chat_height_px = 400
 # ])
 
 # EXPERIMENTAL START #
+
 previous_len = st.session_state.get("last_rendered_index", 0)
-current_len = len(st.session_state["chat_thread"])
+chat_list   = st.session_state.get("chat_thread", [])
+current_len  = len(chat_list)
+
 
 # Mark which are new
 chat_bubble_html = ""

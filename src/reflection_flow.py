@@ -13,14 +13,14 @@ from chat_thread import ChatThread
 
 progress_options = [
     "Not started",
-    "Started, minimal progress",
+    "Started",
     "Halfway done",
     "Mostly completed",
     "Fully completed"
 ]
 progress_numeric = {
     "Not started": 0,
-    "Started, minimal progress": 1,
+    "Started": 1,
     "Halfway done": 2,
     "Mostly completed": 3,
     "Fully completed": 4,
