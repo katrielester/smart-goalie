@@ -1,7 +1,7 @@
 # db_utils.py
 
 import pandas as pd
-from db import conn  # This brings in your existing global connection
+from db import conn_  # This brings in your existing global connection
 
 
 # At the top of goal_flow.py (or in a shared utils module)
@@ -22,7 +22,7 @@ def build_goal_tasks_text(goal, tasks):
 
 def export_chat_history(user_id, format="csv"):
     query = "SELECT * FROM chat_history WHERE user_id = %s"
-    df = pd.read_sql_query(query, conn, params=(user_id,))
+    df = pd.read_sql_query(query, conn_, params=(user_id,))
 
     if format == "csv":
         df.to_csv(f"chat_history_{user_id}.csv", index=False)
@@ -40,8 +40,8 @@ def export_goals_tasks(user_id, format="csv"):
         WHERE goals.user_id = %s
     """
 
-    goals_df = pd.read_sql_query(goals_query, conn, params=(user_id,))
-    tasks_df = pd.read_sql_query(tasks_query, conn, params=(user_id,))
+    goals_df = pd.read_sql_query(goals_query, conn_, params=(user_id,))
+    tasks_df = pd.read_sql_query(tasks_query, conn_, params=(user_id,))
 
     if format == "csv":
         goals_df.to_csv(f"goals_{user_id}.csv", index=False)
@@ -54,7 +54,7 @@ def export_goals_tasks(user_id, format="csv"):
 
 def export_reflections(user_id, format="csv"):
     query = "SELECT * FROM reflections WHERE user_id = %s"
-    df = pd.read_sql_query(query, conn, params=(user_id,))
+    df = pd.read_sql_query(query, conn_, params=(user_id,))
 
     if format == "csv":
         df.to_csv(f"reflections_{user_id}.csv", index=False)
