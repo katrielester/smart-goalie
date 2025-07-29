@@ -315,8 +315,9 @@ def show_reflection_explanation():
         )
     else:
         msg = (
-            "You’re all set! Over the next two weeks, you’ll receive reminder messages via Prolific around twice a week. "
-            "You can reflect on your goal however you’d like, it’s up to you.\n\nThanks again for participating!"
+            "You’re all set! Over the next two weeks, please work on the goal and tasks you just created at your own pace. "
+            "We’ll be in touch again in two weeks with a brief follow-up.\n\n"
+            "Thanks again for being part of the study!"
         )
 
     st.session_state["chat_thread"].append({"sender": "Assistant", "message": msg})

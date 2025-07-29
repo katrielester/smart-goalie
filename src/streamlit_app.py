@@ -36,11 +36,9 @@ from chat_thread import ChatThread
 
 
 def set_state(**kwargs):
-    # 1️⃣ update Streamlit
     for k, v in kwargs.items():
         st.session_state[k] = v
-
-    # 2️⃣ pick exactly the keys you actually want to persist
+        
     keys_to_save = [
         "chat_state",
         "message_index",
@@ -48,11 +46,9 @@ def set_state(**kwargs):
         "task_entry_stage",
         # add any other st.session_state keys you need restored on reload…
     ]
-
-    # 3️⃣ build your JSON dict
+    
     to_save = {k: st.session_state.get(k) for k in keys_to_save}
-
-    # 4️⃣ write it back to your new user_sessions table
+    
     save_session_state(st.session_state["user_id"], to_save)
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
@@ -516,6 +512,24 @@ if st.session_state.get("show_download"):
     )
 
     # EXPERIMENTAL VER END 
+
+# ────────────────────────────────────────────────────────────
+# JS “ping” to keep the WebSocket alive every 25 s
+components.html(
+    """
+    <script>
+      // Toggle a dummy boolean so the ping value changes each time
+      window._ping = !window._ping;
+      setInterval(() => {
+        Streamlit.setComponentValue(window._ping);
+      }, 25_000);
+    </script>
+    """,
+    height=0,
+    scrolling=False,
+)
+# ────────────────────────────────────────────────────────────
+
 
 
 
