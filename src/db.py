@@ -85,10 +85,10 @@ def update_user_phase(user_id, new_phase):
     )
 
 
-def save_message_to_db(user_id, sender, message, timestamp):
+def save_message_to_db(user_id, sender, message, timestamp, phase=None):
     execute_query(
         """
-        INSERT INTO chat_history (user_id, sender, message, timestamp)
+        INSERT INTO chat_history (user_id, sender, message, timestamp, phase)
         VALUES (%s, %s, %s, %s)
         """,
         (user_id, sender, message, timestamp),
@@ -97,11 +97,17 @@ def save_message_to_db(user_id, sender, message, timestamp):
     )
 
 
-def get_chat_history(user_id):
+def get_chat_history(user_id, phase):
     return execute_query("""
-        SELECT sender, message FROM chat_history
-        WHERE user_id = %s ORDER BY id
-    """, (user_id,), fetch="all")
+        SELECT sender,
+               message,
+               timestamp
+          FROM chat_history
+         WHERE user_id = %s
+           AND phase = %s
+      ORDER BY timestamp ASC;
+    """, (user_id, phase), fetch="all")
+
 
 
 def save_goal(user_id, goal_text):

@@ -1,11 +1,11 @@
 #streamlit_app.py
+
 import streamlit as st
 import os
 
-# 1) configure the page BEFORE anything else:
 st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
 
-# 2) super‑light healthz handler:
+# healthz handler:
 if st.query_params.get("healthz") is not None:
     st.write("")  # 200 OK
     st.stop()     # skip the rest
@@ -38,18 +38,35 @@ from chat_thread import ChatThread
 def set_state(**kwargs):
     for k, v in kwargs.items():
         st.session_state[k] = v
-        
+
     keys_to_save = [
+        "needs_restore",
+        
+        # routing
         "chat_state",
+        "group",
+
+        # SMART‑training
+        "smart_step",
         "message_index",
+
+        # Goal‑setting
+        "goal_step",
         "current_goal",
+
+        # Task‑entry
+        "goal_id_being_worked",
         "task_entry_stage",
-        # add any other st.session_state keys you need restored on reload…
+        "candidate_task",
+
+        # (only if you ever jump into reflection via URL)
+        "week",
+        "session",
     ]
-    
+
     to_save = {k: st.session_state.get(k) for k in keys_to_save}
-    
     save_session_state(st.session_state["user_id"], to_save)
+
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
@@ -118,13 +135,6 @@ with st.sidebar:
         user_id = prolific_id
         st.session_state["authenticated"] = True
         st.session_state["user_id"] = user_id
-        st.info(f"Authenticated as Prolific ID: {user_id}")
-
-        # saved = get_session_state(st.session_state["user_id"])
-        # for k, v in saved.items():
-        #     # only set if not already in session_state
-        #     if k not in st.session_state:
-        #         st.session_state[k] = v
 
     elif DEV_MODE:
         user_id = st.text_input("Enter your Prolific ID")
@@ -158,7 +168,42 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     else:
         group = user_info["group_assignment"]
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
-        st.write(st.session_state.get("group"),group)
+        # st.write(st.session_state.get("group"),group)
+           
+    saved = get_session_state(user_id) or {}
+    if saved.get("needs_restore"):
+        # 1) Restore your flow flags
+        for k, v in saved.items():
+            st.session_state.setdefault(k, v)
+
+        # 2) Rebuild only this phase’s chat history
+        current_phase = st.session_state["chat_state"]
+        history = get_chat_history(user_id, current_phase)  # now takes phase
+
+        # 3) Create a fresh ChatThread and disable DB writes for replay
+        orig_append = ChatThread.append
+        ct = ChatThread(user_id)
+        ct.append = lambda entry: list.append(ct, entry)
+
+        # 4) Replay each message in order
+        for row in history:
+            ui_sender = "Assistant" if row["sender"] == "bot" else "User"
+            ct.append({
+                "sender":    ui_sender,
+                "message":   row["message"],
+                "timestamp": row["timestamp"],
+            })
+
+        # 5) Re‑enable real append() so new messages still save
+        ct.append = orig_append.__get__(ct, ChatThread)
+
+        # 6) Store for the UI
+        st.session_state["chat_thread"] = ct
+
+    else:
+        # No restore needed, fresh start
+        st.session_state["chat_state"]  = "menu"
+        st.session_state["chat_thread"] = ChatThread(user_id)
 
     goals   = get_goals_with_task_counts(user_id)
 
@@ -193,14 +238,21 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     print("Group (from DB or URL):", st.session_state["group"], group)
 
     if st.session_state["group"] == "treatment" and week and session:
-        st.session_state["week"] = int(week)
-        st.session_state["session"] = session
-        st.session_state["chat_state"] = "reflection"
+        set_state(
+            chat_state     = "reflection",
+            needs_restore  = True
+            )
+
     elif user_completed_training(user_id):
-        # st.session_state["chat_state"] = "menu"
-        set_state(chat_state="menu")
+        set_state(
+            chat_state="menu", 
+            needs_restore=False
+            )
     else:
-        set_state(chat_state="intro")
+        set_state(
+            chat_state="intro", 
+            needs_restore=False
+            )
 
     # Common session vars
     st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
@@ -236,7 +288,13 @@ if (
         st.session_state["current_goal"] = goal_with_no_active_tasks["goal_text"]
         st.session_state["tasks_saved"] = []
         st.session_state["task_entry_stage"] = "suggest"
-        set_state(chat_state="add_tasks")
+        set_state(
+            chat_state="add_tasks",
+            goal_id_being_worked = goal_with_no_active_tasks["id"],
+            current_goal = goal_with_no_active_tasks["goal_text"],
+            task_entry_stage = "suggest",
+            needs_restore = True
+            )
         ct = ChatThread(st.session_state["user_id"])
         ct.append({
             "sender": "Assistant",
@@ -260,11 +318,14 @@ if vals:
         goal_id = None
 
     if goal:
-        st.session_state["goal_id_being_worked"] = goal_id
-        st.session_state["current_goal"] = goal["goal_text"]
         st.session_state["tasks_saved"] = []
-        st.session_state["task_entry_stage"] = "suggest"
-        set_state(chat_state="add_tasks")
+        set_state(
+            chat_state="add_tasks",
+            needs_restore = True,
+            goal_id_being_worked = goal_id,
+            current_goal = goal["goal_text"],
+            task_entry_stage = "suggest"
+            )
 
         # Only add message if not already in chat
         already_has_prompt = any("adding more tasks for your goal" in m["message"] for m in st.session_state["chat_thread"])
@@ -287,65 +348,6 @@ import streamlit.components.v1 as components
 
 # Use pixel height for consistent layout
 chat_height_px = 400
-# if st.session_state["chat_state"] not in ["menu", "view_goals"] else 400
-
-# GOAL OVERVIEW INJECTION
-# Inject goal HTML into chat thread if viewing goals
-# if st.session_state["chat_state"] == "view_goals":
-#     if not any(
-#         "Your SMART Goals:" in m["message"] or "You haven’t created any goal" in m["message"]
-#         for m in st.session_state["chat_thread"]
-#     ):
-#         user_id = str(st.session_state["user_id"])  # Ensure it's a string
-#         goals = get_goals(st.session_state["user_id"])
-#         if not goals:
-#             goal_html = "<div class='chat-left'>You haven’t created any goal yet.</div>"
-#         else:
-#             goal_html = "<div class='chat-left'><strong>Your SMART Goals:</strong><br>"
-#             for goal in goals:
-#                 goal_id = goal["id"]
-#                 goal_text = goal["goal_text"]
-#                 goal_html += f"<strong>Goal:</strong> {goal_text}<br>"
-#                 tasks = get_tasks(goal_id, active_only=True)
-#                 if tasks:
-#                     for task in tasks:
-#                         task_id = task["id"]
-#                         task_text = task["task_text"]
-#                         completed = task["completed"]
-#                         status = "✅" if completed else "⬜️"
-#                         goal_html += f"{status} {task_text}<br>"
-#                 else:
-#                     goal_html += "<em>No subtasks yet.</em><br>"
-#                 # goal_html += "<hr>"
-#             goal_html += "</div>"
-
-#         st.session_state["chat_thread"].append({
-#             "sender": "Assistant",
-#             "message": goal_html
-#         })
-#         # now show “X of Y tasks done last week”
-#         meta = get_last_reflection_meta(user_id, goal_id)
-#         if meta:
-#             responses = get_reflection_responses(meta["id"])
-#             total_tasks = len(tasks)
-#             done = sum(1 for r in responses if r["progress_rating"] == 4)
-#             summary_html = (
-#                 "<div class='chat-left'>"
-#                 f"<b>Last Reflection (Week {meta['week_number']}):</b><br>"
-#                 f"✅ You completed {done}/{total_tasks} tasks."
-#                 "</div>"
-#             )
-#             st.session_state["chat_thread"].append({
-#                 "sender": "Assistant",
-#                 "message": summary_html
-#             })
-
-# STABLE VER
-# chat_bubble_html = "".join([
-#     f'<div class="{"chat-left" if m["sender"] == "Assistant" else "chat-right"}">{m["message"]}</div>'
-#     for m in st.session_state["chat_thread"]
-# ])
-
 # EXPERIMENTAL START #
 
 previous_len = st.session_state.get("last_rendered_index", 0)
@@ -358,7 +360,7 @@ chat_bubble_html = ""
 for i, m in enumerate(st.session_state["chat_thread"]):
     css_class = "chat-left" if m["sender"] == "Assistant" else "chat-right"
     if i >= previous_len:
-        # This is a new message – hide initially
+        # This is a new message, hide initially
         chat_bubble_html += f'<div class="{css_class} message" style="display: none;">{m["message"]}</div>'
     else:
         chat_bubble_html += f'<div class="{css_class}">{m["message"]}</div>'
@@ -545,12 +547,15 @@ def run_intro():
     if st.session_state.get("chat_state") == "intro":
         if st.button("Yes, let's start!", key="start_training_btn"):
             st.session_state["chat_thread"].append({"sender": "User", "message": "Yes, let's start!"})
-            set_state(chat_state= "smart_training", message_index = 0)
-            st.session_state["smart_step"] = "intro"
-            # st.session_state["message_index"] = 0
+            set_state(
+                chat_state= "smart_training", 
+                message_index = 0, 
+                needs_restore = True,
+                smart_step = "intro")
             st.rerun()
 
 def run_smart_training():
+    first= not user_completed_training(st.session_state["user_id"])
     print("🔵 In run_smart_training()")
     step = smart_training_flow[st.session_state["smart_step"]]
     if st.session_state["smart_step"] not in smart_training_flow:
@@ -574,7 +579,11 @@ def run_smart_training():
             st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
 
         # Always advance index after rendering
-        st.session_state["message_index"] += 1
+        # st.session_state["message_index"] += 1
+        set_state(
+            message_index = st.session_state["message_index"] + 1,
+            needs_restore=first
+            )
         time.sleep(0.7)
         st.rerun()
 
@@ -589,15 +598,29 @@ def run_smart_training():
                     break
             if selected:
                 st.session_state["chat_thread"].append({"sender": "User", "message": selected})
-                st.session_state["smart_step"] = step["next"][selected]
-                st.session_state["message_index"] = 0
+                # st.session_state["smart_step"] = step["next"][selected]
+                # st.session_state["message_index"] = 0
+                set_state(
+                    smart_step = step["next"][selected],
+                    message_index = 0,
+                    needs_restore=first
+                )
                 st.rerun()
         elif step.get("complete"):
             if not(user_completed_training(st.session_state["user_id"])):
                 mark_training_completed(st.session_state["user_id"])
-            set_state(chat_state= "goal_setting", message_index = 0)
-            st.session_state["goal_step"] = "initial_goal"
-            # st.session_state["message_index"] = 0
+                set_state(
+                    chat_state= "goal_setting", 
+                    message_index = 0,
+                    goal_step = "initial_goal",
+                    needs_restore=True
+                    )
+            else:
+                set_state(
+                    chat_state= "menu", 
+                    message_index = 0,
+                    needs_restore=False
+                    )
             st.rerun()
 
 def run_menu():
@@ -609,31 +632,46 @@ def run_menu():
         st.session_state["chat_thread"][-1]["sender"] == "Assistant" and
         "What would you like to do next?" not in st.session_state["chat_thread"][-1]["message"]
     ):
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": "What would you like to do next? You can view your goal, review training, or create something new."
-        })
+        if user_goals_exist(st.session_state["user_id"]):
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
+            })
+        else:
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "You have not set a goal yet. Please create a goal to proceed!"
+            })
         st.rerun()
-    
+
     col1,col2= st.columns(2)
 
     if not user_goals_exist(st.session_state["user_id"]):
         if col1.button("➕ Create a New Goal"):
-            st.session_state["chat_state"] = "goal_setting"
-            st.session_state["goal_step"] = "initial_goal"
-            st.session_state["message_index"] = 0
+            set_state(
+                chat_state = "goal_setting",
+                goal_step = "initial_goal",
+                message_index = 0,
+                needs_restore=True
+                )
             st.rerun()
     else:
         if col1.button("✅ View Existing Goal and Tasks"):
             st.session_state["trigger_view_goals"] = True
-            st.session_state["chat_state"] = "view_goals"
+            set_state(
+                chat_state = "view_goals",
+                needs_restore=True
+                )
             st.rerun()
 
     if user_completed_training(st.session_state["user_id"]):
         if col2.button("📚 Review SMART Goal Training"):
-            st.session_state["chat_state"] = "smart_training"
-            st.session_state["smart_step"] = "intro"
-            st.session_state["message_index"] = 0
+            set_state(
+                chat_state = "smart_training",
+                smart_step = "intro",
+                message_index = 0,
+                needs_restore=False
+            )
             st.rerun()
 
 
@@ -704,7 +742,10 @@ def run_view_goals():
         st.stop()
 
     if col2.button("⬅️ Back to Menu"):
-        st.session_state["chat_state"] = "menu"
+        set_state(
+            chat_state    = "menu",
+            needs_restore = False
+            )
         st.rerun()
     
     with col3:

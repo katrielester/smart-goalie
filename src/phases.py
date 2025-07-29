@@ -244,7 +244,7 @@ smart_training_flow = {
         "next": {"Continue to goal setting": "end"}
     },
     "end": {
-        "text": ["SMART goal training complete — let’s help you set your own now!"],
+        "text": ["SMART goal training complete, let’s help you set your own now!"],
         "complete": True
     }
 }

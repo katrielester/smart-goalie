@@ -11,11 +11,15 @@ from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phas
 from phases import goal_setting_flow, goal_setting_flow_score
 from chat_thread import ChatThread
 from db_utils import build_goal_tasks_text
+from streamlit_app import set_state
 
 def run_goal_setting():
     USE_LLM_SCORING=True;
     if "goal_step" not in st.session_state:
-        st.session_state["goal_step"] = "initial_goal"
+        set_state(
+            goal_step = "initial_goal",
+            needs_restore=True
+        )
 
     flow = goal_setting_flow_score if USE_LLM_SCORING else goal_setting_flow;
 
@@ -50,17 +54,21 @@ def run_goal_setting():
                 break
         if selected:
             st.session_state["chat_thread"].append({"sender": "User", "message": selected})
-            st.session_state["goal_step"] = step["next"][selected]
-            st.session_state["message_index"] = 0
+            set_state(
+                goal_step = step["next"][selected],
+                message_index = 0
+            )
             st.rerun()
 
     elif step.get("input_type") == "text":
         user_input = st.chat_input("Type your answer")
         if user_input:
             st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
-            st.session_state["current_goal"] = user_input
-            st.session_state["goal_step"] = step["next"]
-            st.session_state["message_index"] = 0
+            set_state(
+                current_goal = user_input,
+                goal_step = step["next"],
+                message_index = 0
+            )
             st.rerun()
 
     elif "llm_feedback" in step:
@@ -79,9 +87,11 @@ def run_goal_setting():
             feedback = check_smart_feedback(goal, dimension).strip()
             # st.session_state["chat_thread"][-1]["message"] = feedback
             st.session_state["llm_feedback_result"] = feedback
-            st.session_state["goal_step"] = step["next"]
+            set_state(
+                goal_step = step["next"],
+                message_index = 0
+            )
             del st.session_state["llm_feedback_pending"]
-            st.session_state["message_index"] = 0
             st.rerun()
 
     elif "fix_with_llm" in step:
@@ -118,8 +128,10 @@ def run_goal_setting():
             )
 
             del st.session_state["llm_typing"]
-            st.session_state["goal_step"] = step["next"]
-            st.session_state["message_index"] = 0
+            set_state(
+                goal_step = step["next"],
+                message_index = 0
+            )
             st.rerun()
 
     elif step.get("complete"):
@@ -128,7 +140,9 @@ def run_goal_setting():
             goal_text=st.session_state["current_goal"]
         )
 
-        st.session_state["goal_id_being_worked"] = goal_id
+        set_state(
+            goal_id_being_worked = goal_id
+        )
         st.session_state["task_count"] = 0
         st.session_state["tasks_entered"] = []
         
@@ -167,8 +181,10 @@ def run_goal_setting():
                 "message": "Now it’s your turn! What’s one small task you’d like to add first?"
             }
         ])
-        st.session_state["task_entry_stage"] = "entry"
-        st.session_state["chat_state"] = "add_tasks"
+        set_state(
+            task_entry_stage = "entry",
+            chat_state = "add_tasks"
+        )
         st.rerun()
 
 
@@ -181,7 +197,9 @@ def run_add_tasks():
         st.session_state["tasks_saved"] = []
 
     if "task_entry_stage" not in st.session_state:
-        st.session_state["task_entry_stage"] = "suggest"
+        set_state(
+            task_entry_stage = "suggest"
+        )
 
     # ✅ Always run this if in suggest stage (even after rerun)
     if st.session_state["task_entry_stage"] == "suggest":
@@ -209,7 +227,9 @@ def run_add_tasks():
                 "message": f"Here are some task ideas based on your goal:<br><br>{suggested}<br><br>"
                         "Type one of these or add your own!"
             }
-            st.session_state["task_entry_stage"] = "entry"
+            set_state(
+                task_entry_stage = "entry"
+            )
             del st.session_state["suggestion_pending"]
             st.rerun()
 
@@ -217,7 +237,7 @@ def run_add_tasks():
         task_input = st.chat_input("Type a small task you'd like to do")
 
         if task_input:
-            st.session_state["candidate_task"] = task_input.strip()
+            set_state(candidate_task = task_input.strip())
             st.session_state["chat_thread"].append({
                 "sender": "User",
                 "message": task_input.strip()
@@ -227,7 +247,9 @@ def run_add_tasks():
                 "message": f"Would you like to save this task?<br><br><b>{task_input.strip()}</b><br><br>"
                            "Please confirm below."
             })
-            st.session_state["task_entry_stage"] = "confirm"
+            set_state(
+                task_entry_stage = "confirm"
+            )
             st.rerun()
 
     elif st.session_state["task_entry_stage"] == "confirm":
@@ -242,7 +264,10 @@ def run_add_tasks():
                         "Please replace or archive one during your next reflection before adding more."
                     )
                 })
-                st.session_state["chat_state"] = "menu"
+                set_state(
+                    chat_state    = "menu",
+                    needs_restore = False
+                    )
                 del st.session_state["task_entry_stage"]
                 st.rerun()
             task = st.session_state.pop("candidate_task")
@@ -260,7 +285,7 @@ def run_add_tasks():
                     "sender": "Assistant",
                     "message": "Would you like to add another task?"
                 })
-                st.session_state["task_entry_stage"] = "add_more_decision"
+                set_state(task_entry_stage = "add_more_decision")
             else:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
@@ -269,7 +294,12 @@ def run_add_tasks():
                 if get_user_phase(st.session_state["user_id"]) < 2:
                     show_reflection_explanation()
                     update_user_phase(st.session_state["user_id"], 2)
-                st.session_state["chat_state"] = "menu"
+                    
+                set_state(
+                    chat_state    = "menu",
+                    needs_restore = False
+                    )
+                    
                 del st.session_state["task_entry_stage"]
             st.rerun()
 
@@ -278,13 +308,13 @@ def run_add_tasks():
                 "sender": "Assistant",
                 "message": "No problem! Please enter a new task."
             })
-            st.session_state["task_entry_stage"] = "entry"
+            set_state(task_entry_stage = "entry")
             del st.session_state["candidate_task"]
             st.rerun()
     elif st.session_state["task_entry_stage"] == "add_more_decision":
         col1, col2 = st.columns([1, 1])
         if col1.button("➕ Yes, add another"):
-            st.session_state["task_entry_stage"] = "suggest"
+            set_state(task_entry_stage = "suggest")
             st.rerun()
 
         if col2.button("✅ No, done for now"):
@@ -296,7 +326,10 @@ def run_add_tasks():
             if get_user_phase(st.session_state["user_id"]) < 2:
                 show_reflection_explanation()
                 update_user_phase(st.session_state["user_id"], 2)
-            st.session_state["chat_state"] = "menu"
+            set_state(
+                chat_state    = "menu",
+                needs_restore = False
+                )
             del st.session_state["task_entry_stage"]
             st.rerun()
 

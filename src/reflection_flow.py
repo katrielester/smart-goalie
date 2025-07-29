@@ -10,6 +10,7 @@ from db import (
 from llama_utils import summarize_reflection, suggest_tasks_with_context
 import json
 from chat_thread import ChatThread
+from streamlit_app import set_state
 
 progress_options = [
     "Not started",
@@ -37,9 +38,9 @@ def run_weekly_reflection():
         group_code = str(group_code_raw).strip()
         # st.write(f"DEBUG: Raw group from DB: {group_code_raw} (converted to '{group_code}')")
         if group_code == "1":
-            st.session_state["group"] = "treatment"
+            set_state(group = "treatment")
         else:
-            st.session_state["group"] = "control"
+            set_state(group = "control")
 
     if "group" not in st.session_state:
         st.error("❌ Group not set. Something went wrong in session initialization.")
@@ -58,6 +59,10 @@ def run_weekly_reflection():
 
     st.session_state["week"] = week
     st.session_state["session"] = session
+    set_state(
+        week = week,
+        session = session
+    )
 
     phase = get_user_phase(user_id)
 
@@ -83,7 +88,10 @@ def run_weekly_reflection():
 
         col1, col2 = st.columns(2)
         if col1.button("⬅️ Return to Main Menu"):
-            st.session_state["chat_state"] = "menu"
+            set_state(
+                chat_state = "menu",
+                needs_restore = False
+            )
             del st.session_state["reflection_acknowledged"]
             st.rerun()
 
@@ -519,7 +527,10 @@ def run_weekly_reflection():
         if not active_tasks:
             st.warning("⚠️ You have no active tasks left. Please add new tasks before the next reflection.")
             if st.button("➕ Add Tasks Now"):
-                st.session_state["chat_state"] = "add_tasks"
+                set_state(
+                    chat_state = "add_tasks",
+                    needs_restore = True
+                )
                 st.rerun()
 
         delete_reflection_draft(user_id, goal_id, week, session)
@@ -539,7 +550,10 @@ def run_weekly_reflection():
         st.success("Reflection submitted and saved!")
 
         if st.button("⬅️ Return to Main Menu"):
-            st.session_state["chat_state"] = "menu"
+            set_state(
+                chat_state = "menu",
+                needs_restore = False
+            )
 
         for key in list(st.session_state.keys()):
             if key.startswith("reflection_") or key in [

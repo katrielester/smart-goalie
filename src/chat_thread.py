@@ -1,5 +1,8 @@
+# chat_thread.py
+
 from datetime import datetime
 from db import save_message_to_db
+import streamlit as st
 
 class ChatThread(list):
     def __init__(self, user_id, *entries):
@@ -9,21 +12,22 @@ class ChatThread(list):
             self.append(e)
 
     def append(self, entry):
-        # 1️⃣ Pick the DB‐side sender value
+        # Pick the DB‐side sender value
         db_sender = "bot" if entry["sender"] == "Assistant" else "user"
 
-        # 2️⃣ Generate one timestamp for both DB & UI
+        # Generate one timestamp for both DB & UI
         ts = datetime.now().isoformat()
 
-        # 3️⃣ Persist into the database with the mapped sender
+        # Persist into the database with the mapped sender
         save_message_to_db(
             self.user_id,
             db_sender,
             entry["message"],
-            ts
-        )
+            ts,
+            phase=st.session_state["chat_state"]  
+            )
 
-        # 4️⃣ Store in-memory for UI (with the original label)
+        # Store in-memory for UI (with the original label)
         super().append({
             "sender":    entry["sender"],
             "message":   entry["message"],
