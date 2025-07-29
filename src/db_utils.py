@@ -1,7 +1,7 @@
 # db_utils.py
-
+import streamlit as st
 import pandas as pd
-from db import conn  # This brings in your existing global connection
+from db import conn, save_session_state  # This brings in your existing global connection
 
 
 # At the top of goal_flow.py (or in a shared utils module)
@@ -18,6 +18,38 @@ def build_goal_tasks_text(goal, tasks):
     for t in tasks:
         lines.append(f"- {t}")
     return "\n".join(lines)
+
+def set_state(**kwargs):
+    for k, v in kwargs.items():
+        st.session_state[k] = v
+
+    keys_to_save = [
+        "needs_restore",
+        
+        # routing
+        "chat_state",
+        "group",
+
+        # SMART‑training
+        "smart_step",
+        "message_index",
+
+        # Goal‑setting
+        "goal_step",
+        "current_goal",
+
+        # Task‑entry
+        "goal_id_being_worked",
+        "task_entry_stage",
+        "candidate_task",
+
+        # (only if you ever jump into reflection via URL)
+        "week",
+        "session",
+    ]
+
+    to_save = {k: st.session_state.get(k) for k in keys_to_save}
+    save_session_state(st.session_state["user_id"], to_save)
 
 
 def export_chat_history(user_id, format="csv"):

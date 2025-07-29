@@ -10,7 +10,7 @@ from db import (
 from llama_utils import summarize_reflection, suggest_tasks_with_context
 import json
 from chat_thread import ChatThread
-from streamlit_app import set_state
+from db_utils import set_state
 
 progress_options = [
     "Not started",

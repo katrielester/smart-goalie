@@ -10,8 +10,7 @@ from llama_utils import (
 from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phase
 from phases import goal_setting_flow, goal_setting_flow_score
 from chat_thread import ChatThread
-from db_utils import build_goal_tasks_text
-from streamlit_app import set_state
+from db_utils import build_goal_tasks_text, set_state
 
 def run_goal_setting():
     USE_LLM_SCORING=True;
