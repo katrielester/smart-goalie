@@ -645,7 +645,7 @@ def run_menu():
 
 def run_view_goals():
     # 1) grab & consume the “I just clicked view” flag
-    triggered = st.session_state.pop("trigger_view_goals", False)
+    triggered = st.session_state.get("trigger_view_goals", False)
 
     user_id = st.session_state["user_id"]
     goals   = get_goals_with_task_counts(user_id)
@@ -684,7 +684,7 @@ def run_view_goals():
                     "</div>"
                 )
                 st.session_state["chat_thread"].append({"sender":"Assistant","message":summary})
-            
+            st.session_state["trigger_view_goals"] = False
             st.rerun()
 
     # 2) now always render the two columns of buttons
