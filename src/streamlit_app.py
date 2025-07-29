@@ -199,35 +199,35 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
         st.stop()
 
+    if not saved.get("needs_restore"):
+        # Routing logic
+        print("Week:", week)
+        print("Session:", session)
+        print("Group (from DB or URL):", st.session_state["group"], group)
+        
+        if st.session_state["group"] == "treatment" and week and session:
+            set_state(
+                chat_state     = "reflection",
+                needs_restore  = True
+                )
 
-    # Routing logic
-    print("Week:", week)
-    print("Session:", session)
-    print("Group (from DB or URL):", st.session_state["group"], group)
+        elif user_completed_training(user_id):
+            set_state(
+                chat_state="menu", 
+                needs_restore=False
+                )
+        else:
+            set_state(
+                chat_state="intro", 
+                needs_restore=False
+                )
 
-    if st.session_state["group"] == "treatment" and week and session:
-        set_state(
-            chat_state     = "reflection",
-            needs_restore  = True
-            )
-
-    elif user_completed_training(user_id):
-        set_state(
-            chat_state="menu", 
-            needs_restore=False
-            )
-    else:
-        set_state(
-            chat_state="intro", 
-            needs_restore=False
-            )
-
-    # Common session vars
-    st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
-    st.session_state["smart_step"] = "intro"
-    st.session_state["message_index"] = 0
-    st.session_state["current_goal"] = ""
-    st.session_state["force_task_handled"] = False
+        # Common session vars
+        st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
+        st.session_state["smart_step"] = "intro"
+        st.session_state["message_index"] = 0
+        st.session_state["current_goal"] = ""
+        st.session_state["force_task_handled"] = False
 
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.warning("Please authenticate first.")
