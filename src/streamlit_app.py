@@ -92,6 +92,8 @@ with st.sidebar:
             st.session_state["week"] = 1
             st.session_state["session"] = "a"
             st.rerun()
+    
+st.sidebar.write("🛠 chat_state missing?", "chat_state" not in st.session_state)
 
 with st.sidebar:
     st.title("User Panel")
@@ -118,9 +120,9 @@ with st.sidebar:
         st.stop()
 
 # debug: show me what keys are present on *every* render
-st.sidebar.write("🛠 DEBUG session_state keys:", list(st.session_state.keys()))
+st.sidebar.write("🛠 session_state keys:", list(st.session_state.keys()))
 # and show whether chat_state is missing
-st.sidebar.write("🛠 DEBUG chat_state missing?", "chat_state" not in st.session_state)
+st.sidebar.write("🛠 chat_state missing?", "chat_state" not in st.session_state)
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
