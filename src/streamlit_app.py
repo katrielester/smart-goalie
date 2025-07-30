@@ -87,6 +87,7 @@ with st.sidebar:
     if DEV_MODE:
         if st.button("Dev: Jump to Goal Setting"):
             st.session_state["chat_state"] = "goal_setting"
+            st.session_state["goal_step"] = "initial_goal" 
             mark_training_completed(st.session_state["user_id"])
             st.session_state["message_index"] = 0
             st.rerun()
