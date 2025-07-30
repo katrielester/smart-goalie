@@ -88,6 +88,9 @@ def run_goal_setting():
             current_text = current_text.replace(
                 "{llm_feedback}", st.session_state.get("llm_feedback_result", "")
             )
+        # Only pop if last message is our placeholder
+        if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "🔎 Analyzing your goal…":
+            st.session_state["chat_thread"].pop()
         st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
         st.session_state["message_index"] += 1
         st.rerun()
@@ -170,9 +173,15 @@ def run_goal_setting():
             formatted_variants = extract_goal_variants(updated_goal).strip()
             current_goal = st.session_state.get("current_goal", "")
 
-            st.session_state["chat_thread"][-1]["message"] = (
+            llm_message = (
                 f"{formatted_variants}<br>"
             )
+
+            # Only pop if last message is our placeholder
+            if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "✍️ Typing...":
+                st.session_state["chat_thread"].pop()
+            st.session_state["chat_thread"].append({"sender": "Assistant", "message": llm_message})
+
 
             del st.session_state["llm_typing"]
             set_state(

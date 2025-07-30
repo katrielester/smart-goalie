@@ -18,14 +18,15 @@ class ChatThread(list):
         # Generate one timestamp for both DB & UI
         ts = datetime.now().isoformat()
 
-        # Persist into the database with the mapped sender
-        save_message_to_db(
-            self.user_id,
-            db_sender,
-            entry["message"],
-            ts,
-            phase=st.session_state["chat_state"]  
-            )
+        if entry["message"].strip() not in {"🔎 Analyzing your goal…", "✍️ Typing..."}:
+            # Persist into the database with the mapped sender
+            save_message_to_db(
+                self.user_id,
+                db_sender,
+                entry["message"],
+                ts,
+                phase=st.session_state["chat_state"]  
+                )
 
         # Store in-memory for UI (with the original label)
         super().append({
