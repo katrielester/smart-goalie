@@ -630,47 +630,69 @@ def run_smart_training():
             st.rerun()
 
 def run_menu():
-    if "chat_thread" not in st.session_state:
-        if user_goals_exist(st.session_state["user_id"]):
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
-            })
+    user_id = st.session_state["user_id"]
+    chat_thread = st.session_state.setdefault("chat_thread", [])
+
+    # Defensive: If the chat is empty, try to repopulate from DB (just once)
+    if not chat_thread:
+        # Try to reload from DB, only for the menu phase
+        db_history = get_chat_history(user_id, "menu")
+        if db_history:
+            for row in db_history:
+                chat_thread.append({
+                    "sender": "Assistant" if row["sender"] == "bot" else "User",
+                    "message": row["message"]
+                })
+            st.session_state["chat_thread"] = chat_thread
+            st.rerun()
         else:
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": "You have not set a goal yet. Please create a goal to proceed!"
-            })
-        st.rerun()
-    else:
-        # Prevent infinite loops: Only append *once* per menu entry
-        last_msg = st.session_state["chat_thread"][-1]
-        if (
-            last_msg["sender"] == "Assistant"
-            and last_msg["message"] == "You have not set a goal yet. Please create a goal to proceed!"
-            and not user_goals_exist(st.session_state["user_id"])
-        ):
-            pass # Do nothing, the prompt is already shown
-        elif (
-            last_msg["sender"] == "Assistant"
-            and last_msg["message"].startswith("What would you like to do next?")
-            and user_goals_exist(st.session_state["user_id"])
-        ):
-            pass # Do nothing, correct prompt is shown
-        else:
-            # Handle other cases (e.g. switching from one state to another)
-            if user_goals_exist(st.session_state["user_id"]):
-                st.session_state["chat_thread"].append({
+            # No DB history, just show the normal initial prompt
+            if user_goals_exist(user_id):
+                chat_thread.append({
                     "sender": "Assistant",
                     "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
                 })
             else:
-                st.session_state["chat_thread"].append({
+                chat_thread.append({
                     "sender": "Assistant",
                     "message": "You have not set a goal yet. Please create a goal to proceed!"
                 })
+            st.session_state["chat_thread"] = chat_thread
             st.rerun()
 
+    # At this point, we are guaranteed chat_thread is non-empty
+    last_msg = chat_thread[-1]
+    goals_exist = user_goals_exist(user_id)
+
+    # Prevent infinite loop: Only append menu bubble ONCE per menu render
+    if (
+        last_msg["sender"] == "Assistant"
+        and last_msg["message"] == "You have not set a goal yet. Please create a goal to proceed!"
+        and not goals_exist
+    ):
+        pass
+    elif (
+        last_msg["sender"] == "Assistant"
+        and last_msg["message"].startswith("What would you like to do next?")
+        and goals_exist
+    ):
+        pass
+    else:
+        # Handle all state transitions
+        if goals_exist:
+            chat_thread.append({
+                "sender": "Assistant",
+                "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
+            })
+        else:
+            chat_thread.append({
+                "sender": "Assistant",
+                "message": "You have not set a goal yet. Please create a goal to proceed!"
+            })
+        st.session_state["chat_thread"] = chat_thread
+        st.rerun()
+
+    # ────── BUTTONS UI ──────
 
     col1,col2= st.columns(2)
 
