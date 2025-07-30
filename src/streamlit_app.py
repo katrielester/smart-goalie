@@ -93,6 +93,10 @@ with st.sidebar:
             st.session_state["week"] = 1
             st.session_state["session"] = "a"
             st.rerun()
+
+        if st.sidebar.button("Force clear session_state"):
+            st.session_state.clear()
+            st.rerun()
     
 if "chat_state" in st.session_state:
     st.sidebar.write(st.session_state["chat_state"])
