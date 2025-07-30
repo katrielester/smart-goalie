@@ -4,6 +4,9 @@ import streamlit as st
 import os
 import uuid
 
+restore_id = str(uuid.uuid4())
+print(f"🔄 Restore Cycle: {restore_id}")
+
 st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
 
 # healthz handler:
@@ -159,7 +162,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
         print("🟩 DB restore triggered for", user_id)
 
-        st.session_state["RESTORED_FROM_DB"] = str(uuid.uuid4())
+        st.session_state["RESTORED_FROM_DB"] = str(restore_id)
         print("🔄 SESSION RESTORED FROM DB! UUID:", st.session_state["RESTORED_FROM_DB"])
         
 
