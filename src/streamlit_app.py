@@ -9,11 +9,20 @@ print(f"🔄 Restore Cycle: {restore_id}")
 
 st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
 
+
 # healthz handler:
 if st.query_params.get("healthz") is not None:
     st.write("")  # 200 OK
     st.stop()     # skip the rest
 
+# ---- GLOBAL USER GUARD ----
+user_id = st.session_state.get("user_id") or st.query_params.get("PROLIFIC_PID")
+if not user_id:
+    st.warning("⚠️ Please access the chatbot using your unique study link from Prolific (with your ID in the URL).")
+    st.stop()
+else:
+    st.session_state["user_id"] = user_id  # Always sync to session state for later use
+# ---------------------------
 
 import time
 from datetime import datetime
@@ -118,15 +127,6 @@ with st.sidebar:
         st.session_state["authenticated"] = True
         st.session_state["user_id"] = user_id
 
-    elif DEV_MODE:
-        user_id = st.text_input("Enter your Prolific ID")
-        if not st.session_state.get("authenticated"):
-            if st.button("Authenticate (DEV only)") and user_id:
-                st.session_state["authenticated"] = True
-                st.session_state["user_id"] = user_id
-                st.rerun()
-        else:
-            st.info(f"Manually authenticated as {st.session_state['user_id']}")
     else:
         st.warning("Please access this link via Prolific.")
         st.stop()

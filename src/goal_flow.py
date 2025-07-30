@@ -13,12 +13,28 @@ from chat_thread import ChatThread
 from db_utils import build_goal_tasks_text, set_state
 
 def run_goal_setting():
+
     USE_LLM_SCORING=True;
     if "goal_step" not in st.session_state:
         set_state(
             goal_step = "initial_goal",
             needs_restore=True
         )
+
+    keys_needed = {
+        "goal_step": "initial_goal",
+        "message_index": 0,
+        "current_goal": "",
+        "chat_thread": ChatThread(st.session_state.get("user_id", "")),
+        "user_id": "",  # fallback for safety
+    }
+    rerun_needed = False
+    for k, v in keys_needed.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
+            rerun_needed = True
+    if rerun_needed:
+        st.rerun()
 
     flow = goal_setting_flow_score if USE_LLM_SCORING else goal_setting_flow;
 
