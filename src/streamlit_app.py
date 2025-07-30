@@ -48,6 +48,32 @@ from chat_thread import ChatThread
 # st.write("Dir listing:", os.listdir())
 # st.stop()
 
+PHASE_KEYS = {
+    "intro": [
+        "chat_state", "smart_step", "message_index", "chat_thread", "user_id"
+    ],
+    "smart_training": [
+        "chat_state", "smart_step", "message_index", "chat_thread", "user_id"
+    ],
+    "menu": [
+        "chat_state", "group", "chat_thread", "user_id"
+    ],
+    "goal_setting": [
+        "chat_state", "goal_step", "message_index", "current_goal", "chat_thread", "user_id"
+    ],
+    "add_tasks": [
+        "chat_state", "goal_id_being_worked", "task_entry_stage", "tasks_saved",
+        "current_goal", "chat_thread", "user_id"
+    ],
+    "reflection": [
+        "chat_state", "week", "session", "reflection_step", "task_progress",
+        "reflection_answers", "update_task_idx", "reflection_q_idx", "chat_thread", "user_id"
+    ],
+    "view_goals": [
+        "chat_state", "goal_id_being_worked", "chat_thread", "user_id"
+    ]
+}
+
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
@@ -171,7 +197,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
         # 1) Restore your flow flags
         for k, v in saved.items():
-            st.session_state.setdefault(k, v)
+            st.session_state[k] = v
 
         # 2) Rebuild only this phase’s chat history
         current_phase = st.session_state["chat_state"]

@@ -14,20 +14,45 @@ from db_utils import build_goal_tasks_text, set_state
 
 def run_goal_setting():
 
-    USE_LLM_SCORING=True;
+    USE_LLM_SCORING=True
+
+    # Check if we're resuming a partially completed flow
+    if st.session_state.get("needs_restore", False) and st.session_state.get("goal_step") != "initial_goal":
+        # Only show once per restore cycle
+        if not st.session_state.get("recap_rendered", False):
+            goal = st.session_state.get("current_goal", "")
+            step = st.session_state.get("goal_step", "")
+            recap_msg = (
+                f"<b>Progress saved!</b> Last step: <code>{step}</code>.<br>"
+                f"Your goal so far:<br><b>{goal}</b><br><br>"
+                "Continue where you left off below."
+            )
+            ct = st.session_state.get("chat_thread")
+            if ct:
+                ct.append({"sender": "Assistant", "message": recap_msg})
+            else:
+                st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
+                st.session_state["chat_thread"].append({"sender": "Assistant", "message": recap_msg})
+            st.session_state["recap_rendered"] = True
+            st.session_state["message_index"] = 0  # Reset to render next prompt after recap
+            st.rerun()
+    # --- (rest of your function unchanged)
+
+
     if "goal_step" not in st.session_state:
         set_state(
             goal_step = "initial_goal",
             needs_restore=True
         )
 
+    
+
     keys_needed = {
-        "goal_step": "initial_goal",
-        "message_index": 0,
-        "current_goal": "",
-        "chat_thread": ChatThread(st.session_state.get("user_id", "")),
-        "user_id": "",  # fallback for safety
-    }
+    "goal_step": "initial_goal",
+    "current_goal": "",
+    "user_id": "",
+}
+
     rerun_needed = False
     for k, v in keys_needed.items():
         if k not in st.session_state:

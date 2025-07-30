@@ -25,6 +25,7 @@ def set_state(**kwargs):
 
     keys_to_save = [
         "needs_restore",
+        
         # routing
         "chat_state",
         "group",
