@@ -118,9 +118,9 @@ with st.sidebar:
         st.stop()
 
 # debug: show me what keys are present on *every* render
-st.write("🛠 DEBUG session_state keys:", list(st.session_state.keys()))
+st.sidebar.write("🛠 DEBUG session_state keys:", list(st.session_state.keys()))
 # and show whether chat_state is missing
-st.write("🛠 DEBUG chat_state missing?", "chat_state" not in st.session_state)
+st.sidebar.write("🛠 DEBUG chat_state missing?", "chat_state" not in st.session_state)
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
@@ -171,6 +171,8 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
         # 6) Store for the UI
         st.session_state["chat_thread"] = ct
+
+        st.rerun()
 
     else:
         # No restore needed, fresh start
