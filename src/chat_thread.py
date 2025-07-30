@@ -18,7 +18,7 @@ class ChatThread(list):
         # Generate one timestamp for both DB & UI
         ts = datetime.now().isoformat()
 
-        if entry["message"].strip() not in {"🔎 Analyzing your goal…", "✍️ Typing..."}:
+        if entry["message"].strip() not in {"🔎 Analyzing your goal…", "✍️ Typing...", "Thinking of task suggestions for you… ✍️"}:
             # Persist into the database with the mapped sender
             save_message_to_db(
                 self.user_id,

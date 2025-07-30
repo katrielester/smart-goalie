@@ -217,13 +217,10 @@ def run_goal_setting():
             {
                 "sender": "Assistant",
                 "message": (
-                    "You’ll now break your goal into weekly tasks. "
-                    "<br><br>"
+                    "You’ll now break your goal into weekly tasks. <br>"
                     "<b>Here’s how it works:</b><br>"
                     "- You’ll set up to 3 small tasks to complete this week<br>"
                     "- These tasks should help you make progress on your goal<br>"
-                    "- You’ll reflect on your progress twice each week (midweek and weekend)"
-                    "<br><br>"
                     "Try to keep your tasks small, realistic, and clearly tied to this week’s focus."
                 )
             },
@@ -278,11 +275,12 @@ def run_add_tasks():
                     "3. Set a reminder to check your progress"
                 )
 
-            st.session_state["chat_thread"][-1] = {
+            if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "Thinking of task suggestions for you… ✍️":
+                st.session_state["chat_thread"].pop()
+            st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": f"Here are some task ideas based on your goal:<br><br>{suggested}<br><br>"
-                        "Type one of these or add your own!"
-            }
+                "message": "Here are some task ideas based on your goal:<br>{suggested}<br><br> Type one of these or add your own!"
+            })
             set_state(
                 task_entry_stage = "entry"
             )
