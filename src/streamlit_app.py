@@ -93,7 +93,7 @@ with st.sidebar:
             st.session_state["session"] = "a"
             st.rerun()
     
-st.sidebar.write(st.session_state["chat_state"])
+st.sidebar.write(st.session_state["chat_state"] or "None")
 
 with st.sidebar:
     st.title("User Panel")
