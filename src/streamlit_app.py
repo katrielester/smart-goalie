@@ -176,8 +176,10 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # default to control = "0"
         group = query_params.get("g", ["0"])[0]
         create_user(user_id, prolific_code=user_id, group=group)
+        print("DEBUG: Calling create_user()!")
         st.session_state["group"] = "treatment" if group == "1" else "control"
     else:
+        print(user_info)
         group = user_info["group_assignment"]
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
 
