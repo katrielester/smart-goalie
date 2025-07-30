@@ -127,7 +127,7 @@ st.sidebar.write("🛠 session_state keys:", list(st.session_state.keys()))
 # and show whether chat_state is missing
 st.sidebar.write("🛠 chat_state missing?", "chat_state" not in st.session_state)
 
-if st.session_state.get("authenticated"):
+if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
     week = query_params.get("week")
     session = query_params.get("session")
@@ -177,8 +177,6 @@ if st.session_state.get("authenticated"):
         # 6) Store for the UI
         st.session_state["chat_thread"] = ct
 
-        set_state(needs_restore=False)
-
         st.rerun()
 
     else:
@@ -213,7 +211,7 @@ if st.session_state.get("authenticated"):
 
         st.stop()
 
-    if not saved.get("needs_restore") or "chat_state" not in st.session_state:
+    if not saved.get("needs_restore"):
         # Routing logic
         print("Week:", week)
         print("Session:", session)
