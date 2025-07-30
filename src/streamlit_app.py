@@ -177,6 +177,8 @@ if st.session_state.get("authenticated"):
         # 6) Store for the UI
         st.session_state["chat_thread"] = ct
 
+        set_state(needs_restore=False)
+
         st.rerun()
 
     else:
