@@ -146,7 +146,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
         # 2) Rebuild only this phase’s chat history
         current_phase = st.session_state["chat_state"]
-        history = get_chat_history(user_id, current_phase)  # now takes phase
+        history = get_chat_history(user_id, current_phase)
 
         # 3) Create a fresh ChatThread and disable DB writes for replay
         orig_append = ChatThread.append
@@ -171,11 +171,12 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     else:
         # No restore needed, fresh start
         st.session_state["chat_state"]  = "menu"
-        st.session_state["chat_thread"] = ChatThread(user_id)
+        st.session_state.setdefault("chat_thread", ChatThread(user_id))
+
 
     goals   = get_goals_with_task_counts(user_id)
 
-    if goals and (user_info["has_completed_presurvey"]==False):
+    if goals and (user_info["has_completed_presurvey"]==False) and not (saved.get("needs_restore")):
         st.title("📝 Pre-Survey Required")
         st.warning("You haven’t completed the pre-survey yet. Please do that first to continue.")
         gr_code = 1 if str(user_info["group_assignment"]).strip() == "1" else 0
@@ -223,7 +224,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
                 )
 
         # Common session vars
-        st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
+        st.session_state.setdefault("chat_thread", ChatThread(st.session_state["user_id"]))
         st.session_state["smart_step"] = "intro"
         st.session_state["message_index"] = 0
         st.session_state["current_goal"] = ""
@@ -245,7 +246,9 @@ goals = get_goals_with_task_counts(st.session_state["user_id"])
 if (
     st.session_state.get("chat_state") == "menu" 
     and goals 
-    and not st.session_state.get("force_task_handled", False)):
+    and not st.session_state.get("force_task_handled", False)
+    and not st.session_state.get("needs_restored", False)):
+
     goal_with_no_active_tasks = next((g for g in goals if g["task_count"] == 0), None)
 
     if goal_with_no_active_tasks:
