@@ -93,7 +93,7 @@ with st.sidebar:
             st.session_state["session"] = "a"
             st.rerun()
     
-if "chat_state"  in st.session_state:
+if "chat_state" in st.session_state:
     st.sidebar.write(st.session_state["chat_state"])
 else:
     st.sidebar.write("None")
@@ -127,7 +127,7 @@ st.sidebar.write("🛠 session_state keys:", list(st.session_state.keys()))
 # and show whether chat_state is missing
 st.sidebar.write("🛠 chat_state missing?", "chat_state" not in st.session_state)
 
-if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
+if st.session_state.get("authenticated"):
     query_params = st.query_params.to_dict()
     week = query_params.get("week")
     session = query_params.get("session")
@@ -211,7 +211,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
         st.stop()
 
-    if not saved.get("needs_restore"):
+    if not saved.get("needs_restore") or "chat_state" not in st.session_state:
         # Routing logic
         print("Week:", week)
         print("Session:", session)
