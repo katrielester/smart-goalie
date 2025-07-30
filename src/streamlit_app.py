@@ -117,6 +117,7 @@ with st.sidebar:
         st.warning("Please access this link via Prolific.")
         st.stop()
 
+print("chat_state" not in st.session_state)
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
