@@ -151,16 +151,16 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         group = user_info["group_assignment"]
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
 
-    st.sidebar.write("🧬 DB restore fingerprint:", st.session_state.get("RESTORED_FROM_DB", "(not restored this run)"))
+    print("🧬 DB restore fingerprint:", st.session_state.get("RESTORED_FROM_DB", "(not restored this run)"))
 
     saved = get_session_state(user_id) or {}
 
     if saved.get("needs_restore"):
 
-        st.sidebar.write("🟩 DB restore triggered for", user_id)
+        print("🟩 DB restore triggered for", user_id)
 
         st.session_state["RESTORED_FROM_DB"] = str(uuid.uuid4())
-        st.sidebar.write("🔄 SESSION RESTORED FROM DB! UUID:", st.session_state["RESTORED_FROM_DB"])
+        print("🔄 SESSION RESTORED FROM DB! UUID:", st.session_state["RESTORED_FROM_DB"])
         
 
         # 1) Restore your flow flags
@@ -194,14 +194,14 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.rerun()
 
     else:
-        st.sidebar.write("🟦 No DB restore needed, menu phase set")
+        print("🟦 No DB restore needed, menu phase set")
 
         # No restore needed, fresh start
         st.session_state["chat_state"]  = "menu"
         st.session_state.setdefault("chat_thread", ChatThread(user_id))
 
 
-    goals   = get_goals_with_task_counts(user_id)
+    goals = get_goals_with_task_counts(user_id)
 
     if goals and (user_info["has_completed_presurvey"]==False) and not (saved.get("needs_restore")):
         st.title("📝 Pre-Survey Required")
