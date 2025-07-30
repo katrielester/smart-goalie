@@ -28,11 +28,15 @@ def run_goal_setting():
                 "Continue where you left off below."
             )
             ct = st.session_state.get("chat_thread")
+            # bypass db write
+            orig_append = ChatThread.append
+            ct.append = lambda entry: list.append(ct, entry)
             if ct:
                 ct.append({"sender": "Assistant", "message": recap_msg})
             else:
                 st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
                 st.session_state["chat_thread"].append({"sender": "Assistant", "message": recap_msg})
+            ct.append = orig_append.__get__(ct, ChatThread)
             st.session_state["recap_rendered"] = True
             st.session_state["message_index"] = 0  # Reset to render next prompt after recap
             st.rerun()
@@ -69,14 +73,17 @@ def run_goal_setting():
         texts = [texts]
 
     current_index = st.session_state.get("message_index", 0)
-    
-    # Flag to block message rendering but still show the rest of the UI on first render after restore
-    skip_message = False
-    if st.session_state.get("just_restored", False):
-        skip_message = True
-        del st.session_state["just_restored"]
 
-    if current_index < len(texts):
+    if st.session_state.get("just_restored", False):
+        # During restore, skip all assistant messages for this step by fast-forwarding message_index
+        if current_index < len(texts):
+            st.session_state["message_index"] += 1
+            st.rerun()
+        else:
+            # All assistant texts skipped; now allow buttons/inputs to show and normal rendering resumes
+            del st.session_state["just_restored"]
+
+    elif current_index < len(texts):
         current_text = texts[current_index]
         current_text = current_text.replace(
             "{current_goal}", st.session_state.get("current_goal", "")
@@ -85,11 +92,9 @@ def run_goal_setting():
             current_text = current_text.replace(
                 "{llm_feedback}", st.session_state.get("llm_feedback_result", "")
             )
-        if not skip_message:
-            st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
+        st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
         st.session_state["message_index"] += 1
         st.rerun()
-
 
     elif step.get("buttons"):
         selected = None
