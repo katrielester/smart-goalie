@@ -117,7 +117,10 @@ with st.sidebar:
         st.warning("Please access this link via Prolific.")
         st.stop()
 
-st.write("chat_state in session_state? ", "chat_state" in st.session_state)
+# debug: show me what keys are present on *every* render
+st.write("🛠 DEBUG session_state keys:", list(st.session_state.keys()))
+# and show whether chat_state is missing
+st.write("🛠 DEBUG chat_state missing?", "chat_state" not in st.session_state)
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
