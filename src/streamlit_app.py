@@ -633,38 +633,25 @@ def run_menu():
     user_id = st.session_state["user_id"]
     chat_thread = st.session_state.setdefault("chat_thread", [])
 
-    # Defensive: If the chat is empty, try to repopulate from DB (just once)
+    # Only ever append if chat_thread is empty
     if not chat_thread:
-        # Try to reload from DB, only for the menu phase
-        db_history = get_chat_history(user_id, "menu")
-        if db_history:
-            for row in db_history:
-                chat_thread.append({
-                    "sender": "Assistant" if row["sender"] == "bot" else "User",
-                    "message": row["message"]
-                })
-            st.session_state["chat_thread"] = chat_thread
-            st.rerun()
+        if user_goals_exist(user_id):
+            chat_thread.append({
+                "sender": "Assistant",
+                "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
+            })
         else:
-            # No DB history, just show the normal initial prompt
-            if user_goals_exist(user_id):
-                chat_thread.append({
-                    "sender": "Assistant",
-                    "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
-                })
-            else:
-                chat_thread.append({
-                    "sender": "Assistant",
-                    "message": "You have not set a goal yet. Please create a goal to proceed!"
-                })
-            st.session_state["chat_thread"] = chat_thread
-            st.rerun()
+            chat_thread.append({
+                "sender": "Assistant",
+                "message": "You have not set a goal yet. Please create a goal to proceed!"
+            })
+        st.session_state["chat_thread"] = chat_thread
+        st.rerun()
 
-    # At this point, we are guaranteed chat_thread is non-empty
     last_msg = chat_thread[-1]
     goals_exist = user_goals_exist(user_id)
 
-    # Prevent infinite loop: Only append menu bubble ONCE per menu render
+    # Only append menu bubble ONCE per menu render
     if (
         last_msg["sender"] == "Assistant"
         and last_msg["message"] == "You have not set a goal yet. Please create a goal to proceed!"
@@ -678,7 +665,6 @@ def run_menu():
     ):
         pass
     else:
-        # Handle all state transitions
         if goals_exist:
             chat_thread.append({
                 "sender": "Assistant",
