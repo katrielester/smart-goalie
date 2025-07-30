@@ -224,6 +224,8 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.session_state["chat_thread"] = ct
 
         st.session_state["restored_done"] = True
+
+        st.session_state["just_restored"] = True
         
         st.rerun()
 
