@@ -631,13 +631,6 @@ def run_smart_training():
 
 def run_menu():
     if "chat_thread" not in st.session_state:
-        st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
-
-    # Only show this prompt if it's not already the last message from Assistant
-    if not st.session_state["chat_thread"] or (
-        st.session_state["chat_thread"][-1]["sender"] == "Assistant" and
-        "What would you like to do next?" not in st.session_state["chat_thread"][-1]["message"]
-    ):
         if user_goals_exist(st.session_state["user_id"]):
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
@@ -649,6 +642,35 @@ def run_menu():
                 "message": "You have not set a goal yet. Please create a goal to proceed!"
             })
         st.rerun()
+    else:
+        # Prevent infinite loops: Only append *once* per menu entry
+        last_msg = st.session_state["chat_thread"][-1]
+        if (
+            last_msg["sender"] == "Assistant"
+            and last_msg["message"] == "You have not set a goal yet. Please create a goal to proceed!"
+            and not user_goals_exist(st.session_state["user_id"])
+        ):
+            pass # Do nothing, the prompt is already shown
+        elif (
+            last_msg["sender"] == "Assistant"
+            and last_msg["message"].startswith("What would you like to do next?")
+            and user_goals_exist(st.session_state["user_id"])
+        ):
+            pass # Do nothing, correct prompt is shown
+        else:
+            # Handle other cases (e.g. switching from one state to another)
+            if user_goals_exist(st.session_state["user_id"]):
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
+                })
+            else:
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "You have not set a goal yet. Please create a goal to proceed!"
+                })
+            st.rerun()
+
 
     col1,col2= st.columns(2)
 
