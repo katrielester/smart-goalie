@@ -75,13 +75,10 @@ def run_goal_setting():
     current_index = st.session_state.get("message_index", 0)
 
     if st.session_state.get("just_restored", False):
-        # During restore, skip all assistant messages for this step by fast-forwarding message_index
-        if current_index < len(texts):
-            st.session_state["message_index"] += 1
-            st.rerun()
-        else:
-            # All assistant texts skipped; now allow buttons/inputs to show and normal rendering resumes
-            del st.session_state["just_restored"]
+        st.session_state["message_index"] = len(texts)
+        del st.session_state["just_restored"]
+        # (Do NOT rerun, just fall through)
+
 
     elif current_index < len(texts):
         current_text = texts[current_index]

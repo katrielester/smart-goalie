@@ -121,6 +121,11 @@ if "did_auth_init" not in st.session_state:
 with st.sidebar:
     if DEV_MODE:
         if st.button("Dev: Jump to Goal Setting"):
+            set_state(
+                chat_state = "goal_setting",
+                goal_step = "initial_goal",
+                message_index = 0
+            )
             st.session_state["chat_state"] = "goal_setting"
             st.session_state["goal_step"] = "initial_goal" 
             mark_training_completed(st.session_state["user_id"])
