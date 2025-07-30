@@ -146,12 +146,14 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     else:
         group = user_info["group_assignment"]
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
-           
+
+    st.sidebar.write("🧬 DB restore fingerprint:", st.session_state.get("RESTORED_FROM_DB", "(not restored this run)"))
+
     saved = get_session_state(user_id) or {}
 
     if saved.get("needs_restore"):
 
-        st.write("🟩 DB restore triggered for", user_id)
+        st.sidebar.write("🟩 DB restore triggered for", user_id)
 
         st.session_state["RESTORED_FROM_DB"] = str(uuid.uuid4())
         st.sidebar.write("🔄 SESSION RESTORED FROM DB! UUID:", st.session_state["RESTORED_FROM_DB"])
@@ -188,7 +190,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.rerun()
 
     else:
-        st.write("🟦 No DB restore needed, menu phase set")
+        st.sidebar.write("🟦 No DB restore needed, menu phase set")
 
         # No restore needed, fresh start
         st.session_state["chat_state"]  = "menu"
