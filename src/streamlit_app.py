@@ -158,7 +158,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
     saved = get_session_state(user_id) or {}
 
-    if saved.get("needs_restore"):
+    if saved.get("needs_restore") and not st.session_state.get("restored_done", False):
 
         print("🟩 DB restore triggered for", user_id)
 
@@ -194,6 +194,8 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # 6) Store for the UI
         st.session_state["chat_thread"] = ct
 
+        st.session_state["restored_done"] = True
+        
         st.rerun()
 
     else:
