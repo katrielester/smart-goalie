@@ -2,6 +2,7 @@
 
 import streamlit as st
 import os
+import uuid
 
 st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
 
@@ -149,6 +150,13 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
            
     saved = get_session_state(user_id) or {}
     if saved.get("needs_restore"):
+
+        st.sidebar.write("🟩 DB restore triggered for", user_id)
+
+        st.session_state["RESTORED_FROM_DB"] = str(uuid.uuid4())
+        st.sidebar.write("🔄 SESSION RESTORED FROM DB! UUID:", st.session_state["RESTORED_FROM_DB"])
+        
+
         # 1) Restore your flow flags
         for k, v in saved.items():
             st.session_state.setdefault(k, v)
@@ -180,6 +188,8 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.rerun()
 
     else:
+        st.sidebar.write("🟦 No DB restore needed, menu phase set")
+
         # No restore needed, fresh start
         st.session_state["chat_state"]  = "menu"
         st.session_state.setdefault("chat_thread", ChatThread(user_id))
