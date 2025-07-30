@@ -77,8 +77,7 @@ def run_goal_setting():
     if st.session_state.get("just_restored", False):
         st.session_state["message_index"] = len(texts)
         del st.session_state["just_restored"]
-        # (Do NOT rerun, just fall through)
-
+        st.rerun()
 
     elif current_index < len(texts):
         current_text = texts[current_index]
