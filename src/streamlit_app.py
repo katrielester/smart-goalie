@@ -132,7 +132,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     query_params = st.query_params.to_dict()
     week = query_params.get("week")
     session = query_params.get("session")
-    print("Init Debug — Week:", week, "| Session:", session)
+    print("!!! Init Debug — Week:", week, "| Session:", session)
 
     user_id = st.session_state["user_id"]
 
@@ -146,12 +146,12 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     else:
         group = user_info["group_assignment"]
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
-        # st.write(st.session_state.get("group"),group)
            
     saved = get_session_state(user_id) or {}
+
     if saved.get("needs_restore"):
 
-        st.sidebar.write("🟩 DB restore triggered for", user_id)
+        st.write("🟩 DB restore triggered for", user_id)
 
         st.session_state["RESTORED_FROM_DB"] = str(uuid.uuid4())
         st.sidebar.write("🔄 SESSION RESTORED FROM DB! UUID:", st.session_state["RESTORED_FROM_DB"])
@@ -188,7 +188,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.rerun()
 
     else:
-        st.sidebar.write("🟦 No DB restore needed, menu phase set")
+        st.write("🟦 No DB restore needed, menu phase set")
 
         # No restore needed, fresh start
         st.session_state["chat_state"]  = "menu"
