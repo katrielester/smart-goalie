@@ -89,7 +89,7 @@ def save_message_to_db(user_id, sender, message, timestamp, phase=None):
     execute_query(
         """
         INSERT INTO chat_history (user_id, sender, message, timestamp, phase)
-        VALUES (%s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s)
         """,
         (user_id, sender, message, timestamp),
         fetch=None,
