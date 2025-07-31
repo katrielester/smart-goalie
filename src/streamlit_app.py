@@ -4,6 +4,7 @@ import streamlit as st
 import os
 import uuid
 from chat_thread import ChatThread
+import streamlit.components.v1 as components
 
 restore_id = str(uuid.uuid4())
 print(f"🔄 Restore Cycle: {restore_id}")
@@ -313,9 +314,15 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         """)
         
         if st.button("✅ I completed it!"):
-            user_info=get_user_info(user_id)
-            st.rerun()  # on reload you'll see has_completed_presurvey=True
-        
+            components.html(
+                """
+                <script>
+                window.location.reload(true);
+                </script>
+                """,
+                height=0,
+                width=0,
+            )
         if "chat_thread" not in st.session_state:
             st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
 
@@ -434,7 +441,6 @@ if vals:
 st.title("SMART Goalie")
 
 
-import streamlit.components.v1 as components
 
 # Use pixel height for consistent layout
 chat_height_px = 500
@@ -691,8 +697,8 @@ def run_menu():
             chat_thread.append({
                 "sender": "Assistant",
                 "message": (
-                    f"🎉 Nice work so far! You’ve set {task_count}/3 tasks. "
-                    f"{add_line} view & download your current goal and tasks, or review the SMART training.  <br>"
+                    f"🎉 Nice work so far! You’ve set {task_count}/3 tasks. <br>"
+                    f"{add_line} view & download your current goal and tasks, or review the SMART training.  <br><br>"
                     "What would you like to do next?"
                 )
                 
@@ -734,8 +740,8 @@ def run_menu():
             chat_thread.append({
                 "sender": "Assistant",
                 "message": (
-                    f"🎉 Nice work so far! You’ve set {task_count}/3 tasks. "
-                    f"{add_line} view & download your current goal and tasks, or review the SMART training.  <br>"
+                    f"🎉 Nice work so far! You’ve set {task_count}/3 tasks. <br>"
+                    f"{add_line} view & download your current goal and tasks, or review the SMART training.  <br><br>"
                     "What would you like to do next?"
                 )
                 
