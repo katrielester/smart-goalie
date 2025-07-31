@@ -1,6 +1,9 @@
 # llama_utils.py
 
 import requests, re
+import logging
+from logger import setup_logger
+
 
 # LLM_API_URL = "http://213.173.102.150:11434/api/generate"
 LLM_API_URL = "https://498spxjyhd6q36-11434.proxy.runpod.net/api/generate"
@@ -8,6 +11,7 @@ LLM_API_URL = "https://498spxjyhd6q36-11434.proxy.runpod.net/api/generate"
 import os
 
 FAKE_MODE = False
+logger = setup_logger()
 # FAKE_MODE = os.getenv("FAKE_MODE", "true").lower() == "true"
 
 def extract_goal_variants(response_text):
@@ -102,10 +106,18 @@ def smart_wrapper(prompt, goal_text, type_):
         response = requests.post(LLM_API_URL, json=payload, timeout=60)
         response.raise_for_status()
     except requests.HTTPError as he:
-        print("❌ LLM HTTPError:", he, "\nResponse body:", response.text)
+        logger.error(
+            "❌ LLM HTTPError: %s; response body: %s",
+            he,
+            response.text,
+            exc_info=True
+            )
         return fake_response(goal_text, type_)
     except Exception as e:
-        print("❌ LLM request failed:", e)
+        logger.error(
+            "❌ LLM request failed",
+            exc_info=True
+            )
         return fake_response(goal_text, type_)
 
     text = response.json().get("response", "").strip()
