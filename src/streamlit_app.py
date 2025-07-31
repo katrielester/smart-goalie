@@ -84,6 +84,21 @@ logger = setup_logger()
 
 st.markdown("""
     <style>
+    iframe[title="streamlit_component.html"] {
+        margin-bottom: 0px !important;
+        padding-bottom: 0px !important;
+        display: block;
+    }
+
+    section[data-testid="stBlock"] + section[data-testid="stBlock"] {
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    .block-container {
+        padding-bottom: 0.5rem !important;
+    }
+            
     button {
         background-color: #1f77b4;
         color: white !important;
@@ -97,16 +112,9 @@ st.markdown("""
         background-color: #145a86;
     }
     
-    .block-container {
-            padding-top: 0.5rem !important;
-            }
     h1 {
             margin-top: 0.25rem !important;
             margin-bottom: 0.5rem !important;
-            }
-    section[data-testid="stBlock"] {
-            margin-bottom: 4px !important;
-            padding-bottom: 4px !important;
             }
     </style>
 """, unsafe_allow_html=True)
