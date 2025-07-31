@@ -104,6 +104,10 @@ st.markdown("""
             margin-top: 0.25rem !important;
             margin-bottom: 0.5rem !important;
             }
+    section[data-testid="stBlock"] {
+            margin-bottom: 4px !important;
+            padding-bottom: 4px !important;
+            }
     </style>
 """, unsafe_allow_html=True)
 
@@ -467,7 +471,7 @@ with st.container():
     <body>
         <div id="chatbox" class="chat-wrapper">
             {chat_bubble_html}
-            <div id="endofchat" style="height: 0px;"></div>
+            <div id="endofchat" style="height: 10px;"></div>
         </div>
         <script>
             const chatBox = document.getElementById("chatbox");
