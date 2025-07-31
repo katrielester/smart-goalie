@@ -531,7 +531,7 @@ st.markdown("""
 
     div.block-container {
         padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
+        padding-bottom: 0.25rem !important;
     }
 
     /* Kill bottom margin of iframe container */
