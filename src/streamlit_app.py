@@ -510,8 +510,7 @@ with st.container():
     </body>
     </html>
     """, height=chat_height_px, scrolling=False)
-    
-st.markdown(
+    st.markdown(
     """
     <script>
       function scrollPageToTop() {
@@ -526,6 +525,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 # if we’ve been told to show a download, render it here in the normal Streamlit UI
 if st.session_state.get("show_download"):
