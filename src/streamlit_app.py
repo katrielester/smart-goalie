@@ -3,6 +3,7 @@
 import streamlit as st
 import os
 import uuid
+from chat_thread import ChatThread
 
 restore_id = str(uuid.uuid4())
 print(f"🔄 Restore Cycle: {restore_id}")
@@ -22,6 +23,8 @@ if not user_id:
     st.stop()
 else:
     st.session_state["user_id"] = user_id  # Always sync to session state for later use
+    if not isinstance(st.session_state.get("chat_thread"), ChatThread):
+        st.session_state["chat_thread"] = ChatThread(user_id)
 # ---------------------------
 
 import time
@@ -41,7 +44,6 @@ from goal_flow import run_goal_setting, run_add_tasks
 from phases import smart_training_flow
 from prompts import system_prompt_goal_refiner, system_prompt_reflection_summary
 from logger import setup_logger
-from chat_thread import ChatThread
 
 
 # st.write("CWD:", os.getcwd())

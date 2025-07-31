@@ -7,7 +7,7 @@ from llama_utils import (
     suggest_timebound_fix, suggest_tasks_for_goal,
     extract_goal_variants, check_smart_feedback
 )
-from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phase
+from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phase, get_chat_history
 from phases import goal_setting_flow, goal_setting_flow_score
 from chat_thread import ChatThread
 from db_utils import build_goal_tasks_text, set_state
@@ -75,7 +75,12 @@ def run_goal_setting():
     current_index = st.session_state.get("message_index", 0)
 
     if st.session_state.get("just_restored", False):
-        st.session_state["message_index"] = len(texts)
+        history = get_chat_history(
+            st.session_state["user_id"],
+            st.session_state["chat_state"]
+            )
+        if history:
+            st.session_state["message_index"] = len(texts)
         del st.session_state["just_restored"]
         st.rerun()
 
