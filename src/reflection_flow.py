@@ -49,6 +49,20 @@ def save_reflection_state(needs_restore=True):
 def run_weekly_reflection():
     query_params = st.query_params.to_dict()
 
+    if "task_progress" in st.session_state and isinstance(st.session_state["task_progress"], dict):
+        raw = st.session_state["task_progress"]
+        fixed = {}
+        for k, v in raw.items():
+            # drop any null‐key
+            if k in (None, "null"):
+                continue
+            try:
+                ik = int(k)
+            except (ValueError, TypeError):
+                ik = k
+            fixed[ik] = v
+        st.session_state["task_progress"] = fixed
+
     if "user_id" not in st.session_state:
         st.session_state["user_id"] = query_params.get("user_id")
 
@@ -574,7 +588,7 @@ def run_weekly_reflection():
         for task in tasks:  
             task_id = task["id"]
             task_text = task["task_text"]
-            val = st.session_state["task_progress"][task_id]
+            val = st.session_state["task_progress"].get(task_id, 0)
             label = [k for k, v in progress_numeric.items() if v == val][0]
             task_results.append(f"{task_text}: {label}")
         progress_str = "<br>".join(task_results)

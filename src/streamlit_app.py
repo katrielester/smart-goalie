@@ -211,12 +211,12 @@ if "chat_state" in st.session_state:
         txt_state= "Add Tasks"
     else:
         txt_state= "SMART Goalie"
-    st.sidebar.write(txt_state)
+    st.sidebar.title(txt_state)
 else:
     st.sidebar.write("None")
 
 with st.sidebar:
-    st.title("User Panel")
+    # st.title("User Panel")
 
     query_params = st.query_params
     prolific_id = query_params.get("PROLIFIC_PID")
