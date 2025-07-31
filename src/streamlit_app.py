@@ -13,19 +13,34 @@ st.set_page_config(page_title="SMART Goal Chatbot", layout="centered")
 st.markdown(
     """
     <script>
-    // watch for the chat-input getting added and strip its autofocus
-    const observer = new MutationObserver(() => {
-      const ta = document.querySelector('textarea[autofocus]');
-      if (ta) {
-        ta.removeAttribute('autofocus');
-        observer.disconnect();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+      const observer = new MutationObserver(() => {
+        const ta = document.querySelector('textarea[autofocus]');
+        if (ta) {
+          ta.removeAttribute('autofocus');
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
     </script>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
+st.markdown(
+    """
+    <script>
+      function scrollPageToTop() {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
+      // run once immediately
+      scrollPageToTop();
+      // re-run after any Streamlit DOM mutation
+      new MutationObserver(scrollPageToTop)
+        .observe(document.body, { childList: true, subtree: true });
+    </script>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 
 # healthz handler:
