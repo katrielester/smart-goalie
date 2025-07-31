@@ -46,7 +46,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
+dev = st.query_params.get("dev")
 
 # healthz handler:
 if st.query_params.get("healthz") is not None:
@@ -170,7 +170,7 @@ if "did_auth_init" not in st.session_state:
     st.session_state["did_auth_init"] = False
 
 with st.sidebar:
-    if DEV_MODE:
+    if DEV_MODE and dev=="1":
         if st.button("Dev: Jump to Goal Setting"):
             set_state(
                 chat_state = "goal_setting",
@@ -194,7 +194,24 @@ with st.sidebar:
             st.rerun()
     
 if "chat_state" in st.session_state:
-    st.sidebar.write(st.session_state["chat_state"])
+    cstate =st.session_state["chat_state"]
+    if cstate == "intro":
+        txt_state= "Introduction"
+    elif cstate == "smart_training":
+        txt_state= "SMART Goal Training"
+    elif cstate == "menu":
+        txt_state= "Menu"
+    elif cstate == "goal_setting":
+        txt_state= "Goal Setting"
+    elif cstate.startswith("reflection"):
+        txt_state= "Reflection"
+    elif cstate == "view_goals":
+        txt_state= "View Goals"
+    elif cstate == "add_tasks":
+        txt_state= "Add Tasks"
+    else:
+        txt_state= "SMART Goalie"
+    st.sidebar.write(txt_state)
 else:
     st.sidebar.write("None")
 
@@ -212,11 +229,11 @@ with st.sidebar:
     else:
         st.warning("Please access this link via Prolific.")
         st.stop()
-
-# debug: show me what keys are present on *every* render
-st.sidebar.write("🛠 session_state keys:", list(st.session_state.keys()))
-# and show whether chat_state is missing
-st.sidebar.write("🛠 chat_state missing?", "chat_state" not in st.session_state)
+if dev=="1":
+    # debug: show me what keys are present on *every* render
+    st.sidebar.write("🛠 session_state keys:", list(st.session_state.keys()))
+    # and show whether chat_state is missing
+    st.sidebar.write("🛠 chat_state missing?", "chat_state" not in st.session_state)
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
