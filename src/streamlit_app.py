@@ -277,21 +277,24 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         history = get_chat_history(user_id, current_phase)
 
         # 3) Create a fresh ChatThread and disable DB writes for replay
-        orig_append = ChatThread.append
-        ct = ChatThread(user_id)
-        ct.append = lambda entry: list.append(ct, entry)
+        if current_phase in ("view_goals", "add_tasks"):
+            ct = ChatThread(user_id)
+        else:
+            orig_append = ChatThread.append
+            ct = ChatThread(user_id)
+            ct.append = lambda entry: list.append(ct, entry)
 
-        # 4) Replay each message in order
-        for row in history:
-            ui_sender = "Assistant" if row["sender"] == "bot" else "User"
-            ct.append({
-                "sender":    ui_sender,
-                "message":   row["message"],
-                "timestamp": row["timestamp"],
-            })
+            # 4) Replay each message in order
+            for row in history:
+                ui_sender = "Assistant" if row["sender"] == "bot" else "User"
+                ct.append({
+                    "sender":    ui_sender,
+                    "message":   row["message"],
+                    "timestamp": row["timestamp"],
+                })
 
-        # 5) Re‑enable real append() so new messages still save
-        ct.append = orig_append.__get__(ct, ChatThread)
+            # 5) Re‑enable real append() so new messages still save
+            ct.append = orig_append.__get__(ct, ChatThread)
 
         # 6) Store for the UI
         st.session_state["chat_thread"] = ct
