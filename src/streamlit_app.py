@@ -44,20 +44,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-# disable the outer page scroll and fix height to viewport
-st.markdown(
-    """
-    <style>
-        /* make the whole Streamlit app exactly the height of the window */
-        html, body, [data-testid="stAppViewContainer"] > div:first-child {
-        height: 100vh !important;
-        overflow: hidden !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
-    )
-
 
 
 
@@ -487,7 +473,7 @@ with st.container():
             color: #f0f0f0;
         }}
         .chat-wrapper {{
-            height: calc(100vh - 45px) !important;
+            height: calc(100vh - 40px) !important;
             overflow-y: auto;
             padding: 10px;
             padding-bottom: 0px !important;
@@ -691,9 +677,22 @@ def run_menu():
     # Only ever append if chat_thread is empty
     if not chat_thread:
         if user_goals_exist(user_id):
+            goals = get_goals_with_task_counts(user_id)
+            task_count = goals[0]["task_count"]
+            tasks_left = max(3 - task_count, 0)
+            if tasks_left > 0:
+                add_line = f"You can add up to {tasks_left} more to keep the momentum going, "
+            else:
+                add_line = "You can"
+
             chat_thread.append({
                 "sender": "Assistant",
-                "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
+                "message": (
+                    f"🎉 Nice work so far! You’ve set {task_count}/3 tasks. "
+                    f"{add_line} view & download your current goal and tasks, or review the SMART training.  <br>"
+                    "What would you like to do next?"
+                )
+                
             })
         else:
             chat_thread.append({
@@ -721,9 +720,22 @@ def run_menu():
         pass
     else:
         if goals_exist:
+            goals = get_goals_with_task_counts(user_id)
+            task_count = goals[0]["task_count"]
+            tasks_left = max(3 - task_count, 0)
+            if tasks_left > 0:
+                add_line = f"You can add up to {tasks_left} more to keep the momentum going, "
+            else:
+                add_line = "You can"
+
             chat_thread.append({
                 "sender": "Assistant",
-                "message": "What would you like to do next? You can view and download your goal, review training, or create something new."
+                "message": (
+                    f"🎉 Nice work so far! You’ve set {task_count}/3 tasks. "
+                    f"{add_line} view & download your current goal and tasks, or review the SMART training.  <br>"
+                    "What would you like to do next?"
+                )
+                
             })
         else:
             chat_thread.append({

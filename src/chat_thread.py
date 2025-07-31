@@ -25,7 +25,8 @@ class ChatThread(list):
         }
 
         skip_substrings = [
-            "You've already submitted a reflection"
+            "You've already submitted a reflection",
+            "🎉 Nice work so far!"
         ]
 
         msg = entry["message"].strip()
