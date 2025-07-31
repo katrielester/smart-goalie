@@ -124,6 +124,9 @@ def run_weekly_reflection():
 
         if draft:
             st.session_state["reflection_step"] = draft["reflection_step"]
+
+            st.session_state["awaiting_task_edit"] = draft["awaiting_task_edit"]
+            st.session_state["editing_choice"]    = draft["editing_choice"]
             
             raw_prog = draft["task_progress"]
             if isinstance(raw_prog, str):
@@ -151,6 +154,109 @@ def run_weekly_reflection():
         # st.session_state["task_progress"] = {}
         # st.session_state["reflection_answers"] = {}
         # st.session_state["current_task"] = 0
+
+        # --- PATCH: Early branch if in edit mode ---
+    # If user is in the middle of editing or inputting a new task, only show edit UI
+    if st.session_state.get("awaiting_task_edit") in [True, "awaiting_input"]:
+        idx = st.session_state.get("update_task_idx", 0)
+        task = tasks[idx] if idx < len(tasks) else None
+        task_id = task["id"] if task else None
+        # Suggestion message should appear only once
+        if st.session_state["awaiting_task_edit"] == True:
+            if "ask_for_edit" not in st.session_state:
+                # Only append these once
+                reflection_answers = st.session_state.get("reflection_answers", {})
+                existing_tasks     = [t["task_text"] for t in tasks]
+                suggestions = suggest_tasks_with_context(
+                    goal_text,
+                    reflection_answers,
+                    existing_tasks
+                )
+                if suggestions:
+                    st.session_state["chat_thread"].append({
+                        "sender": "Assistant",
+                        "message": (
+                        "💡 Based on your goal and what you just reflected, here are some fresh task ideas:<br><br>" + suggestions
+                        )
+                    })
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "✍️ Please write the new version of this task."
+                })
+                st.session_state["ask_for_edit"] = True
+                st.rerun()
+            # Otherwise, just render input
+            else:
+                new_text = st.chat_input("Type your updated task here...")
+                if new_text:
+                    reason = st.session_state.get("editing_choice", "Modified")
+                    # Defensive: fallback to "Modified" if not set
+                    task = tasks[st.session_state["update_task_idx"]]
+                    task_id = task["id"]
+                    new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
+                    st.session_state["chat_thread"].append({
+                        "sender": "Assistant",
+                        "message": f"✅ Task updated to: '<b>{new_text}</b>'"
+                    })
+                    st.session_state["chat_thread"].append({
+                        "sender": "User",
+                        "message": new_text
+                    })
+                    st.session_state["awaiting_task_edit"] = False
+                    st.session_state["editing_choice"] = None
+                    st.session_state["update_task_idx"] += 1
+                    # Clean ask_for_edit so if user hits reload again, doesn't get stuck
+                    if "ask_for_edit" in st.session_state:
+                        del st.session_state["ask_for_edit"]
+                    save_reflection_draft(
+                        user_id, goal_id, week, session,
+                        step=st.session_state["reflection_step"],
+                        task_progress=st.session_state.get("task_progress", {}),
+                        answers=st.session_state.get("reflection_answers", {}),
+                        update_idx=st.session_state.get("update_task_idx", 0),
+                        q_idx=st.session_state.get("reflection_q_idx", 0),
+                        awaiting_task_edit=st.session_state.get("awaiting_task_edit"),
+                        editing_choice=st.session_state.get("editing_choice")
+                    )
+                    st.rerun()
+            # Prevent other UI from rendering
+            return
+        elif st.session_state["awaiting_task_edit"] == "awaiting_input":
+            # This branch should be unreachable now, but for safety:
+            new_text = st.chat_input("Type your updated task here...")
+            if new_text:
+                reason = st.session_state.get("editing_choice", "Modified")
+                task = tasks[st.session_state["update_task_idx"]]
+                task_id = task["id"]
+                new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": f"✅ Task updated to: '<b>{new_text}</b>'"
+                })
+                st.session_state["chat_thread"].append({
+                    "sender": "User",
+                    "message": new_text
+                })
+                st.session_state["awaiting_task_edit"] = False
+                st.session_state["editing_choice"] = None
+                st.session_state["update_task_idx"] += 1
+                if "ask_for_edit" in st.session_state:
+                    del st.session_state["ask_for_edit"]
+                save_reflection_draft(
+                    user_id, goal_id, week, session,
+                    step=st.session_state["reflection_step"],
+                    task_progress=st.session_state.get("task_progress", {}),
+                    answers=st.session_state.get("reflection_answers", {}),
+                    update_idx=st.session_state.get("update_task_idx", 0),
+                    q_idx=st.session_state.get("reflection_q_idx", 0),
+                    awaiting_task_edit=st.session_state.get("awaiting_task_edit"),
+                    editing_choice=st.session_state.get("editing_choice")
+                )
+                st.rerun()
+            return
+    # --- END PATCH ---
+
+
 
     if st.session_state["reflection_step"] == 0:
         st.write("Reflection step:", st.session_state.get("reflection_step"))
@@ -233,16 +339,16 @@ def run_weekly_reflection():
                 st.session_state["reflection_step"] += 1
 
                 save_reflection_draft(
-                    user_id=user_id,
-                    goal_id=goal_id,
-                    week_number=week,
-                    session_id=session,
+                    user_id, goal_id, week, session,
                     step=st.session_state["reflection_step"],
                     task_progress=st.session_state.get("task_progress", {}),
                     answers=st.session_state.get("reflection_answers", {}),
                     update_idx=st.session_state.get("update_task_idx", 0),
-                    q_idx=st.session_state.get("reflection_q_idx", 0)
+                    q_idx=st.session_state.get("reflection_q_idx", 0),
+                    awaiting_task_edit=st.session_state.get("awaiting_task_edit"),
+                    editing_choice=st.session_state.get("editing_choice")
                 )
+
 
                 st.rerun()
 
@@ -305,16 +411,16 @@ def run_weekly_reflection():
             st.session_state["reflection_answers"][key] = user_input
             q_idx += 1
             save_reflection_draft(
-                user_id=user_id,
-                goal_id=goal_id,
-                week_number=week,
-                session_id=session,
+                user_id, goal_id, week, session,
                 step=st.session_state["reflection_step"],
                 task_progress=st.session_state.get("task_progress", {}),
                 answers=st.session_state.get("reflection_answers", {}),
                 update_idx=st.session_state.get("update_task_idx", 0),
-                q_idx=st.session_state.get("reflection_q_idx", 0)
+                q_idx=st.session_state.get("reflection_q_idx", 0),
+                awaiting_task_edit=st.session_state.get("awaiting_task_edit"),
+                editing_choice=st.session_state.get("editing_choice")
             )
+
             if q_idx < len(questions):
                 st.session_state["reflection_q_idx"] = q_idx
                 st.rerun()
@@ -371,19 +477,31 @@ def run_weekly_reflection():
                 st.session_state[f"update_choice_{task_id}"] = selected
 
                 save_reflection_draft(
-                    user_id=user_id,
-                    goal_id=goal_id,
-                    week_number=week,
-                    session_id=session,
+                    user_id, goal_id, week, session,
                     step=st.session_state["reflection_step"],
                     task_progress=st.session_state.get("task_progress", {}),
                     answers=st.session_state.get("reflection_answers", {}),
                     update_idx=st.session_state.get("update_task_idx", 0),
-                    q_idx=st.session_state.get("reflection_q_idx", 0)
+                    q_idx=st.session_state.get("reflection_q_idx", 0),
+                    awaiting_task_edit=st.session_state.get("awaiting_task_edit"),
+                    editing_choice=st.session_state.get("editing_choice")
                 )
+
 
                 if selected in ["Modify", "Replace"]:
                     st.session_state["awaiting_task_edit"] = True
+                    st.session_state["editing_choice"] = selected
+                    save_reflection_draft(
+                        user_id, goal_id, week, session,
+                        step=st.session_state["reflection_step"],
+                        task_progress=st.session_state.get("task_progress", {}),
+                        answers=st.session_state.get("reflection_answers", {}),
+                        update_idx=st.session_state.get("update_task_idx", 0),
+                        q_idx=st.session_state.get("reflection_q_idx", 0),
+                        awaiting_task_edit=st.session_state.get("awaiting_task_edit"),
+                        editing_choice=st.session_state.get("editing_choice")
+                    )
+                    st.rerun()
                 else:
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
@@ -437,19 +555,20 @@ def run_weekly_reflection():
                     })
 
                     st.session_state["awaiting_task_edit"] = False
+                    st.session_state["editing_choice"] = None
                     st.session_state["update_task_idx"] += 1
 
                     save_reflection_draft(
-                        user_id=user_id,
-                        goal_id=goal_id,
-                        week_number=week,
-                        session_id=session,
+                        user_id, goal_id, week, session,
                         step=st.session_state["reflection_step"],
                         task_progress=st.session_state.get("task_progress", {}),
                         answers=st.session_state.get("reflection_answers", {}),
                         update_idx=st.session_state.get("update_task_idx", 0),
-                        q_idx=q_idx
+                        q_idx=st.session_state.get("reflection_q_idx", 0),
+                        awaiting_task_edit=st.session_state.get("awaiting_task_edit"),
+                        editing_choice=st.session_state.get("editing_choice")
                     )
+
                     st.rerun()
                 # if new_text:
                 #     task = tasks[st.session_state["update_task_idx"]]
@@ -485,16 +604,16 @@ def run_weekly_reflection():
             st.session_state["reflection_step"] += 1
             st.session_state["update_task_idx"] = 0
             save_reflection_draft(
-                user_id=user_id,
-                goal_id=goal_id,
-                week_number=week,
-                session_id=session,
+                user_id, goal_id, week, session,
                 step=st.session_state["reflection_step"],
                 task_progress=st.session_state.get("task_progress", {}),
                 answers=st.session_state.get("reflection_answers", {}),
                 update_idx=st.session_state.get("update_task_idx", 0),
-                q_idx=st.session_state.get("reflection_q_idx", 0)
+                q_idx=st.session_state.get("reflection_q_idx", 0),
+                awaiting_task_edit=st.session_state.get("awaiting_task_edit"),
+                editing_choice=st.session_state.get("editing_choice")
             )
+
             st.rerun()
 
     elif st.session_state["reflection_step"] == len(tasks) + 4:
@@ -542,7 +661,7 @@ def run_weekly_reflection():
             if st.button("➕ Add Tasks Now"):
                 set_state(
                     chat_state = "add_tasks",
-                    needs_restore = True
+                    needs_restore = False
                 )
                 st.rerun()
 
@@ -587,3 +706,4 @@ def init_reflection_session():
     st.session_state["reflection_q_idx"] = 0
     st.session_state["update_task_idx"] = 0
     st.session_state["awaiting_task_edit"] = False
+    st.session_state["editing_choice"] = None

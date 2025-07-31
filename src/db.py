@@ -244,15 +244,16 @@ def replace_or_modify_task(goal_id, old_task_id, new_task_text, reason="Replaced
     )
     return result["new_task_id"] if result else None
 
-def save_reflection_draft(user_id, goal_id, week_number, session_id, step, task_progress, answers, update_idx, q_idx):
+def save_reflection_draft(user_id, goal_id, week_number, session_id, step, task_progress, answers, update_idx, q_idx, awaiting_task_edit=None, editing_choice=None):
     execute_query("""
         INSERT INTO reflection_drafts (
             user_id, goal_id, week_number, session_id,
             task_progress, reflection_answers,
             reflection_step, update_task_idx, reflection_q_idx,
+            awaiting_task_edit, editing_choice,
             updated_at
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
         ON CONFLICT (user_id, goal_id, week_number, session_id)
         DO UPDATE SET
             task_progress = EXCLUDED.task_progress,
@@ -260,11 +261,14 @@ def save_reflection_draft(user_id, goal_id, week_number, session_id, step, task_
             reflection_step = EXCLUDED.reflection_step,
             update_task_idx = EXCLUDED.update_task_idx,
             reflection_q_idx = EXCLUDED.reflection_q_idx,
+            awaiting_task_edit = EXCLUDED.awaiting_task_edit,
+            editing_choice = EXCLUDED.editing_choice,
             updated_at = NOW()
     """, (
         user_id, goal_id, week_number, session_id,
         json.dumps(task_progress), json.dumps(answers),
-        step, update_idx, q_idx
+        step, update_idx, q_idx,
+        awaiting_task_edit, editing_choice
     ), commit=True)
 
 def load_reflection_draft(user_id, goal_id, week_number, session_id):
@@ -272,6 +276,7 @@ def load_reflection_draft(user_id, goal_id, week_number, session_id):
         SELECT * FROM reflection_drafts
         WHERE user_id = %s AND goal_id = %s AND week_number = %s AND session_id = %s
     """, (user_id, goal_id, week_number, session_id), fetch="one")
+
 
 def delete_reflection_draft(user_id, goal_id, week_number, session_id):
     execute_query("""
