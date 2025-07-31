@@ -101,7 +101,7 @@ st.markdown("""
             padding-top: 0.5rem !important;
             }
     h1 {
-            margin-top: 1 !important;
+            margin-top: 1rem !important;
             margin-bottom: 0.5rem !important;
             }
     section[data-testid="stBlock"] {
