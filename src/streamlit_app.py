@@ -315,7 +315,7 @@ if (
     st.session_state.get("chat_state") == "menu" 
     and goals 
     and not st.session_state.get("force_task_handled", False)
-    and not st.session_state.get("needs_restored", False)):
+    and not st.session_state.get("needs_restore", False)):
 
     goal_with_no_active_tasks = next((g for g in goals if g["task_count"] == 0), None)
 
@@ -523,7 +523,7 @@ with st.container():
     <body>
         <div id="chatbox" class="chat-wrapper">
             {chat_bubble_html}
-            <div id="endofchat" style="height: 30px;"></div>
+            <div id="endofchat" style="height: 5px;"></div>
         </div>
         <script>
             const chatBox = document.getElementById("chatbox");
