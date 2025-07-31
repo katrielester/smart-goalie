@@ -382,7 +382,7 @@ if (
             goal_id_being_worked = goal_with_no_active_tasks["id"],
             current_goal = goal_with_no_active_tasks["goal_text"],
             task_entry_stage = "suggest",
-            needs_restore = True
+            needs_restore = False
             )
         ct = ChatThread(st.session_state["user_id"])
         ct.append({
@@ -410,7 +410,7 @@ if vals:
         st.session_state["tasks_saved"] = []
         set_state(
             chat_state="add_tasks",
-            needs_restore = True,
+            needs_restore = False,
             goal_id_being_worked = goal_id,
             current_goal = goal["goal_text"],
             task_entry_stage = "suggest"
@@ -716,7 +716,7 @@ def run_menu():
         pass
     elif (
         last_msg["sender"] == "Assistant"
-        and last_msg["message"].startswith("What would you like to do next?")
+        and last_msg["message"].startswith("🎉 Nice work so far")
         and goals_exist
     ):
         pass
