@@ -366,123 +366,112 @@ def check_smart_feedback(goal_text, dimension):
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give only ONE short, friendly sentence of feedback on how specific the goal is, without rewriting or fixing it.
+Give ONE short, friendly sentence evaluating how specific the goal is, without rewriting it.
 
-Focus only on whether the goal clearly identifies one main focus or outcome.
+Focus only on whether the goal names a single clear outcome.
 
 Guidelines:
-- Do not suggest how to fix the goal
-- Do not comment on other SMART traits
-- Assume the goal covers about 2 weeks and will be broken into smaller tasks
-- Keep feedback concise (one to two short sentences, under 15 words total)
+- Do not suggest improvements
+- Do not rewrite the goal
+- Keep feedback under 15 words
 - Be warm and encouraging
 
 Examples:
-- Looks clear and focused, nice work!
-- This goal seems too broad to act on clearly.
-- Good start, but the goal could use more precision.
+- Great focus, this goal names a clear outcome!
+- This goal feels broad, consider honing in on one main result.
 
 [Goal]
 {goal_text}
 [/Goal]
 """
-
     elif dimension == "measurable":
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give one short, friendly sentence of feedback on how measurable the goal is, without rewriting or fixing it.
+Give ONE short, friendly sentence evaluating how measurable the goal is, without rewriting it.
 
-Focus only on whether there is a way to track progress like frequency, quantity, or visible milestones.
+Focus only on whether there is a clear way to track progress.
 
 Guidelines:
-- Do not suggest how to fix the goal
-- Do not comment on other SMART traits
-- Assume the goal covers about 2 weeks
-- Keep feedback concise (one to two short sentences, under 15 words total)
+- Do not suggest improvements
+- Do not rewrite the goal
+- Keep feedback under 15 words
 - Be warm and encouraging
 
 Examples:
-- Nice, there’s a clear way to track progress.
-- Good start. You could add how often or how much.
+- Good job, this goal includes a clear progress indicator!
+- Almost there, adding a way to measure success will make it better!
 
 [Goal]
 {goal_text}
 [/Goal]
 """
-
     elif dimension == "achievable":
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give one short, friendly sentence of feedback on how achievable the goal is, without rewriting or fixing it.
+Give ONE short, friendly sentence evaluating how achievable the goal is, without rewriting it.
 
-Focus only on whether the goal seems realistic for someone to complete in about 2 weeks.
+Focus only on whether the goal seems realistic for ~2 weeks’ effort.
 
 Guidelines:
-- Do not suggest how to fix the goal
-- Do not comment on other SMART traits
-- Assume the goal will have smaller weekly tasks
-- Keep feedback concise (one to two short sentences, under 15 words total)
+- Do not suggest improvements
+- Do not rewrite the goal
+- Keep feedback under 15 words
 - Be warm and encouraging
 
 Examples:
-- This looks doable within two weeks.
-- Nice goal. Just make sure it fits your energy and schedule.
+- Nice, this goal seems doable within two weeks!
+- Looks good! Just make sure it fits your energy and schedule.
 
 [Goal]
 {goal_text}
 [/Goal]
 """
-
     elif dimension == "relevant":
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give one short, friendly sentence of feedback on how personally relevant the goal is, without rewriting or fixing it.
+Give ONE short, friendly sentence evaluating how relevant the goal is, without rewriting it.
 
-Focus only on whether the goal connects to a value, interest, or current priority.
+Focus only on whether the goal aligns with personal values or priorities.
 
 Guidelines:
-- Do not suggest how to fix the goal
-- Do not assume personal context
-- Do not comment on other SMART traits
-- Keep feedback concise (one to two short sentences, under 15 words total)
+- Do not suggest improvements
+- Do not rewrite the goal
+- Keep feedback under 15 words
 - Be warm and encouraging
 
 Examples:
-- Looks meaningful. Great fit for your current focus.
-- Nice! Want to add why it matters to you?
+- Excellent, this goal aligns with what matters to you!
+- Consider adding what personal value this goal connects to.
 
 [Goal]
 {goal_text}
 [/Goal]
 """
-
     elif dimension == "timebound":
         prompt = f"""
 You are a goal support assistant.
 
-Your task is to give one short, friendly sentence of feedback on whether the goal includes a timeframe, without rewriting or fixing it.
+Give ONE short, friendly sentence evaluating how time-bound the goal is, without rewriting it.
 
-Focus only on whether the goal mentions a deadline, schedule, or time span.
+Focus only on whether the goal includes a deadline or timeframe.
 
 Guidelines:
-- Do not suggest how to fix the goal
-- Do not comment on other SMART traits
-- Timeframe should fit about 2 weeks but not be overly rigid
-- Keep feedback concise (one to two short sentences, under 15 words total)
+- Do not suggest improvements
+- Do not rewrite the goal
+- Keep feedback under 15 words
 - Be warm and encouraging
 
 Examples:
-- Nice, the timeframe adds structure.
-- Good goal. You might include when or how long to do it.
+- Great, this goal has a clear timeframe!
+- Good start, adding a deadline would give this goal more structure.
 
 [Goal]
 {goal_text}
 [/Goal]
 """
-
     else:
         return "Invalid SMART dimension."
 
