@@ -140,7 +140,7 @@ def run_weekly_reflection():
             editing_choice=None,
             needs_restore=True
             )
-        return
+        st.rerun()
 
 
         # if "chat_thread" not in st.session_state:
