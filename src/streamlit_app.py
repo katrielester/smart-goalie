@@ -392,7 +392,7 @@ st.title("SMART Goalie")
 import streamlit.components.v1 as components
 
 # Use pixel height for consistent layout
-chat_height_px = 400
+chat_height_px = "70vh"
 # EXPERIMENTAL START #
 
 previous_len = st.session_state.get("last_rendered_index", 0)
