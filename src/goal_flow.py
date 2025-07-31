@@ -279,7 +279,7 @@ def run_add_tasks():
                 st.session_state["chat_thread"].pop()
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "Here are some task ideas based on your goal:<br>{suggested}<br><br> Type one of these or add your own!"
+                "message": f"Here are some task ideas based on your goal:<br>{suggested}<br><br> Type one of these or add your own!"
             })
             set_state(
                 task_entry_stage = "entry"

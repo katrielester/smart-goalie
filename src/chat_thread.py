@@ -18,7 +18,24 @@ class ChatThread(list):
         # Generate one timestamp for both DB & UI
         ts = datetime.now().isoformat()
 
-        if entry["message"].strip() not in {"🔎 Analyzing your goal…", "✍️ Typing...", "Thinking of task suggestions for you… ✍️"}:
+        skip_literals = {
+            "🔎 Analyzing your goal…", 
+            "✍️ Typing...", 
+            "Thinking of task suggestions for you… ✍️"
+        }
+
+        skip_substrings = [
+            "You've already submitted a reflection"
+        ]
+
+        msg = entry["message"].strip()
+
+        should_skip = (
+            msg in skip_literals
+            or any(sub in msg for sub in skip_substrings)
+        )
+
+        if not should_skip:
             # Persist into the database with the mapped sender
             save_message_to_db(
                 self.user_id,

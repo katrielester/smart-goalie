@@ -76,14 +76,17 @@ def run_weekly_reflection():
     goal_text = all_goals[0]["goal_text"]
 
     if reflection_exists(user_id, goal_id, week, session):
-        if "reflection_acknowledged" not in st.session_state:
+
+        ack_key = f"reflection_ack_w{week}_s{session}"
+
+        if ack_key not in st.session_state:
             if "chat_thread" not in st.session_state:
                 st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>.<br><br>Thanks!"
             })
-            st.session_state["reflection_acknowledged"] = True
+            st.session_state[ack_key] = True
             st.rerun()
 
         col1, col2 = st.columns(2)
@@ -92,7 +95,7 @@ def run_weekly_reflection():
                 chat_state = "menu",
                 needs_restore = False
             )
-            del st.session_state["reflection_acknowledged"]
+            del st.session_state[ack_key]
             st.rerun()
 
         if col2.button("⬅️ Return to Prolific"):
