@@ -467,7 +467,7 @@ with st.container():
     <body>
         <div id="chatbox" class="chat-wrapper">
             {chat_bubble_html}
-            <div id="endofchat" style="height: 10px;"></div>
+            <div id="endofchat" style="height: 0px;"></div>
         </div>
         <script>
             const chatBox = document.getElementById("chatbox");
