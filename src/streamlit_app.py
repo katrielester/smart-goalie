@@ -44,6 +44,19 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+# disable the outer page scroll and fix height to viewport
+st.markdown(
+    """
+    <style>
+        /* make the whole Streamlit app exactly the height of the window */
+        html, body, [data-testid="stAppViewContainer"] > div:first-child {
+        height: 100vh !important;
+        overflow: hidden !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+    )
 
 
 
@@ -474,7 +487,7 @@ with st.container():
             color: #f0f0f0;
         }}
         .chat-wrapper {{
-            height: calc(100vh - 70px) !important;
+            height: calc(100vh - 45px) !important;
             overflow-y: auto;
             padding: 10px;
             padding-bottom: 0px !important;
