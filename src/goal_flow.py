@@ -16,31 +16,31 @@ def run_goal_setting():
 
     USE_LLM_SCORING=True
 
-    # Check if we're resuming a partially completed flow
-    if st.session_state.get("needs_restore", False) and st.session_state.get("goal_step") != "initial_goal":
-        # Only show once per restore cycle
-        if not st.session_state.get("recap_rendered", False):
-            goal = st.session_state.get("current_goal", "")
-            step = st.session_state.get("goal_step", "")
-            recap_msg = (
-                f"<b>Progress saved!</b> Last step: <code>{step}</code>.<br>"
-                f"Your goal so far:<br><b>{goal}</b><br><br>"
-                "Continue where you left off below."
-            )
-            ct = st.session_state.get("chat_thread")
-            # bypass db write
-            orig_append = ChatThread.append
-            ct.append = lambda entry: list.append(ct, entry)
-            if ct:
-                ct.append({"sender": "Assistant", "message": recap_msg})
-            else:
-                st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
-                st.session_state["chat_thread"].append({"sender": "Assistant", "message": recap_msg})
-            ct.append = orig_append.__get__(ct, ChatThread)
-            st.session_state["recap_rendered"] = True
-            st.session_state["message_index"] = 0  # Reset to render next prompt after recap
-            st.rerun()
-    # --- (rest of your function unchanged)
+    # # Check if we're resuming a partially completed flow
+    # if st.session_state.get("needs_restore", False) and st.session_state.get("goal_step") != "initial_goal":
+    #     # Only show once per restore cycle
+    #     if not st.session_state.get("recap_rendered", False):
+    #         goal = st.session_state.get("current_goal", "")
+    #         step = st.session_state.get("goal_step", "")
+    #         recap_msg = (
+    #             f"<b>Progress saved!</b> Last step: <code>{step}</code>.<br>"
+    #             f"Your goal so far:<br><b>{goal}</b><br><br>"
+    #             "Continue where you left off below."
+    #         )
+    #         ct = st.session_state.get("chat_thread")
+    #         # bypass db write
+    #         orig_append = ChatThread.append
+    #         ct.append = lambda entry: list.append(ct, entry)
+    #         if ct:
+    #             ct.append({"sender": "Assistant", "message": recap_msg})
+    #         else:
+    #             st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
+    #             st.session_state["chat_thread"].append({"sender": "Assistant", "message": recap_msg})
+    #         ct.append = orig_append.__get__(ct, ChatThread)
+    #         st.session_state["recap_rendered"] = True
+    #         st.session_state["message_index"] = 0  # Reset to render next prompt after recap
+    #         st.rerun()
+    # # --- (rest of your function unchanged)
 
 
     if "goal_step" not in st.session_state:

@@ -275,10 +275,8 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         print("Group (from DB or URL):", st.session_state["group"], group)
         
         if st.session_state["group"] == "treatment" and week and session:
-            set_state(
-                chat_state     = "reflection",
-                needs_restore  = True
-                )
+            phase_key = f"reflection_{week}_{session}"
+            set_state(chat_state=phase_key, needs_restore=True)
 
         elif user_completed_training(user_id):
             set_state(

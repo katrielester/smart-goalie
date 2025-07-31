@@ -59,6 +59,16 @@ def run_weekly_reflection():
 
     st.session_state["week"] = week
     st.session_state["session"] = session
+
+    phase_key = f"reflection_{week}_{session}"
+    st.session_state["chat_state"] = phase_key
+    set_state(
+        week        = week,
+        session     = session,
+        chat_state  = phase_key
+        )
+
+
     set_state(
         week = week,
         session = session
