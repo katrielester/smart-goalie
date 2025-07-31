@@ -25,6 +25,25 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+st.markdown(
+    """
+    <style>
+      /* Pin Streamlit’s chat-input to the bottom */
+      div[data-testid="stChat"] div[data-testid="stChatInputContainer"] {
+        position: sticky !important;
+        bottom: 0;
+        z-index: 100;
+        background: #1c1f26;
+        padding-top: 8px;
+      }
+      /* Give your chat-iframe room to breathe */
+      .chat-wrapper {
+        height: calc(100vh - 80px) !important;
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 
@@ -510,22 +529,6 @@ with st.container():
     </body>
     </html>
     """, height=chat_height_px, scrolling=False)
-    st.markdown(
-    """
-    <script>
-      function scrollPageToTop() {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-      }
-      // run once immediately
-      scrollPageToTop();
-      // re-run after any Streamlit DOM mutation
-      new MutationObserver(scrollPageToTop)
-        .observe(document.body, { childList: true, subtree: true });
-    </script>
-    """,
-    unsafe_allow_html=True,
-)
-
 
 # if we’ve been told to show a download, render it here in the normal Streamlit UI
 if st.session_state.get("show_download"):
