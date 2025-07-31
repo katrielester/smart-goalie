@@ -180,6 +180,7 @@ def run_weekly_reflection():
                     "message": "✍️ Please write the new version of this task."
                 })
                 st.session_state["ask_for_edit"] = True
+                save_reflection_state()
                 st.rerun()
             # Otherwise, just render input
             else:
@@ -190,6 +191,7 @@ def run_weekly_reflection():
                     task = tasks[st.session_state["update_task_idx"]]
                     task_id = task["id"]
                     new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
+                    st.session_state["task_progress"][new_task_id] = st.session_state["task_progress"].pop(task_id, 0)
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
                         "message": f"✅ Task updated to: '<b>{new_text}</b>'"
@@ -218,6 +220,7 @@ def run_weekly_reflection():
                 task = tasks[st.session_state["update_task_idx"]]
                 task_id = task["id"]
                 new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
+                st.session_state["task_progress"][new_task_id] = st.session_state["task_progress"].pop(task_id, 0)
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
                     "message": f"✅ Task updated to: '<b>{new_text}</b>'"
