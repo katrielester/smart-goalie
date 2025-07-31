@@ -22,7 +22,10 @@ def build_goal_tasks_text(goal, tasks):
 def set_state(**kwargs):
     for k, v in kwargs.items():
         st.session_state[k] = v
-
+    
+    dynamic_flags = [k for k in st.session_state.keys()
+                     if k.startswith(("ask_", "justifying_", "justified_"))]
+    
     keys_to_save = [
         "needs_restore",
         
@@ -43,10 +46,23 @@ def set_state(**kwargs):
         "task_entry_stage",
         "candidate_task",
 
-        # (only if you ever jump into reflection via URL)
+        "tasks_saved","force_task_handled",
+
+        # Reflection
         "week",
         "session",
-    ]
+        "reflection_step",
+        "task_progress",
+        "reflection_answers",
+        "update_task_idx",
+        "reflection_q_idx",
+        "awaiting_task_edit",
+        "editing_choice",
+    ] + dynamic_flags
+    
+    # also save the “view goals” trigger if set
+    if "trigger_view_goals" in st.session_state:
+        keys_to_save.append("trigger_view_goals")
 
     to_save = {k: st.session_state.get(k) for k in keys_to_save}
     save_session_state(st.session_state["user_id"], to_save)
