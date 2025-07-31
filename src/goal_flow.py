@@ -393,38 +393,32 @@ def show_reflection_explanation():
     gr_code = 1 if group == "treatment" else 0
     user_id = st.session_state.get("user_id")
 
-    # 1) Reflection explanation message
-    if group == "treatment":
-        msg = (
-            "You’re all set! Over the next two weeks, you’ll receive reflection prompts here in this chat roughly twice a week. "
-            "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n"
-            "Looking forward to seeing your progress!"
-        )
-    else:
-        msg = (
-            "You’re all set! Over the next two weeks, please work on the goal and tasks you just created at your own pace. "
-            "We’ll be in touch again in two weeks with a brief follow-up.\n\n"
-            "Thanks again for being part of the study!"
-        )
+    # 1) Chat summary message
+    msg = (
+        "You’re all set! Over the next two weeks, you’ll receive reflection prompts here in this chat roughly twice a week. "
+        "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created."
+        if group == "treatment"
+        else
+        "You’re all set! Over the next two weeks, please work on the goal and tasks you just created at your own pace. "
+        "We’ll be in touch again in two weeks with a brief follow-up."
+    )
 
     st.session_state["chat_thread"].append({"sender": "Assistant", "message": msg})
 
-    # 2) Download button – only shows once they truly have their final tasks
+    # 2) Download button
     goal = st.session_state["current_goal"]
     tasks = [t["task_text"] for t in get_tasks(st.session_state["goal_id_being_worked"])]
     content = build_goal_tasks_text(goal, tasks)
 
-    # st.download_button(
-    #     label="📄 Download your goal & tasks",
-    #     data=content,
-    #     file_name="my_smart_goal.txt",
-    #     mime="text/plain",
-    # )
-    # stash the download content and turn-on our “show it” flag
-    st.session_state["show_download"] = True
-    st.session_state["download_content"] = content
+    with st.container():
+        st.download_button(
+            label="📄 Download your goal & tasks",
+            data=content,
+            file_name="my_smart_goal.txt",
+            mime="text/plain",
+        )
 
-    # 3) Finally, send them to Qualtrics
+    # 3) Survey redirect
     survey_url = (
         "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
         f"?user_id={user_id}&group={gr_code}"
