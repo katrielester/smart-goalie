@@ -170,8 +170,8 @@ if "did_auth_init" not in st.session_state:
     st.session_state["did_auth_init"] = False
 
 with st.sidebar:
-    if DEV_MODE and dev=="1":
-        if st.button("Dev: Jump to Goal Setting"):
+    if DEV_MODE:
+        if st.button("DEV: Jump to Goal Setting"):
             set_state(
                 chat_state = "goal_setting",
                 goal_step = "initial_goal",
@@ -183,13 +183,13 @@ with st.sidebar:
             st.session_state["message_index"] = 0
             st.rerun()
 
-        if st.button("Dev: Jump to Reflection"):
+        if st.button("DEV: Jump to Reflection"):
             st.session_state["chat_state"] = "reflection"
             st.session_state["week"] = 1
             st.session_state["session"] = "a"
             st.rerun()
 
-        if st.sidebar.button("Force clear session_state"):
+        if st.sidebar.button("DEV: Force clear session_state"):
             st.session_state.clear()
             st.rerun()
     
