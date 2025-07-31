@@ -25,21 +25,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown(
-    """
-    <script>
-      function scrollPageToTop() {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-      }
-      // run once immediately
-      scrollPageToTop();
-      // re-run after any Streamlit DOM mutation
-      new MutationObserver(scrollPageToTop)
-        .observe(document.body, { childList: true, subtree: true });
-    </script>
-    """,
-    unsafe_allow_html=True,
-)
+
 
 
 
@@ -524,6 +510,22 @@ with st.container():
     </body>
     </html>
     """, height=chat_height_px, scrolling=False)
+    
+st.markdown(
+    """
+    <script>
+      function scrollPageToTop() {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
+      // run once immediately
+      scrollPageToTop();
+      // re-run after any Streamlit DOM mutation
+      new MutationObserver(scrollPageToTop)
+        .observe(document.body, { childList: true, subtree: true });
+    </script>
+    """,
+    unsafe_allow_html=True,
+)
 
 # if we’ve been told to show a download, render it here in the normal Streamlit UI
 if st.session_state.get("show_download"):
