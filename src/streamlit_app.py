@@ -101,7 +101,7 @@ st.markdown("""
             padding-top: 0.5rem !important;
             }
     h1 {
-            margin-top: 1rem !important;
+            margin-top: 2rem !important;
             margin-bottom: 0.5rem !important;
             }
     section[data-testid="stBlock"] {
@@ -523,8 +523,8 @@ st.markdown("""
     <style>
     /* Remove default Streamlit padding/margin between components */
     div[data-testid="stVerticalBlock"] {
-        gap: 0.75px !important;
-        padding-bottom: 0.75px !important;
+        gap: 1px !important;
+        padding-bottom: 1px !important;
     }
 
     div.block-container {
