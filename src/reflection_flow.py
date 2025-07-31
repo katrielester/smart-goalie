@@ -48,7 +48,7 @@ def run_weekly_reflection():
     elif st.session_state["group"] != "treatment":
         st.warning("Reflections are only available for the treatment group.")
         st.stop()
-    if st.session_state.get("chat_state") != "reflection":
+    elif not st.session_state.get("chat_state", "").startswith("reflection"):
         st.warning("You're not currently in reflection mode.")
         st.stop()
 
