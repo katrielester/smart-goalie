@@ -213,18 +213,14 @@ def run_goal_setting():
         st.session_state["chat_thread"].extend([
             {
                 "sender": "Assistant",
-                "message": "Your SMART goal has been saved! Now let's break it down into smaller tasks you can do <b>this week</b>. We'll check in with you midweek to help you reflect and adjust if needed."
-            },
-            {
-                "sender": "Assistant",
                 "message": "🔸 Weekly Task Planning 🔸"
             },
             {
                 "sender": "Assistant",
                 "message": (
-                    "You’ll now break your goal into weekly tasks. <br>"
+                    "Now, let's break your goal into weekly tasks. <br>"
                     "<b>Here’s how it works:</b><br>"
-                    "- You’ll set up to 3 small tasks to complete this week<br>"
+                    "- You’ll set up to 3 smaller tasks to complete this week<br>"
                     "- These tasks should help you make progress on your goal<br>"
                     "Try to keep your tasks small, realistic, and clearly tied to this week’s focus."
                 )
