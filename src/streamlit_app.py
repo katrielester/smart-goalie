@@ -437,7 +437,7 @@ with st.container():
             color: #f0f0f0;
         }}
         .chat-wrapper {{
-            height: calc(100vh - 150px) !important;
+            height: calc(100vh - 50px) !important;
             overflow-y: auto;
             padding: 10px;
             padding-bottom: 0px !important;
