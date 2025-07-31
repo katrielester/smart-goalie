@@ -313,7 +313,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         """)
         # then your “I completed it!” button
         if st.button("✅ I completed it!"):
-            st.experimental_rerun()  # on reload you'll see has_completed_presurvey=True
+            st.rerun()  # on reload you'll see has_completed_presurvey=True
         
         if "chat_thread" not in st.session_state:
             st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
