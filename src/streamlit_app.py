@@ -492,14 +492,13 @@ with st.container():
     """, height=chat_height_px, scrolling=False)
 
 # if we’ve been told to show a download, render it here in the normal Streamlit UI
-# if st.session_state.get("show_download"):
-#     st.markdown("<div style='margin-top: -2rem;'></div>", unsafe_allow_html=True)
-#     st.download_button(
-#         label="📄 Download your goal & tasks",
-#         data=st.session_state["download_content"],
-#         file_name="my_smart_goal.txt",
-#         mime="text/plain",
-#     )
+if st.session_state.get("show_download"):
+    st.download_button(
+        label="📄 Download your goal & tasks",
+        data=st.session_state["download_content"],
+        file_name="my_smart_goal.txt",
+        mime="text/plain",
+    )
 
     # EXPERIMENTAL VER END 
 
@@ -519,6 +518,28 @@ components.html(
     scrolling=False,
 )
 # ────────────────────────────────────────────────────────────
+
+st.markdown("""
+    <style>
+    /* Remove default Streamlit padding/margin between components */
+    div[data-testid="stVerticalBlock"] {
+        gap: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    div.block-container {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    /* Kill bottom margin of iframe container */
+    iframe {
+        margin-bottom: 0px !important;
+        display: block;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
 
 
