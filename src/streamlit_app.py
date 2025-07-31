@@ -880,7 +880,7 @@ elif state == "menu":
     run_menu()
 elif state == "goal_setting":
     run_goal_setting()
-elif state == "reflection":
+elif state.startswith("reflection"):
     run_weekly_reflection()
 elif state == "view_goals":
     run_view_goals()
