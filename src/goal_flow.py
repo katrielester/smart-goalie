@@ -237,7 +237,8 @@ def run_goal_setting():
         ])
         set_state(
             task_entry_stage = "entry",
-            chat_state = "add_tasks"
+            chat_state = "add_tasks",
+            needs_restore=False
         )
         st.rerun()
 
