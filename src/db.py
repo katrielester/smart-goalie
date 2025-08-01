@@ -222,27 +222,26 @@ def archive_task(task_id, replaced_by_task_id=None, reason=None):
         WHERE id = %s
     """, (replaced_by_task_id, reason, task_id), commit=True)
 
-def replace_or_modify_task(goal_id, old_task_id, new_task_text, reason="Replaced"):
-    query = """
-    WITH new_task AS (
-        INSERT INTO tasks (goal_id, task_text)
-        VALUES (%s, %s)
-        RETURNING id
-    )
-    UPDATE tasks
-    SET status = 'archived',
-        replaced_by_task_id = (SELECT id FROM new_task),
-        replacement_reason = %s
-    WHERE id = %s
-    RETURNING (SELECT id FROM new_task) AS new_task_id;
+def replace_or_modify_task(goal_id, old_task_id, new_task_text, reason="Modified"):
     """
-    result = execute_query(
-        query,
-        (goal_id, new_task_text, reason, old_task_id),
+    Archive the old task and insert a new one with the updated text.
+    Returns the new task's id.
+    """
+    # 1️⃣ Archive the old task
+    execute_query(
+        "UPDATE tasks SET status = 'archived' WHERE id = %s",
+        (old_task_id,),
+        commit=True
+        )
+        
+    # 2️⃣ Insert the new, active task
+    row = execute_query(
+        "INSERT INTO tasks (goal_id, task_text, status) VALUES (%s, %s, 'active') RETURNING id",
+        (goal_id, new_task_text),
         fetch="one",
         commit=True
-    )
-    return result["new_task_id"] if result else None
+        )
+    return row["id"] if row else None
 
 def save_reflection_draft(user_id, goal_id, week_number, session_id, step, task_progress, answers, update_idx, q_idx, awaiting_task_edit=None, editing_choice=None):
     execute_query("""

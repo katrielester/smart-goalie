@@ -141,6 +141,9 @@ def run_weekly_reflection():
         st.info("You have no tasks for your goal. Add tasks first.")
         return
     
+    for t in tasks:
+        st.session_state["task_progress"].setdefault(t["id"], 0)
+    
     if "reflection_step" not in st.session_state:
         init_reflection_session()
         save_reflection_state()
@@ -613,7 +616,7 @@ def run_weekly_reflection():
         # Save task progress
         for task in tasks:
             task_id = task["id"]
-            rating = st.session_state["task_progress"][task_id]
+            rating = st.session_state["task_progress"].get(task_id, 0)
             save_reflection_response(reflection_id, task_id=task_id, progress_rating=rating)
             
                 
