@@ -357,8 +357,9 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.markdown(user_info["has_completed_presurvey"])
         st.markdown(f"""
         **1.** Click the link below to open the pre‑survey in a new tab  
-        **2.** Complete it, then come back and refresh this page!”**
-        *Note: If you would like to add more tasks, don't worry, you could always come back to this chatbot after Pre-Survey to add more (up to 3)!*
+        **2.** Complete it, then come back and refresh this page!
+                    
+        **Note:** If you would like to add more tasks, don't worry, you could always come back to this chatbot after Pre-Survey to add more (up to 3)!
 
         [🚀 Open Pre‑Survey here]({survey_url})  
         """)
