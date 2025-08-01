@@ -248,8 +248,8 @@ if dev=="1":
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
-    week = query_params.get("week")
-    session = query_params.get("session")
+    week = query_params.get("week", [None])[0]
+    session = query_params.get("session", [None])[0]
     print("!!! Init Debug — Week:", week, "| Session:", session)
 
     user_id = st.session_state["user_id"]
