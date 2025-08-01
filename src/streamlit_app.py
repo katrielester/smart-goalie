@@ -377,8 +377,10 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # 4. Friendly reminder
         st.info("After you finish the survey, come back and click Refresh to continue.")
 
-        if "chat_thread" not in st.session_state:
-            st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
+        # st.session_state.clear()
+
+        # if "chat_thread" not in st.session_state:
+        #     st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
 
         st.stop()
 
