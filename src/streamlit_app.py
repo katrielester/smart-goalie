@@ -6,6 +6,9 @@ import uuid
 from chat_thread import ChatThread
 import streamlit.components.v1 as components
 
+import textwrap
+
+
 restore_id = str(uuid.uuid4())
 print(f"🔄 Restore Cycle: {restore_id}")
 
@@ -116,6 +119,10 @@ PHASE_KEYS = {
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
+def ensure_download_content():
+    if "download_content" not in st.session_state:
+        st.session_state["download_content"] = build_goal_tasks_text(...)
+    return st.session_state["download_content"]
 
 logger = setup_logger()
 
@@ -347,23 +354,59 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     has_any_task = any(g["task_count"] > 0 for g in goals)
     
     if has_any_task and (user_info["has_completed_presurvey"] == False) and not (saved.get("needs_restore")):
-        st.title("📝 Pre-Survey Required")
-        st.warning("You haven’t completed the pre-survey yet. Please do that first to continue.")
+        goal = goals[0]
+        goal_id   = goal["id"]
+        goal_text = goal["goal_text"]
+        tasks     = get_tasks(goal_id, active_only=True)
+        
+        if "download_content" not in st.session_state:
+            st.session_state["download_content"] = build_goal_tasks_text(
+                goal_text,
+                [ t["task_text"] for t in tasks ]  # even if tasks is empty, this will still work
+                )
         gr_code = 1 if str(user_info["group_assignment"]).strip() == "1" else 0
         survey_url = (
                 "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
                 f"?user_id={user_info['prolific_code']}&group={gr_code}"
             )
-        st.markdown(user_info["has_completed_presurvey"])
-        st.markdown(f"""
-        **1.** Click the link below to open the pre‑survey in a new tab  
-        **2.** Complete it, then come back and refresh this page!
-                    
-        **Note:** If you would like to add more tasks, don't worry, you could always come back to this chatbot after Pre-Survey to add more (up to 3)!
 
-        [🚀 Open Pre‑Survey here]({survey_url})  
-        """)
-    
+        # 1. Heading + warning
+        st.title("📝 Pre-Survey Required")
+        st.warning("You still need to complete a short pre-survey before continuing. It takes under 5 minutes.")
+
+        # 2. Clean, dedented instructions
+        st.markdown(textwrap.dedent("""
+        1. **Download your plan**  
+        Click the 📄 **Download Goal & Tasks** button below and save the file somewhere safe.
+
+        2. **Take the survey**  
+        Click the 🚀 **Open Pre-Survey** button to launch the Qualtrics survey in a new tab.
+
+        3. **Return & resume**  
+        When you’re done, come back here and hit your browser’s **Refresh** button to continue.
+        """))
+
+        # 3. Two-column actions
+        col1, col2 = st.columns([1,1])
+        with col1:
+            data = ensure_download_content()
+            st.download_button(
+            label="📄 Download Goal & Tasks",
+            data=data,
+            file_name="my_smart_goal.txt",
+            mime="text/plain",
+            )
+        with col2:
+            st.markdown(
+            f'<a href="{survey_url}" target="_blank" style="font-size:1.1em;">'
+            "🚀 Open Pre-Survey</a>",
+            unsafe_allow_html=True
+            )
+
+        # 4. Friendly reminder
+        st.info("After you finish the survey, come back and click Refresh to continue.")
+        st.stop()
+
         if "chat_thread" not in st.session_state:
             st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
 
@@ -903,13 +946,14 @@ def run_view_goals():
     
     with col3:
         # build a simple text file: goal on top, then each active task
-        download_content = build_goal_tasks_text(
-            goal_text,
-            [ t["task_text"] for t in tasks ]  # even if tasks is empty, this will still work
-            )
+        if "download_content" not in st.session_state:
+            st.session_state["download_content"] = build_goal_tasks_text(
+                goal_text,
+                [ t["task_text"] for t in tasks ]  # even if tasks is empty, this will still work
+                )
         st.download_button(
             label="📄 Download Goal & Tasks",
-            data=download_content,
+            data=st.session_state["download_content"],
             file_name="my_smart_goal.txt",
             mime="text/plain",
             )
