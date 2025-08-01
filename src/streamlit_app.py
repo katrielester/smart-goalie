@@ -372,11 +372,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
             mime="text/plain",
             )
         with col2:
-            st.markdown(
-            f'<a href="{survey_url}" target="_blank" style="font-size:1.1em;">'
-            "🚀 Open Pre-Survey</a>",
-            unsafe_allow_html=True
-            )
+            st.link_button("🚀 Open Pre-Survey",survey_url)
 
         # 4. Friendly reminder
         st.info("After you finish the survey, come back and click Refresh to continue.")
