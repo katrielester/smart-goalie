@@ -160,8 +160,8 @@ st.markdown(
     }
     /* ─── Extra padding around buttons ─── */
     section[data-testid="stSidebar"] button > div {
-        padding-top: 0.75rem !important;
-        padding-bottom: 0.75rem !important;
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
     }
     </style>
     """,
@@ -230,7 +230,7 @@ else:
 with st.sidebar:
     with st.expander("💡 Tip & Help", expanded=False):
         st.write(
-            "• You can set up to 3 weekly tasks—small steps add up!  \n"
+            "• You can set up to 3 weekly tasks, small steps add up!  \n"
             "• Hit **View Goal & Tasks** to see or download your plan.  \n"
             "• Collapse this panel for more space if you prefer."
         )
