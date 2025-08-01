@@ -155,13 +155,13 @@ st.markdown(
     <style>
     /* ─── More space between all sidebar blocks ─── */
     section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
-        gap: 1rem !important;         /* space between direct children */
-        padding-bottom: 1rem !important;
+        gap: 0rem !important;         /* space between direct children */
+        padding-bottom: 0rem !important;
     }
     /* ─── Extra padding around buttons ─── */
     section[data-testid="stSidebar"] button > div {
-        padding-top: 0rem !important;
-        padding-bottom: 0rem !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
     }
     </style>
     """,
