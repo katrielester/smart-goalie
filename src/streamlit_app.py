@@ -375,7 +375,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
             st.link_button("🚀 Open Pre-Survey",survey_url)
 
         # 4. Friendly reminder
-        st.info("After you finish the survey, come back and click Refresh to continue.")
+        st.info("After you finish the survey, come back and refresh the page to continue.")
 
         st.session_state.clear()
 
