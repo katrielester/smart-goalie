@@ -213,9 +213,9 @@ with st.sidebar:
         st.write(
             "• You can set up to 3 weekly tasks—small steps add up!  \n"
             "• Hit **View Goal & Tasks** to see or download your plan.  \n"
-            "• Collapse this panel for more space if you prefer.""
+            "• Collapse this panel for more space if you prefer."
         )
-        
+
     if DEV_MODE:
         if st.button("DEV: Jump to Goal Setting"):
             set_state(
