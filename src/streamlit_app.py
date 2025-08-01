@@ -150,6 +150,25 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+st.markdown(
+    """
+    <style>
+    /* ─── More space between all sidebar blocks ─── */
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
+        gap: 1rem !important;         /* space between direct children */
+        padding-bottom: 1rem !important;
+    }
+    /* ─── Extra padding around buttons ─── */
+    section[data-testid="stSidebar"] button > div {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 # st.session_state.setdefault("chat_state", "intro")
 # st.session_state.setdefault("user_id", "")
 # st.session_state.setdefault("chat_thread", [])
@@ -203,7 +222,7 @@ if "chat_state" in st.session_state:
         txt_state= "Add Tasks"
     else:
         txt_state= "SMART Goalie"
-    st.sidebar.write(f"Phase: {txt_state}")
+    st.sidebar.write(f"**Phase**: {txt_state}")
     st.sidebar.divider()
 else:
     st.sidebar.write("None")
