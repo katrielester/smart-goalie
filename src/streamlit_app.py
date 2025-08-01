@@ -222,10 +222,10 @@ if "chat_state" in st.session_state:
         txt_state= "Add Tasks"
     else:
         txt_state= "SMART Goalie"
-    st.sidebar.write(f"**Phase**: {txt_state}")
+    st.sidebar.write(f"**Phase**: {txt_state}\n")
     st.sidebar.divider()
 else:
-    st.sidebar.write("None")
+    st.sidebar.write("\n")
 
 with st.sidebar:
     with st.expander("💡 Tip & Help", expanded=False):
