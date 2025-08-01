@@ -198,7 +198,7 @@ with st.sidebar:
         user_id = prolific_id
         st.session_state["authenticated"] = True
         st.session_state["user_id"] = user_id
-        st.markdown(f"**Prolific ID:** {user_id}")
+        st.markdown(f"\n**Prolific ID:** {user_id}")
 
     else:
         st.warning("Please access this link via Prolific.")
