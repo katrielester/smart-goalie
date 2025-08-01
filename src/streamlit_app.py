@@ -170,6 +170,52 @@ if "did_auth_init" not in st.session_state:
     st.session_state["did_auth_init"] = False
 
 with st.sidebar:
+    st.title("🎯 Your Dashboard")
+
+    query_params = st.query_params
+    prolific_id = query_params.get("PROLIFIC_PID")
+
+    if prolific_id:
+        user_id = prolific_id
+        st.session_state["authenticated"] = True
+        st.session_state["user_id"] = user_id
+        st.markdown(f"**Prolific ID:** {user_id}")
+
+    else:
+        st.warning("Please access this link via Prolific.")
+        st.stop()
+    
+if "chat_state" in st.session_state:
+    cstate =st.session_state["chat_state"]
+    if cstate == "intro":
+        txt_state= "Introduction"
+    elif cstate == "smart_training":
+        txt_state= "SMART Goal Training"
+    elif cstate == "menu":
+        txt_state= "Menu"
+    elif cstate == "goal_setting":
+        txt_state= "Goal Setting"
+    elif cstate.startswith("reflection"):
+        txt_state= "Reflection"
+    elif cstate == "view_goals":
+        txt_state= "View Goals"
+    elif cstate == "add_tasks":
+        txt_state= "Add Tasks"
+    else:
+        txt_state= "SMART Goalie"
+    st.sidebar.write(f"Phase: {txt_state}")
+    st.sidebar.divider()
+else:
+    st.sidebar.write("None")
+
+with st.sidebar:
+    with st.expander("💡 Tip & Help", expanded=False):
+        st.write(
+            "• You can set up to 3 weekly tasks—small steps add up!  \n"
+            "• Hit **View Goal & Tasks** to see or download your plan.  \n"
+            "• Collapse this panel for more space if you prefer.""
+        )
+        
     if DEV_MODE:
         if st.button("DEV: Jump to Goal Setting"):
             set_state(
@@ -192,43 +238,7 @@ with st.sidebar:
         if st.sidebar.button("DEV: Force clear session_state"):
             st.session_state.clear()
             st.rerun()
-    
-if "chat_state" in st.session_state:
-    cstate =st.session_state["chat_state"]
-    if cstate == "intro":
-        txt_state= "Introduction"
-    elif cstate == "smart_training":
-        txt_state= "SMART Goal Training"
-    elif cstate == "menu":
-        txt_state= "Menu"
-    elif cstate == "goal_setting":
-        txt_state= "Goal Setting"
-    elif cstate.startswith("reflection"):
-        txt_state= "Reflection"
-    elif cstate == "view_goals":
-        txt_state= "View Goals"
-    elif cstate == "add_tasks":
-        txt_state= "Add Tasks"
-    else:
-        txt_state= "SMART Goalie"
-    st.sidebar.title(txt_state)
-else:
-    st.sidebar.write("None")
 
-with st.sidebar:
-    # st.title("User Panel")
-
-    query_params = st.query_params
-    prolific_id = query_params.get("PROLIFIC_PID")
-
-    if prolific_id:
-        user_id = prolific_id
-        st.session_state["authenticated"] = True
-        st.session_state["user_id"] = user_id
-
-    else:
-        st.warning("Please access this link via Prolific.")
-        st.stop()
 if dev=="1":
     # debug: show me what keys are present on *every* render
     st.sidebar.write("🛠 session_state keys:", list(st.session_state.keys()))
