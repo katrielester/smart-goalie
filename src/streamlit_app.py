@@ -90,39 +90,14 @@ from logger import setup_logger
 # st.write("Dir listing:", os.listdir())
 # st.stop()
 
-PHASE_KEYS = {
-    "intro": [
-        "chat_state", "smart_step", "message_index", "chat_thread", "user_id"
-    ],
-    "smart_training": [
-        "chat_state", "smart_step", "message_index", "chat_thread", "user_id"
-    ],
-    "menu": [
-        "chat_state", "group", "chat_thread", "user_id"
-    ],
-    "goal_setting": [
-        "chat_state", "goal_step", "message_index", "current_goal", "chat_thread", "user_id"
-    ],
-    "add_tasks": [
-        "chat_state", "goal_id_being_worked", "task_entry_stage", "tasks_saved",
-        "current_goal", "chat_thread", "user_id"
-    ],
-    "reflection": [
-        "chat_state", "week", "session", "reflection_step", "task_progress",
-        "reflection_answers", "update_task_idx", "reflection_q_idx", "chat_thread", "user_id"
-    ],
-    "view_goals": [
-        "chat_state", "goal_id_being_worked", "chat_thread", "user_id"
-    ]
-}
-
 
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
-def ensure_download_content():
+def ensure_download_content(goal_text, tasks):
     if "download_content" not in st.session_state:
-        st.session_state["download_content"] = build_goal_tasks_text(...)
+        st.session_state["download_content"] = build_goal_tasks_text(goal_text, tasks)
     return st.session_state["download_content"]
+
 
 logger = setup_logger()
 
@@ -389,7 +364,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # 3. Two-column actions
         col1, col2 = st.columns([1,1])
         with col1:
-            data = ensure_download_content()
+            data = ensure_download_content(goal_text, [t["task_text"] for t in tasks])
             st.download_button(
             label="📄 Download Goal & Tasks",
             data=data,
@@ -405,7 +380,6 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
         # 4. Friendly reminder
         st.info("After you finish the survey, come back and click Refresh to continue.")
-        st.stop()
 
         if "chat_thread" not in st.session_state:
             st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
