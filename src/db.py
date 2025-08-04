@@ -63,7 +63,7 @@ def create_user(user_id, prolific_code=None, group="0"):
         INSERT INTO users (user_id, prolific_code, group_assignment)
         VALUES (%s, %s, %s)
         ON CONFLICT (user_id) DO NOTHING
-    """, (user_id, prolific_code, group), commit=True)
+    """, (user_id, prolific_code, group),  fetch=None, commit=True)
 
 
 def get_user_info(user_id):
@@ -81,7 +81,7 @@ def get_user_group(user_id):
 def mark_training_completed(user_id):
     execute_query(
         "UPDATE users SET has_completed_training = TRUE WHERE user_id = %s",
-        (user_id,), commit=True
+        (user_id,), fetch=None, commit=True
     )
     update_user_phase(user_id, 1)
 
@@ -102,7 +102,7 @@ def get_user_phase(user_id):
 def update_user_phase(user_id, new_phase):
     execute_query(
         "UPDATE users SET phase = %s WHERE user_id = %s",
-        (new_phase, user_id), commit=True
+        (new_phase, user_id), fetch=None, commit=True
     )
 
 
@@ -151,7 +151,7 @@ def save_task(goal_id, task_text):
     execute_query("""
         INSERT INTO tasks (goal_id, task_text, status)
         VALUES (%s, %s, 'active')
-    """, (goal_id, task_text), commit=True)
+    """, (goal_id, task_text),fetch=None, commit=True)
 
 def get_tasks(goal_id, active_only=True):
     query = """
@@ -166,7 +166,7 @@ def get_tasks(goal_id, active_only=True):
 def update_task_completion(task_id, completed):
     execute_query("""
         UPDATE tasks SET completed = %s WHERE id = %s
-    """, (completed, task_id), commit=True)
+    """, (completed, task_id), fetch=None, commit=True)
 
 
 def save_reflection(user_id, goal_id, content, week_number, session_id="a"):
@@ -186,7 +186,7 @@ def save_reflection_response(reflection_id, task_id=None, progress_rating=None, 
         VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, (
         reflection_id, task_id, progress_rating, update_type, updated_task_text, answer_key, answer_text
-    ), commit=True)
+    ),fetch=None,  commit=True)
 
 
 def get_reflections(user_id):
@@ -241,7 +241,7 @@ def archive_task(task_id, replaced_by_task_id=None, reason=None):
             replaced_by_task_id = %s,
             replacement_reason = %s
         WHERE id = %s
-    """, (replaced_by_task_id, reason, task_id), commit=True)
+    """, (replaced_by_task_id, reason, task_id), fetch=None, commit=True)
 
 def replace_or_modify_task(goal_id, old_task_id, new_task_text, reason="Modified"):
     """
@@ -302,7 +302,7 @@ def delete_reflection_draft(user_id, goal_id, week_number, session_id):
     execute_query("""
         DELETE FROM reflection_drafts
         WHERE user_id = %s AND goal_id = %s AND week_number = %s AND session_id = %s
-    """, (user_id, goal_id, week_number, session_id), commit=True)
+    """, (user_id, goal_id, week_number, session_id), fetch=None, commit=True)
 
 def get_last_reflection_meta(user_id, goal_id):
     """
