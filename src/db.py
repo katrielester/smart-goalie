@@ -3,8 +3,11 @@
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from logger import setup_logger
 
 import json
+
+logger = setup_logger()
 
 DATABASE_URL = "postgresql://smart_goalie_db_user:C2FCtmsiG3XKlApXVBtDO73noloz72LR@dpg-d19rim95pdvs73a49kn0-a.frankfurt-postgres.render.com/smart_goalie_db"
 # DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -30,6 +33,7 @@ def execute_query(query, params=(), fetch="one", commit=False):
                     return None
     except Exception as e:
         print("Database error:", e)
+        logger.exception("Database query failed | SQL: %s | Params: %s", query, params)
         # context manager will rollback automatically on exception
         return None if fetch == "one" else []
 
