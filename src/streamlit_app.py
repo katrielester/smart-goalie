@@ -272,8 +272,9 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     print ("restored_done" in st.session_state)
 
     if saved.get("needs_restore") and "restored_done" not in st.session_state:
-
+        logger.info("🔄 Restoring session from DB | user_id=%s | restore_id=%s", user_id, restore_id)
         print("🟩 DB restore triggered for", user_id)
+        
 
         st.session_state["RESTORED_FROM_DB"] = str(restore_id)
         print("🔄 SESSION RESTORED FROM DB! UUID:", st.session_state["RESTORED_FROM_DB"])
@@ -317,6 +318,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.rerun()
 
     else:
+        logger.info("⚪ No DB restore needed | user_id=%s | restore_id=%s", user_id, restore_id)
         print("🟦 No DB restore needed, menu phase set")
 
         # No restore needed, fresh start
