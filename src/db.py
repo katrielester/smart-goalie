@@ -353,7 +353,8 @@ def save_session_state(user_id, state_dict):
         ON CONFLICT (user_id) DO UPDATE
           SET session_state = EXCLUDED.session_state,
               updated_at    = NOW()
-    """, (user_id, js), commit=True)
+    """, 
+    (user_id, js), fetch=None, commit=True),
 
 
 # PHASES
