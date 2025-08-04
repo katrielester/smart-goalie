@@ -1,7 +1,7 @@
 # db_utils.py
 import streamlit as st
 import pandas as pd
-from db import conn, save_session_state  # This brings in your existing global connection
+from db import save_session_state, execute_query  # This brings in your existing global connection
 
 
 # At the top of goal_flow.py (or in a shared utils module)
@@ -70,8 +70,9 @@ def set_state(**kwargs):
 
 def export_chat_history(user_id, format="csv"):
     query = "SELECT * FROM chat_history WHERE user_id = %s"
-    df = pd.read_sql_query(query, conn, params=(user_id,))
-
+    # df = pd.read_sql_query(query, conn, params=(user_id,))
+    rows = execute_query(query, (user_id,), fetch="all")
+    df = pd.DataFrame(rows)
     if format == "csv":
         df.to_csv(f"chat_history_{user_id}.csv", index=False)
     elif format == "json":
@@ -88,8 +89,13 @@ def export_goals_tasks(user_id, format="csv"):
         WHERE goals.user_id = %s
     """
 
-    goals_df = pd.read_sql_query(goals_query, conn, params=(user_id,))
-    tasks_df = pd.read_sql_query(tasks_query, conn, params=(user_id,))
+    # goals_df = pd.read_sql_query(goals_query, conn, params=(user_id,))
+    # tasks_df = pd.read_sql_query(tasks_query, conn, params=(user_id,))
+
+    goals_rows = execute_query(goals_query, (user_id,), fetch="all")
+    goals_df = pd.DataFrame(goals_rows)
+    tasks_rows = execute_query(tasks_query, (user_id,), fetch="all")
+    tasks_df = pd.DataFrame(tasks_rows)
 
     if format == "csv":
         goals_df.to_csv(f"goals_{user_id}.csv", index=False)
@@ -102,8 +108,9 @@ def export_goals_tasks(user_id, format="csv"):
 
 def export_reflections(user_id, format="csv"):
     query = "SELECT * FROM reflections WHERE user_id = %s"
-    df = pd.read_sql_query(query, conn, params=(user_id,))
-
+    # df = pd.read_sql_query(query, conn, params=(user_id,))
+    rows = execute_query(query, (user_id,), fetch="all")
+    df = pd.DataFrame(rows)
     if format == "csv":
         df.to_csv(f"reflections_{user_id}.csv", index=False)
     elif format == "json":
