@@ -245,6 +245,7 @@ def run_goal_setting():
 
 def run_add_tasks():
     if st.session_state.get("task_entry_stage") == "reflection_explained":
+        show_reflection_explanation()
         return
     print("DEBUG: run_add_tasks() triggered")
     print("→ task_entry_stage:", st.session_state["task_entry_stage"])
@@ -322,11 +323,18 @@ def run_add_tasks():
                         "Please replace or archive one during your next reflection before adding more."
                     )
                 })
-                # jump into your reflection explanation
-                set_state(task_entry_stage="reflection_explained")
-                show_reflection_explanation()
-                update_user_phase(st.session_state["user_id"], 2)
-                return  # <- stops any further buttons from rendering
+                if get_user_phase(st.session_state["user_id"]) < 2:
+                    set_state(task_entry_stage="reflection_explained")
+                    update_user_phase(st.session_state["user_id"], 2)
+                    st.rerun()
+                else:
+                    set_state(
+                        chat_state    = "menu",
+                        needs_restore = False
+                        )
+                    
+                    del st.session_state["task_entry_stage"]
+                    st.rerun()
 
             task = st.session_state.pop("candidate_task")
             save_task(goal_id, task)
@@ -344,6 +352,7 @@ def run_add_tasks():
                     "message": "Would you like to add another task?"
                 })
                 set_state(task_entry_stage = "add_more_decision")
+                st.rerun()
             else:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
@@ -351,8 +360,8 @@ def run_add_tasks():
                 })
                 if get_user_phase(st.session_state["user_id"]) < 2:
                     set_state(task_entry_stage="reflection_explained")
-                    show_reflection_explanation()
                     update_user_phase(st.session_state["user_id"], 2)
+                    st.rerun()
                 else:
                     set_state(
                         chat_state    = "menu",
@@ -360,7 +369,7 @@ def run_add_tasks():
                         )
                     
                 del st.session_state["task_entry_stage"]
-            # st.rerun()
+                st.rerun()
             return
 
         if col2.button("❌ No, I want to edit"): 
@@ -378,15 +387,15 @@ def run_add_tasks():
             st.rerun()
 
         if col2.button("✅ No, done for now"):
-            set_state(task_entry_stage="reflection_explained")
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": f"You’ve added {len(st.session_state['tasks_saved'])} task(s). "
                         "You can review or update them during your reflection later."
             })
             if get_user_phase(st.session_state["user_id"]) < 2:
-                show_reflection_explanation()
+                set_state(task_entry_stage="reflection_explained")
                 update_user_phase(st.session_state["user_id"], 2)
+                st.rerun()
             else:
                 set_state(
                     chat_state    = "menu",
