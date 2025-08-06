@@ -261,7 +261,7 @@ def run_weekly_reflection():
 
 
     if st.session_state["reflection_step"] == 0:
-        st.write("Reflection step:", st.session_state.get("reflection_step"))
+        print("Reflection step:", st.session_state.get("reflection_step"))
 
         last_reflection = get_last_reflection(user_id, goal_id)
 
