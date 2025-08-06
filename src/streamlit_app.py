@@ -105,19 +105,35 @@ logger = setup_logger()
 
 st.markdown("""
     <style>
-    button {
-        background-color: #1f77b4;
-        color: white !important;
-        border-radius: 8px;
-        padding: 0.5rem 1.2rem;
-        margin-bottom: 0.5rem;
-        text-align: left;
-        width: 100%;
-    }
-    button:hover {
-        background-color: #145a86;
-    }
-    
+      /* Apply to all Streamlit buttons: normal, download, link */
+      .stButton>button,
+      .stDownloadButton>button,
+      .stLinkButton>button {
+        background-color: #1f77b4 !important;
+        color: #fff      !important;  /* always white by default */
+        border-radius: 8px !important;
+      }
+      /* Hover should remain white text on darker blue */
+      .stButton>button:hover,
+      .stDownloadButton>button:hover,
+      .stLinkButton>button:hover {
+        background-color: #145a86 !important;
+        color: #fff !important;
+      }
+
+      /* In light-mode browsers, swap text to black for better contrast */
+      @media (prefers-color-scheme: light) {
+        .stButton>button,
+        .stDownloadButton>button,
+        .stLinkButton>button {
+          color: #000 !important;
+        }
+        .stButton>button:hover,
+        .stDownloadButton>button:hover,
+        .stLinkButton>button:hover {
+          color: #000 !important;
+        }
+      }
     .block-container {
             padding-top: 0.5rem !important;
             }
@@ -128,7 +144,7 @@ st.markdown("""
     section[data-testid="stBlock"] {
             margin-bottom: 4px !important;
             padding-bottom: 4px !important;
-+    }
+            }
     </style>
 """, unsafe_allow_html=True)
 

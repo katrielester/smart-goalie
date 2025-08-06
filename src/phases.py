@@ -131,8 +131,8 @@ smart_training_flow = {
     },
     "measurable_right": {
         "text": [
-            "Correct! Course completion is a clear, trackable outcome.",
-            "Still, adding lesson or module targets makes it even stronger."
+            "Correct! Course completion is not a clear, trackable outcome.",
+            "Adding lesson or module targets makes it even stronger."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "measurable_example"}
@@ -141,7 +141,7 @@ smart_training_flow = {
         "text": [
             "Which of these is more measurable?",
             "1. Complete a free transcription course.",
-            "2. Complete a free transcription course with at least 3 modules this week."
+            "2. Complete a free transcription course with at least 3 modules each week."
         ],
         "buttons": ["1", "2"],
         "next": {
@@ -213,23 +213,40 @@ smart_training_flow = {
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "time_intro"}
-    },
+    },   
     "time_intro": {
         "text": [
-            "Lastly, T: Time-bound.",
-            "We’ll add a clear timeframe, this helps build momentum and sets a finish line.",
-            "Which of these timeframes would make the goal more time-bound?"
+            "T is for Time-bound: every SMART goal needs a clear finish line!",
+            "You don’t need to rewrite your whole goal—just pick a phrasing that spans two weeks, or sets a weekly milestone.",
+            "Example base goal: <i>Complete a free transcription course</i>",
+            "Which of these is properly time-bound for our 2-week experiment?"
         ],
         "buttons": [
-            "Complete the course within 2 weeks",
-            "Finish 3 modules by this Friday",
+            "Complete the course within two weeks",
+            "Finish 3 modules each week",
             "Review progress after each module"
         ],
         "next": {
-            "Complete the course within 2 weeks": "complete",
-            "Finish 3 modules by this Friday": "complete",
-            "Review progress after each module": "complete"
+            "Complete the course within two weeks": "time_feedback_yes",
+            "Finish 3 modules each week":     "time_feedback_yes",
+            "Review progress after each module": "time_feedback_no"
         }
+    },
+    "time_feedback_no": {
+        "text": [
+            "Not quite—remember: your goal needs either a two-week deadline or a weekly milestone over two weeks.",
+            "Let’s try again."
+        ],
+        "buttons": ["Back to choices"],
+        "next": {"Back to choices": "time_intro"}
+    },
+    "time_feedback_yes": {
+        "text": [
+            "Exactly! That’s all it takes—just picking a two-week deadline or a weekly target.",
+            "You’re ready for the recap."
+        ],
+        "buttons": ["Continue"],
+        "next": {"Continue": "complete"}
     },
     "complete": {
         "text": [

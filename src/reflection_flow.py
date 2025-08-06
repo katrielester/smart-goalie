@@ -141,9 +141,6 @@ def run_weekly_reflection():
         st.info("You have no tasks for your goal. Add tasks first.")
         return
     
-    for t in tasks:
-        st.session_state["task_progress"].setdefault(t["id"], 0)
-    
     if "reflection_step" not in st.session_state:
         init_reflection_session()
         save_reflection_state()
@@ -158,6 +155,10 @@ def run_weekly_reflection():
             needs_restore=True
             )
         st.rerun()
+
+    
+    for t in tasks:
+        st.session_state["task_progress"].setdefault(t["id"], 0)
 
 
         # if "chat_thread" not in st.session_state:

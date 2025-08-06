@@ -1,7 +1,6 @@
 # llama_utils.py
 
 import requests, re
-import logging
 from logger import setup_logger
 
 
