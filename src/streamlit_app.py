@@ -395,6 +395,18 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # 4. Friendly reminder
         st.info("After you finish the survey, come back and refresh the page to continue.")
 
+        # 5. GROUP EXPLANATION
+        if st.session_state["group"] == "treatment":
+            st.info(
+                "Over the next two weeks, you will receive reflection prompts here in this chat roughly twice a week. "
+                "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created."
+            )
+        else:
+            st.info(
+                "After the survey, please work on the goal and tasks you just created at your own pace. "
+                "We’ll be in touch again in two weeks with a brief follow-up.\n\n"
+            )
+
         st.session_state.clear()
 
         # if "chat_thread" not in st.session_state:
