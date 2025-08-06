@@ -51,8 +51,16 @@ smart_training_flow = {
     ],
     "buttons": ["I've watched it"],
     "next": {
-        "I've watched it": "specific_intro"
+        "I've watched it": "study_scope"
     }
+},
+    "study_scope": {
+    "text": [
+        "SMART works for any deadline, but in this study we’ll use a <b>two-week</b> horizon.",
+        "Let’s dive in!"
+    ],
+    "buttons": ["Let’s go"],
+    "next": {"Let’s go": "specific_intro"}
 },
     "specific_intro": {
         "text": [
@@ -167,7 +175,7 @@ smart_training_flow = {
     "achievable_intro": {
         "text": [
             "Next is A: Achievable.",
-            "Think about this goal: 'Complete a free transcription course with at least 3 modules this week.'",
+            "Think about this goal: 'Complete a free transcription course with at least 3 modules each week.'",
             "Is that realistic for someone with other work and responsibilities?"
         ],
         "buttons": ["Yes", "No"],
