@@ -50,10 +50,8 @@ smart_training_flow = {
         "<a href=\"https://www.youtube.com/watch?v=yA53yhiOe04&ab_channel=FlikliTV\" target=\"_blank\" style=\"color:#4ea8ff;\">Watch: SMART Goals Explained</a>"
     ],
     "buttons": ["I've watched it"],
-    "next": {
-        "I've watched it": "study_scope"
-    }
-},
+    "next": {"I've watched it": "study_scope"}
+    },
     "study_scope": {
     "text": [
         "SMART works for any deadline, but in this study we’ll use a <b>two-week</b> horizon.",
@@ -61,7 +59,7 @@ smart_training_flow = {
     ],
     "buttons": ["Let’s go"],
     "next": {"Let’s go": "specific_intro"}
-},
+    },
     "specific_intro": {
         "text": [
             "For this experiment, you’ll set one meaningful goal: something that will take at least two weeks to make progress on. We’ll use the SMART framework to help shape it.",
