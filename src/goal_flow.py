@@ -351,13 +351,14 @@ def run_add_tasks():
                     show_reflection_explanation()
                     update_user_phase(st.session_state["user_id"], 2)
                     
-                set_state(
-                    chat_state    = "menu",
-                    needs_restore = False
-                    )
+                # set_state(
+                #     chat_state    = "menu",
+                #     needs_restore = False
+                #     )
                     
                 del st.session_state["task_entry_stage"]
-            st.rerun()
+            # st.rerun()
+            return
 
         if col2.button("❌ No, I want to edit"): 
             st.session_state["chat_thread"].append({
@@ -382,12 +383,13 @@ def run_add_tasks():
             if get_user_phase(st.session_state["user_id"]) < 2:
                 show_reflection_explanation()
                 update_user_phase(st.session_state["user_id"], 2)
-            set_state(
-                chat_state    = "menu",
-                needs_restore = False
-                )
+            # set_state(
+            #     chat_state    = "menu",
+            #     needs_restore = False
+            #     )
             del st.session_state["task_entry_stage"]
-            st.rerun()
+            # st.rerun()
+            return
 
 
 def show_reflection_explanation():
