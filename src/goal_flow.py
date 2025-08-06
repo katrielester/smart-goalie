@@ -313,7 +313,7 @@ def run_add_tasks():
 
     elif st.session_state["task_entry_stage"] == "confirm":
         col1, col2 = st.columns([1, 1])
-        if col1.button("✅ Yes, save task"):
+        if col1.button("✅ Yes, save task", key="save_task_btn"):
             existing_active_tasks = get_tasks(goal_id)
             if len(existing_active_tasks) >= 3:
                 st.session_state["chat_thread"].append({
@@ -372,7 +372,7 @@ def run_add_tasks():
                 st.rerun()
             return
 
-        if col2.button("❌ No, I want to edit"): 
+        if col2.button("❌ No, I want to edit", key="edit_task_btn"): 
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": "No problem! Please enter a new task."
@@ -382,11 +382,11 @@ def run_add_tasks():
             st.rerun()
     elif st.session_state["task_entry_stage"] == "add_more_decision":
         col1, col2 = st.columns([1, 1])
-        if col1.button("➕ Yes, add another"):
+        if col1.button("➕ Yes, add another", key="add_more_yes_btn"):
             set_state(task_entry_stage = "suggest")
             st.rerun()
 
-        if col2.button("✅ No, done for now"):
+        if col2.button("✅ No, done for now", key="done_for_now_btn"):
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": f"You’ve added {len(st.session_state['tasks_saved'])} task(s). "
