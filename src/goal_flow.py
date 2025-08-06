@@ -440,3 +440,6 @@ def show_reflection_explanation():
             f"<br><br><a href='{survey_url}' target='_blank'>Click here to begin the survey</a>"
         )
     })
+
+    set_state(needs_restore=False)
+    st.stop()
