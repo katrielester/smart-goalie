@@ -54,7 +54,7 @@ smart_training_flow = {
     },
     "study_scope": {
     "text": [
-        "SMART works for any deadline, but in this study we’ll use a <b>two-week</b> horizon.",
+        "SMART works for any deadline, but in this study, you’ll set a goal to work on for the next <b>two weeks</b>.",
         "Let’s dive in!"
     ],
     "buttons": ["Let’s go"],
