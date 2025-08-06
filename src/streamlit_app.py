@@ -370,7 +370,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # 2. Clean, dedented instructions
         st.markdown(textwrap.dedent("""
         1. **Download your plan**  
-        Click the 📄 **Download Goal & Tasks** button below and save the file somewhere safe.
+        If you haven't downloaded your goal and tasks, click the 📄 **Download Goal & Tasks** button below and save the file somewhere safe.
 
         2. **Take the survey**  
         Click the 🚀 **Open Pre-Survey** button to launch the Qualtrics survey in a new tab.
