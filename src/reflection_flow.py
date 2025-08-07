@@ -169,7 +169,9 @@ def run_weekly_reflection():
         # st.session_state["reflection_answers"] = {}
         # st.session_state["current_task"] = 0
 
-        # --- PATCH: Early branch if in edit mode ---
+    # --- PATCH: Early branch if in edit mode ---
+    # DEBUG: check edit-mode guard
+    print(f"DBG ▶️ awaiting_task_edit = {st.session_state.get('awaiting_task_edit')}")
     # If user is in the middle of editing or inputting a new task, only show edit UI
     if st.session_state.get("awaiting_task_edit") in [True, "awaiting_input"]:
         idx = st.session_state.get("update_task_idx", 0)
@@ -333,6 +335,8 @@ def run_weekly_reflection():
 
         # 4️⃣ Capture the user’s justification before moving on
         if st.session_state.get(f"justifying_{task_id}") and f"justified_{task_id}" not in st.session_state:
+            # DEBUG: entering justification prompt for task_id
+            print(f"DBG ▶️ reflection_step={st.session_state['reflection_step']}, justifying_flag=True, task_id={task_id}")
             justification = st.chat_input("Type your answer here…", key=f"justified_input_{task_id}")
             if justification:
                 # echo user justification
@@ -343,14 +347,14 @@ def run_weekly_reflection():
                 # save it under reflection_answers
                 st.session_state["reflection_answers"][f"justification_{task_id}"] = justification
 
+                # Clear the justifying flag so we don't stay stuck here
+                del st.session_state[f"justifying_{task_id}"]
+
                 # mark as done and move to next task
                 st.session_state[f"justified_{task_id}"] = True
                 st.session_state["reflection_step"] += 1
 
                 save_reflection_state()
-
-
-
                 st.rerun()
 
         # selected = None
