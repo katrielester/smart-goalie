@@ -7,12 +7,18 @@ from llama_utils import (
     suggest_timebound_fix, suggest_tasks_for_goal,
     extract_goal_variants, check_smart_feedback
 )
-from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phase, get_chat_history
+from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phase, get_chat_history, get_goals
 from phases import goal_setting_flow, goal_setting_flow_score
 from chat_thread import ChatThread
 from db_utils import build_goal_tasks_text, set_state
 
 def run_goal_setting():
+
+    user_id = st.session_state.get("user_id")
+    # --- NEW GUARD ---
+    if user_id and get_goals(user_id):
+        st.warning("You’ve already set a goal. To update it, please go to Main Menu → View Existing Goal.")
+        return
 
     USE_LLM_SCORING=True
 
@@ -116,7 +122,7 @@ def run_goal_setting():
             st.rerun()
 
     elif step.get("input_type") == "text":
-        user_input = st.chat_input("Type your answer")
+        user_input = st.chat_input("Type your answer", key=f"goal_text_input_{st.session_state['goal_step']}")
         if user_input:
             st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
             set_state(
@@ -293,7 +299,7 @@ def run_add_tasks():
             st.rerun()
 
     elif st.session_state["task_entry_stage"] == "entry":
-        task_input = st.chat_input("Type a small task you'd like to do")
+        task_input = st.chat_input("Type a small task you'd like to do", key=f"task_entry_input_{len(st.session_state['tasks_saved'])}")
 
         if task_input:
             set_state(candidate_task = task_input.strip())

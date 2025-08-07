@@ -1,6 +1,6 @@
 # chat_thread.py
 
-from datetime import datetime
+from datetime import datetime, timezone
 from db import save_message_to_db
 import streamlit as st
 
@@ -16,7 +16,7 @@ class ChatThread(list):
         db_sender = "bot" if entry["sender"] == "Assistant" else "user"
 
         # Generate one timestamp for both DB & UI
-        ts = datetime.now().isoformat()
+        ts = datetime.now(timezone.utc).isoformat()
 
         skip_literals = {
             "🔎 Analyzing your goal…", 

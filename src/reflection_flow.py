@@ -116,7 +116,7 @@ def run_weekly_reflection():
                 st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>.<br><br>Thanks!"
+                "message": f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>. Thank you! <br><br> If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
             })
             st.session_state[ack_key] = True
             st.rerun()
@@ -202,7 +202,7 @@ def run_weekly_reflection():
                 st.rerun()
             # Otherwise, just render input
             else:
-                new_text = st.chat_input("Type your updated task here...")
+                new_text = st.chat_input("Type your updated task here...", key=f"update_task_{task_id}")
                 if new_text:
                     reason = st.session_state.get("editing_choice", "Modified")
                     # Defensive: fallback to "Modified" if not set
@@ -232,7 +232,7 @@ def run_weekly_reflection():
             return
         elif st.session_state["awaiting_task_edit"] == "awaiting_input":
             # This branch should be unreachable now, but for safety:
-            new_text = st.chat_input("Type your updated task here...")
+            new_text = st.chat_input("Type your updated task here...", key=f"awaiting_input_{task_id}")
             if new_text:
                 reason = st.session_state.get("editing_choice", "Modified")
                 task = tasks[st.session_state["update_task_idx"]]
@@ -333,7 +333,7 @@ def run_weekly_reflection():
 
         # 4️⃣ Capture the user’s justification before moving on
         if st.session_state.get(f"justifying_{task_id}") and f"justified_{task_id}" not in st.session_state:
-            justification = st.chat_input("Type your answer here…")
+            justification = st.chat_input("Type your answer here…", key=f"justified_{task_id}")
             if justification:
                 # echo user justification
                 st.session_state["chat_thread"].append({
@@ -407,7 +407,7 @@ def run_weekly_reflection():
             save_reflection_state()
             st.rerun()
 
-        user_input = st.chat_input("Type your answer here...")
+        user_input = st.chat_input("Type your answer here...", key=f"reflection_{q_idx}")
         if user_input:
             st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
             st.session_state["reflection_answers"][key] = user_input
@@ -438,7 +438,7 @@ def run_weekly_reflection():
             save_reflection_state()
             st.rerun()
 
-        user_input = st.chat_input("Type your answer here...")
+        user_input = st.chat_input("Type your answer here...", key=f"task_alignment_{task_id}")
         if user_input:
             st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
             st.session_state["reflection_answers"]["task_alignment"] = user_input
@@ -524,7 +524,7 @@ def run_weekly_reflection():
                 st.rerun()
 
             elif st.session_state.get("awaiting_task_edit") == "awaiting_input":
-                new_text = st.chat_input("Type your updated task here...")
+                new_text = st.chat_input("Type your updated task here...", key=f"update_task_{task_id}")
                 if new_text:
                     task = tasks[st.session_state["update_task_idx"]]
                     task_id = task["id"]
@@ -648,7 +648,7 @@ def run_weekly_reflection():
 
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
-            "message": "✅ Thanks for reflecting! Your responses are saved."
+            "message": "✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
         })
         
         st.success("Reflection submitted and saved!")

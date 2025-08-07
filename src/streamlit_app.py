@@ -234,19 +234,20 @@ with st.sidebar:
         )
 
     if DEV_MODE:
-        if st.button("DEV: Jump to Goal Setting"):
-            set_state(
-                chat_state = "goal_setting",
-                goal_step = "initial_goal",
-                message_index = 0
-            )
-            st.session_state["chat_state"] = "goal_setting"
-            st.session_state["goal_step"] = "initial_goal" 
-            mark_training_completed(st.session_state["user_id"])
-            st.session_state["message_index"] = 0
-            st.rerun()
+        if not user_goals_exist (st.session_state["user_id"]):
+            if st.button("DEV: Jump to Goal Setting"):
+                set_state(
+                    chat_state = "goal_setting",
+                    goal_step = "initial_goal",
+                    message_index = 0
+                )
+                st.session_state["chat_state"] = "goal_setting"
+                st.session_state["goal_step"] = "initial_goal" 
+                mark_training_completed(st.session_state["user_id"])
+                st.session_state["message_index"] = 0
+                st.rerun()
 
-        if st.button("DEV: Jump to Reflection"):
+        if st.button("DEV: Jump to Reflection 1-a"):
             st.session_state["chat_state"] = "reflection"
             st.session_state["week"] = 1
             st.session_state["session"] = "a"
