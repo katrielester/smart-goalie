@@ -316,6 +316,7 @@ def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     - Be actionable and specific (describe the exact action)
     - Each task must be concise, under 12 words
     - Be achievable within one week
+    - Do not mention name of day like "by Monday", instead use each week or every 3 days
     - Include a time, quantity, or duration if relevant
 
     Avoid:

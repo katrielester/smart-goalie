@@ -253,24 +253,23 @@ def run_add_tasks():
     if st.session_state.get("task_entry_stage") == "reflection_explained":
         show_reflection_explanation()
         return
-    
-    if not isinstance(st.session_state.get("tasks_saved"), list):
-        st.session_state["tasks_saved"] = []
-
 
     print("DEBUG: run_add_tasks() triggered")
     print("→ task_entry_stage:", st.session_state["task_entry_stage"])
+    
     goal_id = st.session_state.get("goal_id_being_worked")
 
-    if "tasks_saved" not in st.session_state:
-        st.session_state["tasks_saved"] = []
+    if not isinstance(st.session_state.get("tasks_saved"), list):
+        st.session_state["tasks_saved"] = [
+            t["task_text"] for t in get_tasks(goal_id, active_only=True)
+        ]
 
     if "task_entry_stage" not in st.session_state:
         set_state(
             task_entry_stage = "suggest"
         )
 
-    # ✅ Always run this if in suggest stage (even after rerun)
+    # Always run this if in suggest stage (even after rerun)
     if st.session_state["task_entry_stage"] == "suggest":
         if "suggestion_pending" not in st.session_state:
             st.session_state["chat_thread"].append({
