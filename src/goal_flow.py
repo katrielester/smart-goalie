@@ -256,7 +256,7 @@ def run_add_tasks():
 
     print("DEBUG: run_add_tasks() triggered")
     print("→ task_entry_stage:", st.session_state["task_entry_stage"])
-    
+
     goal_id = st.session_state.get("goal_id_being_worked")
 
     if not isinstance(st.session_state.get("tasks_saved"), list):
@@ -400,7 +400,7 @@ def run_add_tasks():
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": f"You’ve added {len(st.session_state['tasks_saved'])} task(s). "
-                        "You can review or update them during your reflection later."
+                        "You can review or update them during your reflection later. Please download your new plan below."
             })
             if get_user_phase(st.session_state["user_id"]) < 2:
                 set_state(task_entry_stage="reflection_explained")
