@@ -253,6 +253,11 @@ def run_add_tasks():
     if st.session_state.get("task_entry_stage") == "reflection_explained":
         show_reflection_explanation()
         return
+    
+    if not isinstance(st.session_state.get("tasks_saved"), list):
+        st.session_state["tasks_saved"] = []
+
+
     print("DEBUG: run_add_tasks() triggered")
     print("→ task_entry_stage:", st.session_state["task_entry_stage"])
     goal_id = st.session_state.get("goal_id_being_worked")
