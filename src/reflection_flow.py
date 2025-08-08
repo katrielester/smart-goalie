@@ -337,7 +337,7 @@ def run_weekly_reflection():
         if st.session_state.get(f"justifying_{task_id}") and f"justified_{task_id}" not in st.session_state:
             # DEBUG: entering justification prompt for task_id
             print(f"DBG ▶️ reflection_step={st.session_state['reflection_step']}, justifying_flag=True, task_id={task_id}")
-            justification = st.chat_input("Type your answer here…", key=f"justified_input_{task_id}")
+            justification = st.chat_input("Type your answer here…", key=f"justification_input_{task_id}")
             if justification:
                 # echo user justification
                 st.session_state["chat_thread"].append({
