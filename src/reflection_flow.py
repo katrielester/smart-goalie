@@ -31,7 +31,7 @@ def save_reflection_state(needs_restore=True):
     # also grab any one-off “asked” or “justifying” flags so they survive a reload/restore
     dynamic = {
         k: v for k, v in st.session_state.items()
-        if k.startswith(("ask_", "justifying_", "justified_"))
+        if k.startswith(("ask_", "justifying_", "justified_", "answered_"))
         }
     set_state(
       reflection_step    = st.session_state["reflection_step"],
@@ -86,9 +86,8 @@ def run_weekly_reflection():
         st.stop()
 
     user_id = st.session_state["user_id"]
-
-    week = int(query_params.get("week", 1))
-    session = query_params.get("session", "a")
+    week = int(query_params.get("week") or st.session_state.get("week", 1))
+    session = query_params.get("session") or st.session_state.get("session", "a")
 
     st.session_state["week"] = week
     st.session_state["session"] = session
@@ -108,18 +107,22 @@ def run_weekly_reflection():
     goal_text = all_goals[0]["goal_text"]
 
     if reflection_exists(user_id, goal_id, week, session):
-
+        st.success(
+            f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b> Thank you!\n\n"
+            "If you’d like to add more tasks, go back to <b>Main Menu → View Existing Goal and Tasks → Add Another Task</b>.",
+            icon="✔️"
+        )
         ack_key = f"reflection_ack_w{week}_s{session}"
 
-        if ack_key not in st.session_state:
-            if "chat_thread" not in st.session_state:
-                st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
-                st.session_state["chat_thread"].append({
-                    "sender": "Assistant",
-                    "message": f"You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>. Thank you! <br><br> If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
-                })
-            st.session_state[ack_key] = True
-            st.rerun()
+        # if ack_key not in st.session_state:
+        #     if "chat_thread" not in st.session_state:
+        #         st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
+        #         st.session_state["chat_thread"].append({
+        #             "sender": "Assistant",
+        #             "message": f"You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>. Thank you! <br><br> If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
+        #         })
+        #     st.session_state[ack_key] = True
+        #     st.rerun()
 
         col1, col2 = st.columns(2)
         if col1.button("⬅️ Return to Main Menu"):
@@ -661,7 +664,27 @@ def run_weekly_reflection():
 
         delete_reflection_draft(user_id, goal_id, week, session)
 
-        summary = summarize_reflection(reflection_text)
+        # summary = summarize_reflection(reflection_text)
+        if "summary_pending" not in st.session_state:
+            # 1) show a placeholder
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": "🤖 Summarizing your reflection…"
+            })
+            st.session_state["summary_pending"] = True
+            st.rerun()
+        else:
+            # 2) actual call
+            summary = summarize_reflection(reflection_text)
+            # 3) replace the placeholder
+            #    pop last message if it was our placeholder
+            if st.session_state["chat_thread"][-1]["message"].startswith("🤖 Summarizing"):
+                st.session_state["chat_thread"].pop()
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": summary
+            })
+            del st.session_state["summary_pending"]
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
             "message": summary

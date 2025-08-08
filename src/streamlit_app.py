@@ -262,7 +262,7 @@ if dev=="1":
     st.sidebar.json(dict(st.session_state))
     # and show whether chat_state is missing
     st.sidebar.write("🛠 chat_state missing?", "chat_state" not in st.session_state)
-    if st.button("DEV: Jump to Reflection 1-b"):
+    if st.sidebar.button("DEV: Jump to Reflection 1-b"):
         st.session_state["chat_state"] = "reflection"
         st.session_state["week"] = 1
         st.session_state["session"] = "b"

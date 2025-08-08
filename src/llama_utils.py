@@ -270,7 +270,7 @@ Your task is to summarize the user's weekly reflection in a warm and encouraging
 Reflection:
 {reflection_text}
 
-Return only the summary. End with a short positive note (e.g., "See you next time!" or "You’re doing great — keep it up!")
+Return only the summary. End with a short positive note (e.g., "See you next time!" or "You're doing great,  keep it up!")
 """
     return smart_wrapper(prompt, reflection_text, "summary")
 
@@ -283,7 +283,7 @@ Based on the user's input below, summarize their reflection in a warm, friendly 
 1. Keep it short: 1–2 sentences max.
 2. Mention whether their current tasks still align with the goal.
 3. Acknowledge if they feel confident or uncertain.
-4. End with encouragement like “Keep it up!” or “You’ve got this!”
+4. End with encouragement like “Keep it up!” or “You've got this!”
 
 SMART Goal: {goal}
 
@@ -382,7 +382,7 @@ def check_smart_feedback(goal_text, dimension):
         prompt = f"""
 You are a goal support assistant.
 
-RULE: Give ONE short, friendly sentence evaluating how specific the goal is, without rewriting it.
+RULE: Give one short, friendly sentence evaluating how specific the goal is, without rewriting it.
 
 Focus only on whether the goal names a single clear outcome.
 
@@ -391,10 +391,11 @@ Guidelines:
 - Do not rewrite the goal
 - Keep feedback under 15 words
 - Be warm and encouraging
+- Use the tone of these samples, but write your own sentence.
 
-Examples:
-- Great focus, this goal names a clear outcome!
-- This goal feels broad, consider honing in on one main result.
+Stylistic samples:
+– Great focus, this goal names a clear outcome!
+– This goal feels broad, consider honing in on one main result.
 
 [Goal]
 {goal_text}
@@ -404,7 +405,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-RULE: Give ONE short, friendly sentence evaluating how measurable the goal is, without rewriting it.
+RULE: Give one short, friendly sentence evaluating how measurable the goal is, without rewriting it.
 
 Focus only on whether there is a clear way to track progress.
 
@@ -413,10 +414,11 @@ Guidelines:
 - Do not rewrite the goal
 - Keep feedback under 15 words
 - Be warm and encouraging
+- Use the tone of these samples, but write your own sentence.
 
-Examples:
-- Good job, this goal includes a clear progress indicator!
-- Almost there, adding a way to measure success will make it better!
+Stylistic samples:
+– Good job, this goal includes a clear progress indicator!
+– Almost there, consider adding a way to measure success.
 
 [Goal]
 {goal_text}
@@ -426,19 +428,20 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-RULE: Give ONE short, friendly sentence evaluating how achievable the goal is, without rewriting it.
+RULE: Give one short, friendly sentence evaluating how achievable the goal is, without rewriting it.
 
-Focus only on whether the goal seems realistic for ~2 weeks’ effort.
+Focus only on whether the goal seems realistic for ~2 weeks' effort.
 
 Guidelines:
 - Do not suggest improvements
 - Do not rewrite the goal
 - Keep feedback under 15 words
 - Be warm and encouraging
+- Use the tone of these samples, but write your own sentence.
 
-Examples:
-- Nice, this goal seems doable within two weeks!
-- Looks good! Just make sure it fits your energy and schedule.
+Stylistic samples:
+– Nice, this goal seems doable within two weeks!
+– Looks good! Make sure it fits your energy.
 
 [Goal]
 {goal_text}
@@ -448,7 +451,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-RULE: Give ONE short, friendly sentence evaluating how relevant the goal is, without rewriting it.
+RULE: Give one short, friendly sentence evaluating how relevant the goal is, without rewriting it.
 
 Focus only on whether the goal aligns with personal values or priorities.
 
@@ -457,10 +460,11 @@ Guidelines:
 - Do not rewrite the goal
 - Keep feedback under 15 words
 - Be warm and encouraging
+- Use the tone of these samples, but write your own sentence.
 
-Examples:
-- Excellent, this goal aligns with what matters to you!
-- Consider adding what personal value this goal connects to.
+Stylistic samples:
+– Excellent, this goal aligns with what matters to you!
+– Feels a bit generic; adding your “why” could help.
 
 [Goal]
 {goal_text}
@@ -470,7 +474,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-RULE: Give ONE short, friendly sentence evaluating how time-bound the goal is, without rewriting it.
+RULE: Give one short, friendly sentence evaluating how time-bound the goal is, without rewriting it.
 
 Focus only on whether the goal includes a deadline or timeframe.
 
@@ -479,10 +483,11 @@ Guidelines:
 - Do not rewrite the goal
 - Keep feedback under 15 words
 - Be warm and encouraging
+- Use the tone of these samples, but write your own sentence.
 
-Examples:
-- Great, this goal has a clear timeframe!
-- Good start, adding a deadline would give this goal more structure.
+Stylistic samples:
+– Great, this goal has a clear timeframe!
+– Missing a deadline; adding one will help.
 
 [Goal]
 {goal_text}
