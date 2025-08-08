@@ -125,15 +125,15 @@ def smart_wrapper(prompt, goal_text, type_):
 
 def suggest_specific_fix(goal_text):
     prompt = f"""
-Revise the goal to make it more specific.
+Revise the goal to make it more specific with minimal edits.
 
+RULE: Preserve the original wording, change no more than 3 words.
+
+- Use simple language, avoid buzzwords like streamline or optimize.
 - Keep it high level, not a task or step
 - Keep it short (under 12 words)
 - Should be breakable into 2 to 3 subtasks
 - Do not phrase it like a task
-- Only make small adjustments.
-- Keep the original meaning and structure as much as possible.
-- Avoid rewriting the entire goal.
 
 Example:
 Not good: Be more productive
@@ -151,8 +151,11 @@ Return only 3 revised versions:
 
 def suggest_measurable_fix(goal_text):
     prompt = f"""
-Revise the goal to make it more measurable.
+Revise the goal to make it more measurable with minimal edits.
 
+RULE: Preserve the original wording, change no more than 3 words.
+
+- Use simple language, avoid buzzwords like streamline or optimize.
 - Include a way to track progress
 - Do not use numbers or percentages
 - Keep it goal level, not a performance metric
@@ -177,14 +180,14 @@ Return only 3 revised versions:
 
 def suggest_achievable_fix(goal_text):
     prompt = f"""
-Revise the goal to make it more achievable.
+Revise the goal to make it more achievablewith minimal edits.
 
+RULE: Preserve the original wording, change no more than 3 words.
+
+- Use simple language, avoid buzzwords like streamline or optimize.
 - Keep it doable within 2 weeks
 - Stay at the goal level (not tasks)
 - Keep it short (under 12 words)
-- Only make small adjustments.
-- Keep the original meaning and structure as much as possible.
-- Avoid rewriting the entire goal.
 
 Example: Build a routine for consistent time planning
 
@@ -200,14 +203,14 @@ Return only 3 revised versions:
 
 def suggest_relevant_fix(goal_text):
     prompt = f"""
-Revise the goal to make it more personally relevant.
+Revise the goal to make it more personally relevant with minimal edits.
 
+RULE: Preserve the original wording, change no more than 3 words.
+
+- Use simple language, avoid buzzwords like streamline or optimize.
 - Add a short reason or benefit (in brackets is okay)
 - Keep it short (under 12 words)
 - Phrase it as a high-level goal
-- Only make small adjustments.
-- Keep the original meaning and structure as much as possible.
-- Avoid rewriting the entire goal.
 
 Example: Strengthen planning skills (to reduce daily stress)
 
@@ -223,14 +226,14 @@ Return only 3 revised versions:
 
 def suggest_timebound_fix(goal_text):
     prompt = f"""
-Revise the goal to make it more time-bound.
+Revise the goal to make it more time-bound with minimal edits.
 
+RULE: Preserve the original wording, change no more than 3 words.
+
+- Use simple language, avoid buzzwords like streamline or optimize.
 - Add a timeframe (e.g., 2 weeks, end of month), but not a specific date
 - Keep it high-level (not a checklist item)
 - Keep it under 12 words
-- Only make small adjustments.
-- Keep the original meaning and structure as much as possible.
-- Avoid rewriting the entire goal.
 
 Example: Improve work planning by the end of the month
 
@@ -377,7 +380,7 @@ def check_smart_feedback(goal_text, dimension):
         prompt = f"""
 You are a goal support assistant.
 
-Give ONE short, friendly sentence evaluating how specific the goal is, without rewriting it.
+RULE: Give ONE short, friendly sentence evaluating how specific the goal is, without rewriting it.
 
 Focus only on whether the goal names a single clear outcome.
 
@@ -399,7 +402,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-Give ONE short, friendly sentence evaluating how measurable the goal is, without rewriting it.
+RULE: Give ONE short, friendly sentence evaluating how measurable the goal is, without rewriting it.
 
 Focus only on whether there is a clear way to track progress.
 
@@ -421,7 +424,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-Give ONE short, friendly sentence evaluating how achievable the goal is, without rewriting it.
+RULE: Give ONE short, friendly sentence evaluating how achievable the goal is, without rewriting it.
 
 Focus only on whether the goal seems realistic for ~2 weeks’ effort.
 
@@ -443,7 +446,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-Give ONE short, friendly sentence evaluating how relevant the goal is, without rewriting it.
+RULE: Give ONE short, friendly sentence evaluating how relevant the goal is, without rewriting it.
 
 Focus only on whether the goal aligns with personal values or priorities.
 
@@ -465,7 +468,7 @@ Examples:
         prompt = f"""
 You are a goal support assistant.
 
-Give ONE short, friendly sentence evaluating how time-bound the goal is, without rewriting it.
+RULE: Give ONE short, friendly sentence evaluating how time-bound the goal is, without rewriting it.
 
 Focus only on whether the goal includes a deadline or timeframe.
 

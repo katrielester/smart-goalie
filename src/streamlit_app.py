@@ -727,7 +727,7 @@ def run_smart_training():
             message_index = st.session_state["message_index"] + 1,
             needs_restore=first
             )
-        time.sleep(0.7)
+        time.sleep(0.3)
         st.rerun()
 
     # Step 2: Handle buttons or input after all messages are rendered
