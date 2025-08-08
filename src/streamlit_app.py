@@ -259,9 +259,14 @@ with st.sidebar:
 
 if dev=="1":
     # debug: show me what keys are present on *every* render
-    st.sidebar.write("🛠 session_state keys:", list(st.session_state.keys()))
+    st.sidebar.json(dict(st.session_state))
     # and show whether chat_state is missing
     st.sidebar.write("🛠 chat_state missing?", "chat_state" not in st.session_state)
+    if st.button("DEV: Jump to Reflection 1-b"):
+        st.session_state["chat_state"] = "reflection"
+        st.session_state["week"] = 1
+        st.session_state["session"] = "b"
+        st.rerun()
 
 if st.session_state.get("authenticated") and "chat_state" not in st.session_state:
     query_params = st.query_params.to_dict()
