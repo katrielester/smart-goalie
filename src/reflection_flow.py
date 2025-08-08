@@ -114,10 +114,10 @@ def run_weekly_reflection():
         if ack_key not in st.session_state:
             if "chat_thread" not in st.session_state:
                 st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>. Thank you! <br><br> If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
-            })
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": f"You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>. Thank you! <br><br> If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
+                })
             st.session_state[ack_key] = True
             st.rerun()
 

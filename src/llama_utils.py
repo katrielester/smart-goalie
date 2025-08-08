@@ -45,7 +45,7 @@ def fake_response(goal_text, type_):
         )
     elif type_ == "timebound":
         return (
-            f"1. Add a deadline, e.g., '{goal_text} by Friday'<br>"
+            f"1. Add a deadline, e.g., '{goal_text} every 2 days'<br>"
             f"2. Use a schedule, e.g., '{goal_text} every morning at 9 AM'<br>"
             f"3. Set a timeframe, e.g., '{goal_text} for the next 2 weeks'"
         )
@@ -361,6 +361,7 @@ Suggest exactly 3 new weekly tasks. Each task should:
 - Fit into a single sentence, under 12 words
 - Be achievable within one week
 - Include a time, quantity, or duration if relevant
+- Do not mention name of day like "by Monday", instead use each week or every 3 days
 
 Avoid:
 - Rambling or multiple steps per task
