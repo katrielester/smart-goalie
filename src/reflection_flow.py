@@ -442,7 +442,7 @@ def run_weekly_reflection():
             save_reflection_state()
             st.rerun()
 
-        user_input = st.chat_input("Type your answer here...", key=f"task_alignment_{task_id}")
+        user_input = st.chat_input("Type your answer here...", key=f"task_alignment_input")
         if user_input:
             st.session_state["chat_thread"].append({"sender": "User", "message": user_input})
             st.session_state["reflection_answers"]["task_alignment"] = user_input
