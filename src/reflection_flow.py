@@ -48,6 +48,7 @@ def save_reflection_state(needs_restore=True):
 
 def run_weekly_reflection():
     query_params = st.query_params.to_dict()
+    valid_sessions = {(1, "a"), (1, "b"), (2, "a"), (2, "b")}
 
     if "task_progress" in st.session_state and isinstance(st.session_state["task_progress"], dict):
         raw = st.session_state["task_progress"]
@@ -86,8 +87,25 @@ def run_weekly_reflection():
         st.stop()
 
     user_id = st.session_state["user_id"]
-    week = int(query_params.get("week") or st.session_state.get("week", 1))
-    session = query_params.get("session") or st.session_state.get("session", "a")
+    week_val = query_params.get("week") if "week" in query_params else st.session_state.get("week", 1)
+    sess_val = query_params.get("session") if "session" in query_params else st.session_state.get("session", "a")
+    if isinstance(week_val, list):
+        week_val = week_val[0]
+    if isinstance(sess_val, list):
+        sess_val = sess_val[0]
+    
+    try:
+        week = int(str(week_val).strip())
+    except Exception:
+        st.error("Invalid reflection session.")
+        st.stop()
+    
+    session = str(sess_val or "a").strip().lower()
+    
+    # Hard guard against invalid sessions'
+    if (week, session) not in valid_sessions:
+        st.error("Invalid reflection session.")
+        st.stop()
 
     st.session_state["week"] = week
     st.session_state["session"] = session
@@ -130,7 +148,8 @@ def run_weekly_reflection():
                 chat_state = "menu",
                 needs_restore = False
             )
-            del st.session_state[ack_key]
+            if ack_key in st.session_state:
+                del st.session_state[ack_key]
             st.rerun()
 
         if col2.button("⬅️ Return to Prolific"):

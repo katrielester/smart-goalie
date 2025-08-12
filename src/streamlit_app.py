@@ -966,7 +966,21 @@ def run_view_goals():
             mime="text/plain",
             )
 
-
+# ────────────────────────────────────────────────────────────
+# Ensure deep links like ?week=1&session=a always route into reflection,
+# even when chat_state already exists.
+# Only allow for treatment users and valid session values.
+w = st.query_params.get("week")
+s = st.query_params.get("session")
+if st.session_state.get("group") == "treatment" and w and s:
+    # Normalize values possibly coming as lists
+    w = w[0] if isinstance(w, list) else w
+    s = s[0] if isinstance(s, list) else s
+    w = str(w).strip()
+    s = str(s).strip().lower()
+    if w in {"1", "2"} and s in {"a", "b"}:
+        set_state(chat_state=f"reflection_{w}_{s}", week=int(w), session=s, needs_restore=True)
+# ────────────────────────────────────────────────────────────
 
 print("chat_state before routing:", st.session_state.get("chat_state"))
 if "chat_state" not in st.session_state:
