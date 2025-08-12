@@ -108,8 +108,8 @@ def run_weekly_reflection():
 
     if reflection_exists(user_id, goal_id, week, session):
         st.success(
-            f"✅ You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b> Thank you!\n\n"
-            "If you’d like to add more tasks, go back to <b>Main Menu → View Existing Goal and Tasks → Add Another Task</b>.",
+            f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}** Thank you!\n\n"
+            "If you’d like to add more tasks, go back to **Main Menu → View Existing Goal and Tasks → Add Another Task**.",
             icon="✔️"
         )
         ack_key = f"reflection_ack_w{week}_s{session}"
@@ -134,6 +134,10 @@ def run_weekly_reflection():
             st.rerun()
 
         if col2.button("⬅️ Return to Prolific"):
+            set_state(
+                chat_state = "menu",
+                needs_restore = False
+            )
             st.stop()
 
         return
