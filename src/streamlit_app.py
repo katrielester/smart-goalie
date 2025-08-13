@@ -49,6 +49,22 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.markdown("""
+<style>
+/* Make the 'Tip & Help' expander header stand out */
+section[data-testid="stSidebar"] details[open] > summary {
+  background: #2b6cb0 !important;   /* blue */
+  color: #fff !important;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+section[data-testid="stSidebar"] details > summary:hover {
+  filter: brightness(0.95);
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 dev = st.query_params.get("dev")
 
 # healthz handler:
@@ -225,8 +241,14 @@ if "chat_state" in st.session_state:
 else:
     st.sidebar.write("\n")
 
+
 with st.sidebar:
-    with st.expander("💡 Tip & Help", expanded=False):
+    with st.expander("💡 Tip & Help", expanded=True):
+        st.warning(
+            "⏳ **Please submit once and wait**\n\n"
+            "After you click a button or submit a text, Goalie may think for a moment "
+            "and the page can briefly refresh. **Double-pressing can submit extra text or skip steps.**"
+        )
         st.write(
             "• You can set up to 3 weekly tasks, small steps add up!  \n"
             "• Hit **View Goal & Tasks** to see or download your plan.  \n"
