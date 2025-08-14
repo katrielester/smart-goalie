@@ -714,50 +714,18 @@ def run_weekly_reflection():
         })
         
 
-        # st.session_state["chat_thread"].append({
-        #     "sender": "Assistant",
-        #     "message": "✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
-        # })
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": "✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
+        })
         
-        # st.success("Reflection submitted and saved!")
-
-        # if st.button("⬅️ Return to Main Menu"):
-        #     set_state(
-        #         chat_state = "menu",
-        #         needs_restore = False
-        #     )
-
-        PROLIFIC_RETURN_URL = "https://app.prolific.com/submissions/complete?cc=PLACEHOLDER"
-
-        active_tasks = get_tasks(goal_id)
-        if len(active_tasks) < 3:
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": (
-                    f"✅ Thanks for reflecting! You currently have {len(active_tasks)}/3 tasks.<br><br>"
-                    "Would you like to add another one before heading back to Prolific?"
-                )
-            })
-
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("➕ Add Another Task"):
-                    set_state(chat_state="add_tasks", needs_restore=False)
-                    st.rerun()
-            with col2:
-                if st.button("⬅️ Return to Prolific"):
-                    st.markdown(f"[Click here to return to Prolific]({PROLIFIC_RETURN_URL})", unsafe_allow_html=True)
-                    st.stop()
-        else:
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": "✅ Thanks for reflecting! You're all set. You can now return to Prolific."
-            })
-            if st.button("⬅️ Return to Prolific"):
-                st.markdown(f"[Click here to return to Prolific]({PROLIFIC_RETURN_URL})", unsafe_allow_html=True)
-                st.stop()
-
         st.success("Reflection submitted and saved!")
+
+        if st.button("⬅️ Return to Main Menu"):
+            set_state(
+                chat_state = "menu",
+                needs_restore = False
+            )
 
         for key in list(st.session_state.keys()):
             if (
