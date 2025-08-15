@@ -35,13 +35,13 @@ def _add_to_prolific_group(prolific_pid: str, group_code: str) -> tuple[bool, st
     if not group_id:
         return False, "Missing group id env var"
 
-    # Example membership endpoint path (check Prolific API docs in your workspace):
-    # POST {PROLIFIC_API_BASE}/api/v1/participant-groups/{group_id}/members
+
+    # POST https://api.prolific.com/api/v1/participant-groups/{id}/participants/
     # Body: { "participant_ids": ["<PID>"] }
 
-    url = f"{PROLIFIC_API_BASE}/api/v1/participant-groups/{group_id}/members"
+    url = f"{PROLIFIC_API_BASE}/api/v1/participant-groups/{group_id}/participants/"
     headers = {
-        "Authorization": f"Bearer {PROLIFIC_API_TOKEN}",
+        "Authorization": f"Token {PROLIFIC_API_TOKEN}",
         "Content-Type": "application/json",
     }
     payload = {"participant_ids": [prolific_pid]}
