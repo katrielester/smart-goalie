@@ -14,7 +14,7 @@ PROLIFIC_API_TOKEN = os.environ.get("PROLIFIC_API_TOKEN")
 PROLIFIC_API_BASE  = os.environ.get("PROLIFIC_API_BASE", "https://api.prolific.com")  # keep overridable
 GROUP_CONTROL_ID   = os.environ.get("PROLIFIC_GROUP_CONTROL_ID")
 GROUP_TREATMENT_ID = os.environ.get("PROLIFIC_GROUP_TREATMENT_ID")
-PROLIFIC_DRY_RUN = True
+PROLIFIC_DRY_RUN = False
 
 class StatusUpdate(BaseModel):
     prolific_id: str          # Prolific PID from Qualtrics
