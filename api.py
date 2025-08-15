@@ -14,6 +14,7 @@ PROLIFIC_API_TOKEN = os.environ.get("PROLIFIC_API_TOKEN")
 PROLIFIC_API_BASE  = os.environ.get("PROLIFIC_API_BASE", "https://api.prolific.com")  # keep overridable
 GROUP_CONTROL_ID   = os.environ.get("PROLIFIC_GROUP_CONTROL_ID")
 GROUP_TREATMENT_ID = os.environ.get("PROLIFIC_GROUP_TREATMENT_ID")
+PROLIFIC_DRY_RUN = True
 
 class StatusUpdate(BaseModel):
     prolific_id: str          # Prolific PID from Qualtrics
@@ -45,16 +46,20 @@ def _add_to_prolific_group(prolific_pid: str, group_code: str) -> tuple[bool, st
     }
     payload = {"participant_ids": [prolific_pid]}
 
-    try:
-        r = requests.post(url, headers=headers, json=payload, timeout=20)
-        # Treat 200/201/204 as success; if API returns 409 for “already in group”, also consider success.
-        if r.status_code in (200, 201, 202, 204):
-            return True, None
-        if r.status_code == 409:
-            return True, "Already in group"
-        return False, f"Prolific API {r.status_code}: {r.text}"
-    except Exception as e:
-        return False, str(e)
+
+    if PROLIFIC_DRY_RUN:
+        return True, "dry_run"
+    else:
+        try:
+            r = requests.post(url, headers=headers, json=payload, timeout=20)
+            # Treat 200/201/204 as success; if API returns 409 for “already in group”, also consider success.
+            if r.status_code in (200, 201, 202, 204):
+                return True, None
+            if r.status_code == 409:
+                return True, "Already in group"
+            return False, f"Prolific API {r.status_code}: {r.text}"
+        except Exception as e:
+            return False, str(e)
 
 def update_flag(prolific_id: str, stage: str, group: str | None = None) -> dict:
     """
