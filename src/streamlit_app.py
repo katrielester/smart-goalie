@@ -321,9 +321,20 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
     saved = get_session_state(user_id) or {}
 
+    q = st.query_params.to_dict()
+    w = q.get("week", [None])[0] if isinstance(q.get("week"), list) else q.get("week")
+    s = q.get("session", [None])[0] if isinstance(q.get("session"), list) else q.get("session")
+
+    deep_link_present = bool(w and s)
+    deep_target = f"reflection_{str(w).strip()}_{str(s).strip().lower()}" if deep_link_present else None
+    saved_chat_state = saved.get("chat_state")
+
+    # Only skip restore if there is a deep link AND it points to a different reflection
+    should_skip_restore = deep_link_present and (deep_target != saved_chat_state)
+
     print ("restored_done" in st.session_state)
 
-    if saved.get("needs_restore") and "restored_done" not in st.session_state:
+    if saved.get("needs_restore") and "restored_done" not in st.session_state and not should_skip_restore:
         logger.info("🔄 Restoring session from DB | user_id=%s | restore_id=%s", user_id, restore_id)
         print("🟩 DB restore triggered for", user_id)
         
