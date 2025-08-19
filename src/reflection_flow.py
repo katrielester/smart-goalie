@@ -154,9 +154,9 @@ def run_weekly_reflection():
             )
             try:
                 if "week" in st.query_params:
-                    del st,query_params["week"]
+                    del st.query_params["week"]
                 if "session" in st.query_params:
-                    del st,query_params["session"]
+                    del st.query_params["session"]
             except Exception: pass
             if ack_key in st.session_state:
                 del st.session_state[ack_key]
@@ -746,9 +746,9 @@ def run_weekly_reflection():
             )
             try:
                 if "week" in st.query_params:
-                    del st,query_params["week"]
+                    del st.query_params["week"]
                 if "session" in st.query_params:
-                    del st,query_params["session"]
+                    del st.query_params["session"]
             except Exception: pass
             st.rerun()
 
