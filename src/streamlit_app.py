@@ -67,7 +67,6 @@ section[data-testid="stSidebar"] details > summary:hover {
 """, unsafe_allow_html=True)
 
 
-dev = st.query_params.get("dev")
 
 # healthz handler:
 if st.query_params.get("healthz") is not None:
@@ -109,7 +108,10 @@ from logger import setup_logger
 # st.stop()
 
 
-DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
+DEV_MODE = os.getenv("DEV_MODE", "false").lower()
+
+dev = st.query_params.get("dev")
+if dev==1: DEV_MODE=True
 
 def ensure_download_content(goal_text, tasks):
     if "download_content" not in st.session_state:
