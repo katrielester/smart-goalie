@@ -8,6 +8,8 @@ import streamlit.components.v1 as components
 
 import textwrap
 
+from study_text import study_period_phrase, reflection_invite_phrase
+
 
 restore_id = str(uuid.uuid4())
 print(f"🔄 Restore Cycle: {restore_id}")
@@ -426,13 +428,13 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # 5. GROUP EXPLANATION
         if st.session_state["group"] == "treatment":
             st.info(
-                "Over the next two weeks, you will receive reflection prompts here in this chat roughly twice a week. "
+                f"Over {study_period_phrase()}, you will receive reflection invitations on Prolific {reflection_invite_phrase()}. "
                 "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created."
             )
         else:
             st.info(
-                "After the survey, please work on the goal and tasks you just created at your own pace. "
-                "We’ll be in touch again in two weeks with a brief follow-up.\n\n"
+                f"After the survey, please work on the goal and tasks you just created at your own pace.\n "
+                f"We’ll be in touch again in {study_period_phrase()} with a brief follow-up.\n\n"
             )
 
         st.session_state.clear()

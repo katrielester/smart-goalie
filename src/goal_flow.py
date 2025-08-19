@@ -11,6 +11,7 @@ from db import save_goal, save_task, get_tasks, get_user_phase, update_user_phas
 from phases import goal_setting_flow, goal_setting_flow_score
 from chat_thread import ChatThread
 from db_utils import build_goal_tasks_text, set_state
+from study_text import study_period_phrase, reflection_invite_phrase
 
 def run_goal_setting():
 
@@ -424,14 +425,14 @@ def show_reflection_explanation():
     # 1) Reflection explanation message
     if group == "treatment":
         msg = (
-            "You’re all set! Over the next two weeks, you’ll receive reflection prompts here in this chat roughly twice a week. "
+            f"You’re all set! Over {study_period_phrase()}, you will receive reflection invitations on Prolific {reflection_invite_phrase()}. "
             "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n"
             "Looking forward to seeing your progress!"
         )
     else:
         msg = (
-            "You’re all set! Over the next two weeks, please work on the goal and tasks you just created at your own pace. "
-            "We’ll be in touch again in two weeks with a brief follow-up.\n\n"
+            f"You’re all set! Over {study_period_phrase()}, please work on the goal and tasks you just created at your own pace. "
+            f"We’ll be in touch again in {study_period_phrase()} with a brief follow-up.\n\n"
             "Thanks again for being part of the study!"
         )
 
