@@ -102,7 +102,7 @@ def run_weekly_reflection():
     
     session = str(sess_val or "a").strip().lower()
     
-    # Hard guard against invalid sessions'
+    # Hard guard against invalid sessions
     if (week, session) not in valid_sessions:
         st.error("Invalid reflection session.")
         st.stop()
@@ -152,17 +152,16 @@ def run_weekly_reflection():
                 chat_state = "menu",
                 needs_restore = False
             )
-            try:
-                if "week" in st.query_params:
-                    del st.query_params["week"]
-                if "session" in st.query_params:
-                    del st.query_params["session"]
-            except Exception: pass
+            st.query_params.pop("week",None)
+            st.query_params.pop("session",None)
+            st.session_state.pop("week",None)
+            st.session_state.pop("session",None)
             if ack_key in st.session_state:
                 del st.session_state[ack_key]
             st.rerun()
 
-        if col2.button("⬅️ Return to Prolific"):
+        with col2:
+            st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
             set_state(
                 chat_state = "menu",
                 needs_restore = False
@@ -744,12 +743,10 @@ def run_weekly_reflection():
                 chat_state = "menu",
                 needs_restore = False
             )
-            try:
-                if "week" in st.query_params:
-                    del st.query_params["week"]
-                if "session" in st.query_params:
-                    del st.query_params["session"]
-            except Exception: pass
+            st.query_params.pop("week",None)
+            st.query_params.pop("session",None)
+            st.session_state.pop("week",None)
+            st.session_state.pop("session",None)
             st.rerun()
 
         for key in list(st.session_state.keys()):
