@@ -95,7 +95,7 @@ from db import (
     save_goal, save_task, save_reflection,
     get_tasks, get_goals, user_goals_exist,
     get_goals_with_task_counts, get_last_reflection_meta, get_reflection_responses,
-    get_session_state, save_session_state
+    get_session_state, save_session_state, reflection_exists
 )
 from reflection_flow import run_weekly_reflection
 from goal_flow import run_goal_setting, run_add_tasks
@@ -252,7 +252,7 @@ with st.sidebar:
         )
     with st.expander("💡 Tip & Help", expanded=True):
         st.write(
-            "• Hit **View Goal & Tasks** to see, download, and add to your plan.  \n"
+            "\n• Hit **View Goal & Tasks** to see, download, and add to your plan.  \n"
             "• You can set up to 3 weekly tasks. \n"
             "• Collapse this panel for more space if you prefer."
         )
@@ -993,6 +993,7 @@ def run_view_goals():
 # ────────────────────────────────────────────────────────────
 # Ensure deep links like ?week=1&session=a always route into reflection,
 # even when chat_state already exists.
+# ONLY if that specific reflection does not exist yet.
 # Only allow for treatment users and valid session values.
 w = st.query_params.get("week")
 s = st.query_params.get("session")
@@ -1002,8 +1003,30 @@ if st.session_state.get("group") == "treatment" and w and s:
     s = s[0] if isinstance(s, list) else s
     w = str(w).strip()
     s = str(s).strip().lower()
+    
     if w in {"1", "2"} and s in {"a", "b"}:
-        set_state(chat_state=f"reflection_{w}_{s}", week=int(w), session=s, needs_restore=True)
+        user_id = st.session_state["user_id"]
+        goals = get_goals(user_id)  
+        if goals:
+            goal_id = goals[0]["id"]
+            # If NOT submitted yet, go to reflection
+            if not reflection_exists(user_id, goal_id, int(w), s):
+                set_state(
+                    chat_state=f"reflection_{w}_{s}",
+                    week=int(w),
+                    session=s,
+                    needs_restore=True
+                )
+            else:
+                # Already submitted, drop week/session so user can use the menu
+                st.query_params.pop("week", None)
+                st.query_params.pop("session", None)
+                set_state(chat_state="menu", needs_restore=False)
+        else:
+            # No goal yet, reflection makes no sense; clear params and stay menu
+            st.query_params.pop("week", None)
+            st.query_params.pop("session", None)
+            set_state(chat_state="menu", needs_restore=False)
 # ────────────────────────────────────────────────────────────
 
 print("chat_state before routing:", st.session_state.get("chat_state"))
