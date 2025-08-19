@@ -18,7 +18,7 @@ def run_goal_setting():
     user_id = st.session_state.get("user_id")
     # --- NEW GUARD ---
     if user_id and get_goals(user_id):
-        st.warning("You’ve already set a goal. To update it, please go to Main Menu → View Goal and Tasks.")
+        st.warning("You've already set a goal. To update it, please go to Main Menu → View Goal and Tasks.")
         return
 
     USE_LLM_SCORING=True
@@ -226,10 +226,10 @@ def run_goal_setting():
                 "sender": "Assistant",
                 "message": (
                     "Now, let's break your goal into weekly tasks. <br>"
-                    "<b>Here’s how it works:</b><br>"
-                    "- You’ll set up to 3 smaller tasks to complete this week<br>"
+                    "<b>Here's how it works:</b><br>"
+                    "- You'll set up to 3 smaller tasks to complete this week<br>"
                     "- These tasks should help you make progress on your goal<br>"
-                    "Try to keep your tasks small, realistic, and clearly tied to this week’s focus."
+                    "Try to keep your tasks small, realistic, and clearly tied to this week's focus."
                 )
             },
             {
@@ -239,7 +239,7 @@ def run_goal_setting():
             },
             {
                 "sender": "Assistant",
-                "message": "Now it’s your turn! What’s one small task you’d like to add first?"
+                "message": "Now it's your turn! What's one small task you'd like to add first?"
             }
         ])
         set_state(
@@ -259,6 +259,14 @@ def run_add_tasks():
     print("→ task_entry_stage:", st.session_state["task_entry_stage"])
 
     goal_id = st.session_state.get("goal_id_being_worked")
+    existing_active_tasks = get_tasks(goal_id, active_only=True)
+    if len(existing_active_tasks) >= 3:
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": "⚠️ You already have 3 active tasks for this goal."
+        })
+        set_state(chat_state="menu", needs_restore=False)
+        return
 
     if not isinstance(st.session_state.get("tasks_saved"), list):
         st.session_state["tasks_saved"] = [
@@ -325,7 +333,7 @@ def run_add_tasks():
     elif st.session_state["task_entry_stage"] == "confirm":
         col1, col2 = st.columns([1, 1])
         if col1.button("✅ Yes, save task", key="save_task_btn"):
-            existing_active_tasks = get_tasks(goal_id)
+            existing_active_tasks = get_tasks(goal_id, active_only=True)
             if len(existing_active_tasks) >= 3:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
@@ -357,7 +365,8 @@ def run_add_tasks():
                 "message": f"Saved: <b>{task}</b>"
             })
 
-            if len(st.session_state["tasks_saved"]) < 3:
+            total_active = len(get_tasks(goal_id, active_only=True))
+            if total_active < 3:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
                     "message": "Would you like to add another task?"
@@ -398,9 +407,10 @@ def run_add_tasks():
             st.rerun()
 
         if col2.button("✅ No, done for now", key="done_for_now_btn"):
+            total_active = len(get_tasks(goal_id,active_only=True))
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": f"You’ve added {len(st.session_state['tasks_saved'])} task(s). "
+                "message": f"You've added {total_active} task(s). "
                         "You can review or update them during your reflection later. Please download your new plan below."
             })
             if get_user_phase(st.session_state["user_id"]) < 2:
@@ -425,14 +435,14 @@ def show_reflection_explanation():
     # 1) Reflection explanation message
     if group == "treatment":
         msg = (
-            f"You’re all set! Over {study_period_phrase()}, you will receive reflection invitations on Prolific {reflection_invite_phrase()}. "
+            f"You're all set! Over {study_period_phrase()}, you will receive reflection invitations on Prolific {reflection_invite_phrase()}. "
             "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n"
             "Looking forward to seeing your progress!"
         )
     else:
         msg = (
-            f"You’re all set! Over {study_period_phrase()}, please work on the goal and tasks you just created at your own pace. "
-            f"We’ll be in touch again in {study_period_phrase()} with a brief follow-up.\n\n"
+            f"You're all set! Over {study_period_phrase()}, please work on the goal and tasks you just created at your own pace. "
+            f"We'll be in touch again in {study_period_phrase()} with a brief follow-up.\n\n"
             "Thanks again for being part of the study!"
         )
 

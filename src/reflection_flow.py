@@ -131,7 +131,7 @@ def run_weekly_reflection():
         and not post_submit:
         st.success(
             f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
-            "If you’d like to add more tasks, go back to **Main Menu → View Goal and Tasks → Add Another Task**.",
+            "If you'd like to add more tasks, go back to **Main Menu → View Goal and Tasks → Add Another Task**.",
             icon="✔️"
         )
         ack_key = f"reflection_ack_w{week}_s{session}"
@@ -316,7 +316,7 @@ def run_weekly_reflection():
         })
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
-            "message": f"Let’s check in on how your goal is going:<br><br><b>{goal_text}</b><br><br>I'll walk you through your tasks one by one. Just answer honestly, no pressure."
+            "message": f"Let's check in on how your goal is going:<br><br><b>{goal_text}</b><br><br>I'll walk you through your tasks one by one. Just answer honestly, no pressure."
         })
 
         st.session_state["reflection_step"] = 1
@@ -369,7 +369,7 @@ def run_weekly_reflection():
             save_reflection_state()
             st.rerun()
 
-        # 4️⃣ Capture the user’s justification before moving on
+        # 4️⃣ Capture the user's justification before moving on
         if st.session_state.get(f"justifying_{task_id}") and f"justified_{task_id}" not in st.session_state:
             # DEBUG: entering justification prompt for task_id
             print(f"DBG ▶️ reflection_step={st.session_state['reflection_step']}, justifying_flag=True, task_id={task_id}")
@@ -429,11 +429,11 @@ def run_weekly_reflection():
             questions = [
                 ("what", "✨ Just a quick one: <b>what helped you make progress this week?</b> (One sentence is fine!)"),
                 ("so_what", "🔍 Why do you think it <b>felt easier or more motivating</b> this time?"),
-                ("now_what", "➡️ What’s something you’d like to <b>keep doing next week</b>?")
+                ("now_what", "➡️ What's something you'd like to <b>keep doing next week</b>?")
             ]
         else:
             questions = [
-                ("outcome", "💡 What’s one <b>benefit</b> you’d gain if next week goes really well?"),
+                ("outcome", "💡 What's one <b>benefit</b> you'd gain if next week goes really well?"),
                 ("obstacle", "🚧 What <b>got in the way</b> of your tasks this week?"),
                 ("plan", "🛠️ If that same obstacle happens again, <b>what could you try?</b>")
             ]

@@ -34,7 +34,7 @@ st.markdown(
 st.markdown(
     """
     <style>
-      /* Pin Streamlit’s chat-input to the bottom */
+      /* Pin Streamlit's chat-input to the bottom */
       div[data-testid="stChat"] div[data-testid="stChatInputContainer"] {
         position: sticky !important;
         bottom: 0;
@@ -330,7 +330,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         for k, v in saved.items():
             st.session_state[k] = v
 
-        # 2) Rebuild only this phase’s chat history
+        # 2) Rebuild only this phase's chat history
         current_phase = st.session_state["chat_state"]
         history = get_chat_history(user_id, current_phase)
 
@@ -373,7 +373,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
 
 
     goals = get_goals_with_task_counts(user_id)
-    # only warn if they’ve actually added ≥1 task
+    # only warn if they've actually added ≥1 task
     has_any_task = any(g["task_count"] > 0 for g in goals)
     
     if has_any_task and (user_info["has_completed_presurvey"] == False) and not (saved.get("needs_restore")):
@@ -406,7 +406,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         Click the 🚀 **Open Pre-Survey** button to launch the Qualtrics survey in a new tab.
 
         3. **Return & resume**  
-        When you’re done, come back here and hit your browser’s **Refresh** button to continue.
+        When you're done, come back here and hit your browser's **Refresh** button to continue.
         """))
 
         # 3. Two-column actions
@@ -434,7 +434,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         else:
             st.info(
                 f"After the survey, please work on the goal and tasks you just created at your own pace.\n "
-                f"We’ll be in touch again in {study_period_phrase()} with a brief follow-up.\n\n"
+                f"We'll be in touch again in {study_period_phrase()} with a brief follow-up.\n\n"
             )
 
         st.session_state.clear()
@@ -499,7 +499,10 @@ if (
 
         st.session_state["goal_id_being_worked"] = goal_with_no_active_tasks["id"]
         st.session_state["current_goal"] = goal_with_no_active_tasks["goal_text"]
-        st.session_state["tasks_saved"] = []
+        # st.session_state["tasks_saved"] = []
+        st.session_state["tasks_saved"] = [
+            t["task_text"] for t in get_tasks(goal_with_no_active_tasks["id"], active_only=True)
+        ]
         st.session_state["task_entry_stage"] = "suggest"
         set_state(
             chat_state="add_tasks",
@@ -531,7 +534,10 @@ if vals:
         goal_id = None
 
     if goal:
-        st.session_state["tasks_saved"] = []
+        # st.session_state["tasks_saved"] = []
+        st.session_state["tasks_saved"] = [
+            t["task_text"] for t in get_tasks(goal_id, active_only=True)
+        ]
         set_state(
             chat_state="add_tasks",
             needs_restore = False,
@@ -654,7 +660,7 @@ with st.container():
     </html>
     """, height=chat_height_px, scrolling=False)
 
-# # if we’ve been told to show a download, render it here in the normal Streamlit UI
+# # if we've been told to show a download, render it here in the normal Streamlit UI
 # if st.session_state.get("show_download"):
 #     st.download_button(
 #         label="📄 Download your goal & tasks",
@@ -813,7 +819,7 @@ def run_menu():
             chat_thread.append({
                 "sender": "Assistant",
                 "message": (
-                    f"🎉 Nice work so far! You’ve set {task_count}/3 tasks. <br>"
+                    f"🎉 Nice work so far! You've set {task_count}/3 tasks. <br>"
                     f"{add_line} view & download your current goal and tasks, or review the SMART training.  <br><br>"
                     "What would you like to do next?"
                 )
@@ -856,7 +862,7 @@ def run_menu():
             chat_thread.append({
                 "sender": "Assistant",
                 "message": (
-                    f"🎉 Nice work so far! You’ve set {task_count}/3 tasks. <br>"
+                    f"🎉 Nice work so far! You've set {task_count}/3 tasks. <br>"
                     f"{add_line} view & download your current goal and tasks, or review the SMART training.  <br><br>"
                     "What would you like to do next?"
                 )
@@ -912,7 +918,7 @@ def run_view_goals():
     if not goals:
         st.session_state["chat_thread"].append({
             "sender":"Assistant",
-            "message":"You haven’t created any goals yet."
+            "message":"You haven't created any goals yet."
         })
         # no return here — we still want to show the buttons below
     else:
@@ -950,11 +956,12 @@ def run_view_goals():
     # 2) now always render the two columns of buttons
     col1, col2, col3 = st.columns([1,1,1])
     if goals and len(tasks) < 3 and col1.button("➕ Add Another Task"):
+        existing_active = [t["task_text"] for t in get_tasks(goal_id,active_only=True)]
         st.session_state.update({
             "chat_state":"add_tasks",
             "goal_id_being_worked":goal_id,
             "current_goal":goal_text,
-            "tasks_saved":[],
+            "tasks_saved":existing_active.copy(),
             "task_entry_stage":"suggest"
         })
         # reset thread to just the “adding tasks” prompt
@@ -975,20 +982,21 @@ def run_view_goals():
             needs_restore = False
             )
         st.rerun()
-    
-    with col3:
-        # build a simple text file: goal on top, then each active task
-        if "download_content" not in st.session_state:
-            st.session_state["download_content"] = build_goal_tasks_text(
-                goal_text,
-                [ t["task_text"] for t in tasks ]  # even if tasks is empty, this will still work
+
+    if goals:
+        with col3:
+            # build a simple text file: goal on top, then each active task
+            if "download_content" not in st.session_state:
+                st.session_state["download_content"] = build_goal_tasks_text(
+                    goal_text,
+                    [ t["task_text"] for t in tasks ]  # even if tasks is empty, this will still work
+                    )
+            st.download_button(
+                label="📄 Download Goal & Tasks",
+                data=st.session_state["download_content"],
+                file_name="my_smart_goal.txt",
+                mime="text/plain",
                 )
-        st.download_button(
-            label="📄 Download Goal & Tasks",
-            data=st.session_state["download_content"],
-            file_name="my_smart_goal.txt",
-            mime="text/plain",
-            )
 
 # ────────────────────────────────────────────────────────────
 # Ensure deep links like ?week=1&session=a always route into reflection,
