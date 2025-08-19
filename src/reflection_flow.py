@@ -110,6 +110,8 @@ def run_weekly_reflection():
     st.session_state["week"] = week
     st.session_state["session"] = session
 
+    post_submit = st.session_state.get("_post_submit", False)
+
     phase_key = f"reflection_{week}_{session}"
     st.session_state["chat_state"] = phase_key
 
@@ -124,9 +126,11 @@ def run_weekly_reflection():
     goal_id = all_goals[0]["id"]
     goal_text = all_goals[0]["goal_text"]
 
-    if reflection_exists(user_id, goal_id, week, session):
+    if reflection_exists(user_id, goal_id, week, session) \
+        and not st.session_state.get("summary_pending") \
+        and not post_submit:
         st.success(
-            f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}** Thank you!\n\n"
+            f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
             "If you’d like to add more tasks, go back to **Main Menu → View Existing Goal and Tasks → Add Another Task**.",
             icon="✔️"
         )
@@ -148,6 +152,8 @@ def run_weekly_reflection():
                 chat_state = "menu",
                 needs_restore = False
             )
+            try: st.query_params.clear()
+            except Exception: pass
             if ack_key in st.session_state:
                 del st.session_state[ack_key]
             st.rerun()
@@ -246,6 +252,7 @@ def run_weekly_reflection():
                         "sender": "User",
                         "message": new_text
                     })
+
                     st.session_state["awaiting_task_edit"] = False
                     st.session_state["editing_choice"] = None
                     st.session_state["update_task_idx"] += 1
@@ -694,6 +701,7 @@ def run_weekly_reflection():
                 "sender": "Assistant",
                 "message": "🤖 Summarizing your reflection…"
             })
+            st.session_state["_post_submit"]= True
             st.session_state["summary_pending"] = True
             st.rerun()
         else:
@@ -707,11 +715,17 @@ def run_weekly_reflection():
                 "sender": "Assistant",
                 "message": summary
             })
+            # del st.session_state["summary_pending"]
+        
+        if "summary_pending" in st.session_state:
             del st.session_state["summary_pending"]
+        if "_post_submit" in st.session_state:
+            del st.session_state["_post_submit"]
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
             "message": summary
         })
+
         
 
         st.session_state["chat_thread"].append({
@@ -726,6 +740,9 @@ def run_weekly_reflection():
                 chat_state = "menu",
                 needs_restore = False
             )
+            try: st.query_params.clear()
+            except Exception: pass
+            st.rerun()
 
         for key in list(st.session_state.keys()):
             if (
@@ -736,7 +753,8 @@ def run_weekly_reflection():
                 "update_task_idx", "reflection_q_idx"]
                 ):
                 del st.session_state[key]
-        st.rerun()
+        # st.rerun()
+        return
 
 def init_reflection_session():
     if "chat_thread" not in st.session_state:
