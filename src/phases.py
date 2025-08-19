@@ -62,7 +62,7 @@ smart_training_flow = {
     },
     "specific_intro": {
         "text": [
-            "For this experiment, you'll set one meaningful goal: something that will take at least two weeks to make progress on. We'll use the SMART framework to help shape it.",
+            "For this experiment, you'll set one meaningful goal: something that will take at least <b>two weeks</b> to make progress on. We'll use the SMART framework to help shape it.",
             "Let's say someone sets this goal: 'I want to improve my job prospects by learning a new skill.'",
             "Is that goal specific enough?"
         ],
@@ -223,7 +223,7 @@ smart_training_flow = {
     "time_intro": {
         "text": [
             "T is for Time-bound: every SMART goal needs a clear finish line!",
-            "You don't need to rewrite your whole goal, just pick a phrasing that spans two weeks, or sets a weekly milestone.",
+            "You don't need to rewrite your whole goal, just pick a phrasing that spans <b>two weeks</b>, or sets a weekly milestone.",
             "Example base goal: <i>Complete a free transcription course</i>",
             "Which of these is properly time-bound for our 2-week experiment?"
         ],
@@ -240,7 +240,7 @@ smart_training_flow = {
     },
     "time_feedback_no": {
         "text": [
-            "Not quite, remember: your goal needs either a two-week deadline or a weekly milestone over two weeks.",
+            "Not quite, remember: your goal needs either a <b>two-week deadline</b> or a weekly milestone over two weeks.",
             "Let's try again."
         ],
         "buttons": ["Back to choices"],
@@ -277,7 +277,7 @@ goal_setting_flow = {
     "text": [
         "Let's get started! You will set just <b>one personal goal</b> for this 2-week experiment, something that takes time and effort, not just a one-off task.",
         "Think of it as a mini project or meaningful habit: something you'll work toward steadily and break down into smaller steps later.",
-        "✨ What's one thing you'd genuinely like to make progress on over the next two weeks?"
+        "✨ What's one thing you'd genuinely like to make progress on over the next <b>two weeks</b>?"
     ],
     "input_type": "text",
     "next": "check_specific"
@@ -325,7 +325,7 @@ goal_setting_flow = {
         "text": [
             "Here's your current goal: {current_goal}",
             "Based on the suggestion above, try rewriting it to be more measurable. Just type your updated version below.",
-            "💡 It should still feel like a high-level goal, not just one task, but a project or habit you'll grow over the next two weeks."
+            "💡 It should still feel like a high-level goal, not just one task, but a project or habit you'll grow over the next <b>two weeks</b>."
         ],
         "input_type": "text",
         "next": "check_achievable"
@@ -349,7 +349,7 @@ goal_setting_flow = {
     "input_achievable": {
         "text": [
             "Here's your current goal: {current_goal}",
-            "Try rewriting it to be more doable: something you can make progress on over the next two weeks."
+            "Try rewriting it to be more doable: something you can make progress on over the next <b>two weeks</b>."
         ],
         "input_type": "text",
         "next": "check_relevant"
