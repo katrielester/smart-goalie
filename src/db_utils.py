@@ -58,6 +58,8 @@ def set_state(**kwargs):
         "reflection_q_idx",
         "awaiting_task_edit",
         "editing_choice",
+        "frozen_tasks",
+        "frozen_len",
     ] + dynamic_flags
     
     # also save the “view goals” trigger if set

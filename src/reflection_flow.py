@@ -170,7 +170,7 @@ def run_weekly_reflection():
 
         return
 
-    tasks = get_tasks(goal_id)
+    tasks = get_tasks(goal_id,active_only=True)
     # st.write(tasks)
     if not tasks:
         st.info("You have no tasks for your goal. Add tasks first.")
@@ -192,17 +192,30 @@ def run_weekly_reflection():
         st.rerun()
 
     
-    for t in tasks:
+    # for t in tasks:
+        # st.session_state["task_progress"].setdefault(t["id"], 0)
+    
+    # ----- Freeze original task list once and persist -----
+    if "frozen_tasks" not in st.session_state:
+        st.session_state["frozen_tasks"] = [
+            {"id": t["id"], "task_text": t["task_text"]}
+            for t in tasks
+            ]
+        st.session_state["frozen_len"] = len(st.session_state["frozen_tasks"])
+        for t in st.session_state["frozen_tasks"]:
+            st.session_state.setdefault("task_progress", {}).setdefault(t["id"], 0)
+        set_state(
+            frozen_tasks = st.session_state["frozen_tasks"],
+            frozen_len   = st.session_state["frozen_len"],
+            task_progress= st.session_state["task_progress"],
+            needs_restore= True
+            )
+    frozen = st.session_state["frozen_tasks"]
+    frozen_len = st.session_state["frozen_len"]
+        
+    # Ensure progress defaults exist for frozen IDs
+    for t in frozen:
         st.session_state["task_progress"].setdefault(t["id"], 0)
-
-
-        # if "chat_thread" not in st.session_state:
-        #     st.session_state["chat_thread"]=[]
-
-        # st.session_state["reflection_step"] = 0
-        # st.session_state["task_progress"] = {}
-        # st.session_state["reflection_answers"] = {}
-        # st.session_state["current_task"] = 0
 
     # --- PATCH: Early branch if in edit mode ---
     # DEBUG: check edit-mode guard
@@ -210,14 +223,14 @@ def run_weekly_reflection():
     # If user is in the middle of editing or inputting a new task, only show edit UI
     if st.session_state.get("awaiting_task_edit") in [True, "awaiting_input"]:
         idx = st.session_state.get("update_task_idx", 0)
-        task = tasks[idx] if idx < len(tasks) else None
+        task = frozen[idx] if idx < frozen_len else None
         task_id = task["id"] if task else None
         # Suggestion message should appear only once
         if st.session_state["awaiting_task_edit"] == True:
             if "ask_for_edit" not in st.session_state:
                 # Only append these once
                 reflection_answers = st.session_state.get("reflection_answers", {})
-                existing_tasks     = [t["task_text"] for t in tasks]
+                existing_tasks     = [t["task_text"] for t in frozen]
                 suggestions = suggest_tasks_with_context(
                     goal_text,
                     reflection_answers,
@@ -243,7 +256,7 @@ def run_weekly_reflection():
                 if new_text:
                     reason = st.session_state.get("editing_choice", "Modified")
                     # Defensive: fallback to "Modified" if not set
-                    task = tasks[st.session_state["update_task_idx"]]
+                    task = frozen[st.session_state["update_task_idx"]]
                     task_id = task["id"]
                     new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
                     st.session_state["task_progress"][new_task_id] = st.session_state["task_progress"].pop(task_id, 0)
@@ -325,9 +338,9 @@ def run_weekly_reflection():
         st.rerun()
         
 
-    if 1 <= st.session_state["reflection_step"] <= len(tasks):
+    if 1 <= st.session_state["reflection_step"] <= frozen_len:
         idx = st.session_state["reflection_step"] - 1
-        task = tasks[idx]
+        task = frozen[idx]
         task_id = task["id"]
         task_text = task["task_text"]
 
@@ -420,9 +433,9 @@ def run_weekly_reflection():
         #     )
         #     st.rerun()
 
-    elif st.session_state["reflection_step"] == len(tasks) + 1:
+    elif st.session_state["reflection_step"] == frozen_len + 1:
         total = sum(st.session_state["task_progress"].values())
-        max_possible = 4 * len(tasks)
+        max_possible = 4 * frozen_len
         use_success_reflection = total >= 0.65 * max_possible
 
         if use_success_reflection:
@@ -478,7 +491,7 @@ def run_weekly_reflection():
                 st.rerun()
 
     # Goal Alignment Reflection
-    elif st.session_state["reflection_step"] == len(tasks) + 2:
+    elif st.session_state["reflection_step"] == frozen_len + 2:
         if "ask_alignment" not in st.session_state:
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
@@ -505,10 +518,10 @@ def run_weekly_reflection():
 
             st.rerun()
 
-    elif st.session_state["reflection_step"] == len(tasks) + 3:
+    elif st.session_state["reflection_step"] == frozen_len + 3:
         idx = st.session_state.get("update_task_idx", 0)
-        if idx < len(tasks):
-            task = tasks[idx]
+        if idx < frozen_len:
+            task = frozen[idx]
             task_id = task["id"]
             task_text = task["task_text"]
             
@@ -558,7 +571,7 @@ def run_weekly_reflection():
             if st.session_state.get("awaiting_task_edit") is True:
                 # reuse goal_text you set at top of run_weekly_reflection()
                 reflection_answers = st.session_state.get("reflection_answers", {})
-                existing_tasks     = [t["task_text"] for t in tasks]
+                existing_tasks     = [t["task_text"] for t in frozen]
                 
                 # call with reflection + existing tasks
                 suggestions = suggest_tasks_with_context(
@@ -584,7 +597,7 @@ def run_weekly_reflection():
             elif st.session_state.get("awaiting_task_edit") == "awaiting_input":
                 new_text = st.chat_input("Type your updated task here...", key=f"update_task_{task_id}")
                 if new_text:
-                    task = tasks[st.session_state["update_task_idx"]]
+                    task = frozen[st.session_state["update_task_idx"]]
                     task_id = task["id"]
                     reason = "Modified" if st.session_state[f"update_choice_{task_id}"] == "Modify" else "Replaced"
 
@@ -645,9 +658,9 @@ def run_weekly_reflection():
 
             st.rerun()
 
-    elif st.session_state["reflection_step"] == len(tasks) + 4:
+    elif st.session_state["reflection_step"] == frozen_len + 4:
         task_results = []
-        for task in tasks:  
+        for task in frozen:  
             task_id = task["id"]
             task_text = task["task_text"]
             val = st.session_state["task_progress"].get(task_id, 0)
@@ -672,8 +685,8 @@ def run_weekly_reflection():
 
         reflection_id = save_reflection(user_id, goal_id, reflection_text, week_number=week, session_id=session)
 
-        # Save task progress
-        for task in tasks:
+        # Save task progress for the original (frozen) tasks only
+        for task in frozen:
             task_id = task["id"]
             rating = st.session_state["task_progress"].get(task_id, 0)
             save_reflection_response(reflection_id, task_id=task_id, progress_rating=rating)
@@ -747,6 +760,8 @@ def run_weekly_reflection():
             st.query_params.pop("session",None)
             st.session_state.pop("week",None)
             st.session_state.pop("session",None)
+            st.session_state.pop("frozen_tasks", None)
+            st.session_state.pop("frozen_len", None)
             st.rerun()
 
         for key in list(st.session_state.keys()):
@@ -759,7 +774,7 @@ def run_weekly_reflection():
                 ):
                 del st.session_state[key]
         # st.rerun()
-        return
+        st.stop()
 
 def init_reflection_session():
     if "chat_thread" not in st.session_state:
