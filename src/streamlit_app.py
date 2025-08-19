@@ -250,10 +250,10 @@ with st.sidebar:
             "After you click a button or submit a text, Goalie may think for a moment "
             "and the page can briefly refresh. **Double-pressing can submit extra text or skip steps.**"
         )
-    with st.expander("💡 Tip & Help", expanded=False):
+    with st.expander("💡 Tip & Help", expanded=True):
         st.write(
-            "• You can set up to 3 weekly tasks, small steps add up!  \n"
-            "• Hit **View Goal & Tasks** to see or download your plan.  \n"
+            "• Hit **View Goal & Tasks** to see, download, and add to your plan.  \n"
+            "• You can set up to 3 weekly tasks. \n"
             "• Collapse this panel for more space if you prefer."
         )
 
