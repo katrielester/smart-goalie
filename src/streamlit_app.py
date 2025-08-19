@@ -1019,6 +1019,7 @@ if st.session_state.get("group") == "treatment" and w and s:
                 )
             else:
                 # Already submitted, drop week/session so user can use the menu
+                st.toast(f"You have already submitted reflection session for Week {w}, Session {s}!", icon="✅")
                 st.query_params.pop("week", None)
                 st.query_params.pop("session", None)
                 set_state(chat_state="menu", needs_restore=False)
