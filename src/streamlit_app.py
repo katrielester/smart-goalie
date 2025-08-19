@@ -252,8 +252,8 @@ with st.sidebar:
         )
     with st.expander("💡 Tip & Help", expanded=True):
         st.write(
-            "\n• Hit **View Goal & Tasks** to see, download, and add to your plan.  \n"
-            "• You can set up to 3 weekly tasks. \n"
+            "\n\n• Hit **View Goal & Tasks** to see, download, and add tasks to your plan.  \n\n"
+            "• You can set up to 3 weekly tasks. \n\n"
             "• Collapse this panel for more space if you prefer."
         )
 
@@ -884,7 +884,7 @@ def run_menu():
                 )
             st.rerun()
     else:
-        if col1.button("✅ View Existing Goal and Tasks"):
+        if col1.button("✅ View Goal and Tasks"):
             st.session_state["trigger_view_goals"] = True
             set_state(
                 chat_state = "view_goals",

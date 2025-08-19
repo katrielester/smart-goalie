@@ -131,7 +131,7 @@ def run_weekly_reflection():
         and not post_submit:
         st.success(
             f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
-            "If you’d like to add more tasks, go back to **Main Menu → View Existing Goal and Tasks → Add Another Task**.",
+            "If you’d like to add more tasks, go back to **Main Menu → View Goal and Tasks → Add Another Task**.",
             icon="✔️"
         )
         ack_key = f"reflection_ack_w{week}_s{session}"
@@ -141,7 +141,7 @@ def run_weekly_reflection():
         #         st.session_state["chat_thread"] = ChatThread(st.session_state["user_id"])
         #         st.session_state["chat_thread"].append({
         #             "sender": "Assistant",
-        #             "message": f"You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>. Thank you! <br><br> If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
+        #             "message": f"You've already submitted a reflection for <b>Week {week}, Session {session.upper()}</b>. Thank you! <br><br> If you would like to add more tasks, please <b> Return to the Main Menu > View Goal and Tasks > Add Another Task </b>"
         #         })
         #     st.session_state[ack_key] = True
         #     st.rerun()
@@ -733,7 +733,7 @@ def run_weekly_reflection():
 
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
-            "message": "✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Existing Goal and Tasks > Add Another Task </b>"
+            "message": "✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Goal and Tasks > Add Another Task </b>"
         })
         
         st.success("Reflection submitted and saved!")

@@ -18,7 +18,7 @@ def run_goal_setting():
     user_id = st.session_state.get("user_id")
     # --- NEW GUARD ---
     if user_id and get_goals(user_id):
-        st.warning("You’ve already set a goal. To update it, please go to Main Menu → View Existing Goal.")
+        st.warning("You’ve already set a goal. To update it, please go to Main Menu → View Goal and Tasks.")
         return
 
     USE_LLM_SCORING=True
