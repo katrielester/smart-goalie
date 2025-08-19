@@ -108,10 +108,14 @@ from logger import setup_logger
 # st.stop()
 
 
-DEV_MODE = os.getenv("DEV_MODE", "false").lower()
+# replace your current DEV_MODE lines with this:
+DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
-dev = st.query_params.get("dev")
-if dev==1: DEV_MODE=True
+dev_param = st.query_params.get("dev")
+if isinstance(dev_param, list):
+    dev_param = dev_param[0]
+if dev_param == "1":
+    DEV_MODE = True
 
 def ensure_download_content(goal_text, tasks):
     if "download_content" not in st.session_state:
@@ -283,7 +287,7 @@ with st.sidebar:
             st.session_state.clear()
             st.rerun()
 
-if dev=="1":
+if dev_param=="1":
     # debug: show me what keys are present on *every* render
     st.sidebar.json(dict(st.session_state))
     # and show whether chat_state is missing
@@ -737,10 +741,10 @@ def run_intro():
 def run_smart_training():
     first= not user_completed_training(st.session_state["user_id"])
     print("🔵 In run_smart_training()")
-    step = smart_training_flow[st.session_state["smart_step"]]
     if st.session_state["smart_step"] not in smart_training_flow:
         st.error(f"❌ Step '{st.session_state['smart_step']}' not found in smart_training_flow!")
         st.stop()
+    step = smart_training_flow[st.session_state["smart_step"]]
     texts = step["text"]
     if isinstance(texts, str):
         texts = [texts]

@@ -724,10 +724,10 @@ def run_weekly_reflection():
             del st.session_state["summary_pending"]
         if "_post_submit" in st.session_state:
             del st.session_state["_post_submit"]
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": summary
-        })
+        # st.session_state["chat_thread"].append({
+        #     "sender": "Assistant",
+        #     "message": summary
+        # })
 
         
 
