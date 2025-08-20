@@ -294,6 +294,16 @@ def run_weekly_reflection():
 
         last_reflection = get_last_reflection(user_id, goal_id)
 
+        # ⬇️ Add disclaimer as first chat message
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": (
+                "⏳ <b>Before we start:</b> Sometimes the assistant needs a moment to load "
+                "the next message. Please wait for it to appear and avoid double-clicking "
+                "or submitting twice. Everything will be saved automatically ✅"
+            )
+        })
+
         if last_reflection and last_reflection.get("reflection_text", "").strip():
             last_content = last_reflection["reflection_text"]
             last_week = last_reflection["week_number"]
