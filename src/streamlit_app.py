@@ -252,9 +252,8 @@ else:
 
 with st.sidebar:
     st.warning(
-            "⏳ **Please submit once and wait**\n\n"
-            "After you click a button or submit a text, Goalie may think for a moment "
-            "and the page can briefly refresh. **Double-pressing can submit extra text or skip steps.**"
+            "⏳ **Please be patient**\n\n"
+            "When you click or submit, Goalie might take a moment and the page may refresh. That’s normal! \n\n Just wait for the next message to appear, no need to click or type twice. Double-pressing can sometimes add extra text or jump ahead."
         )
     with st.expander("💡 Tip & Help", expanded=True):
         st.write(
@@ -1028,31 +1027,36 @@ if st.session_state.get("group") == "treatment" and w and s:
     s = s[0] if isinstance(s, list) else s
     w = str(w).strip()
     s = str(s).strip().lower()
-    
-    if w in {"1", "2"} and s in {"a", "b"}:
-        user_id = st.session_state["user_id"]
-        goals = get_goals(user_id)  
-        if goals:
-            goal_id = goals[0]["id"]
-            # If NOT submitted yet, go to reflection
-            if not reflection_exists(user_id, goal_id, int(w), s):
-                set_state(
-                    chat_state=f"reflection_{w}_{s}",
-                    week=int(w),
-                    session=s,
-                    needs_restore=True
-                )
+
+    in_reflection = str(st.session_state.get("chat_state", "")).startswith("reflection")
+    finishing     = st.session_state.get("summary_pending") or st.session_state.get("_post_submit")
+    if in_reflection and finishing:
+        pass  # don't touch chat_state or query params during summary phase
+    else:
+        if w in {"1", "2"} and s in {"a", "b"}:
+            user_id = st.session_state["user_id"]
+            goals = get_goals(user_id)  
+            if goals:
+                goal_id = goals[0]["id"]
+                # If NOT submitted yet, go to reflection
+                if not reflection_exists(user_id, goal_id, int(w), s):
+                    set_state(
+                        chat_state=f"reflection_{w}_{s}",
+                        week=int(w),
+                        session=s,
+                        needs_restore=True
+                    )
+                else:
+                    # Already submitted, drop week/session so user can use the menu
+                    st.toast(f"You have already submitted reflection session for Week {w}, Session {s}!", icon="✅")
+                    st.query_params.pop("week", None)
+                    st.query_params.pop("session", None)
+                    set_state(chat_state="menu", needs_restore=False)
             else:
-                # Already submitted, drop week/session so user can use the menu
-                st.toast(f"You have already submitted reflection session for Week {w}, Session {s}!", icon="✅")
+                # No goal yet, reflection makes no sense; clear params and stay menu
                 st.query_params.pop("week", None)
                 st.query_params.pop("session", None)
                 set_state(chat_state="menu", needs_restore=False)
-        else:
-            # No goal yet, reflection makes no sense; clear params and stay menu
-            st.query_params.pop("week", None)
-            st.query_params.pop("session", None)
-            set_state(chat_state="menu", needs_restore=False)
 # ────────────────────────────────────────────────────────────
 
 print("chat_state before routing:", st.session_state.get("chat_state"))
