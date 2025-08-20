@@ -294,15 +294,7 @@ def run_weekly_reflection():
 
         last_reflection = get_last_reflection(user_id, goal_id)
 
-        # ⬇️ Add disclaimer as first chat message
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": (
-                "⏳ <b>Before we start:</b> Sometimes the assistant needs a moment to load "
-                "the next message. Please wait for it to appear and avoid double-clicking "
-                "or submitting twice. Everything will be saved automatically ✅"
-            )
-        })
+        
 
         if last_reflection and last_reflection.get("reflection_text", "").strip():
             last_content = last_reflection["reflection_text"]
@@ -314,6 +306,15 @@ def run_weekly_reflection():
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
             "message": "🔸 Reflection Time 🔸"
+        })
+        # ⬇️ Add disclaimer as first chat message
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": (
+                "⏳ <b>Before we start:</b> Sometimes the assistant needs a moment to load "
+                "the next message. Please wait for it to appear and avoid double-clicking "
+                "or submitting twice. Everything will be saved automatically ✅"
+            )
         })
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
@@ -456,7 +457,7 @@ def run_weekly_reflection():
         if "ask_alignment" not in st.session_state:
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "🧭 For the <b>coming week</b>, do your current tasks still <b>fit your goal</b>? <br><br>Share what still fits and what you’d change for next week."
+                "message": "🧭 For the <b>coming week</b>, do your current tasks still <b>fit your goal</b>? <br><br>Share what still fits and what you'd change for next week."
             })
             st.session_state["ask_alignment"] = True
             save_reflection_state()
@@ -691,39 +692,44 @@ def run_weekly_reflection():
             save_reflection_state(needs_restore=True)
             st.rerun()
 
-        # 3) Third run: now that the summary is visible, clear flags and show end message
+        # 3) Third run: now that the summary is visible, clear flags and show end UI
         else:
             # clear flags
             st.session_state.pop("summary_pending", None)
             st.session_state.pop("_post_submit", None)
             st.session_state.pop("summary_appended", None)
 
-            # thanks message
+            # ----- Build final text for chat + success banner -----
             active_count = len(get_tasks(goal_id, active_only=True))
             if active_count < 3:
-                msg_endsum = ("✅ Thanks for reflecting! Your responses are saved. <br><br> "
-                              "If you’d like, you can add more tasks via "
-                              "<b>Main Menu → View Goal and Tasks → Add Another Task</b>.")
+                msg_endsum = (
+                    "✅ Thanks for reflecting! Your responses are saved. "
+                    "If you'd like, you can add more tasks via "
+                    "<b>Main Menu → View Goal and Tasks → Add Another Task</b>."
+                )
             else:
                 msg_endsum = "✅ Thanks for reflecting! Your responses are saved."
 
+            # Put the final message in the chat thread (keeps your transcript tidy)
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": msg_endsum
             })
 
-            # ---------- DOWNLOAD (plan + reflection) — polite prompt ----------
-            # Build export text
+            # ---------- DOWNLOAD (plan + reflection) content ----------
+            # Gather active tasks for the new plan
             active_tasks = [t["task_text"] for t in get_tasks(goal_id, active_only=True)]
 
-            # Progress (clean list)
+            # Progress (clean list; safe label mapping)
+            def progress_label(v):
+                return next((k for k, vv in progress_numeric.items() if vv == v), "Unknown")
+
             progress_lines = []
             for t in get_tasks(goal_id, active_only=False):
                 tid = t["id"]
                 if tid in st.session_state["task_progress"]:
                     v = st.session_state["task_progress"][tid]
-                    label = [k for k, vv in progress_numeric.items() if vv == v][0]
-                    progress_lines.append(f"- {t['task_text']}: {label}")
+                    progress_lines.append(f"- {t['task_text']}: {progress_label(v)}")
 
             # Open-ended answers
             answers = st.session_state.get("reflection_answers", {})
@@ -768,29 +774,23 @@ def run_weekly_reflection():
             else:
                 export_text.append("(no answers)\n")
             if llm_summary:
-                export_text.append("\nLLM SUMMARY:\n")
+                export_text.append("\n")
                 export_text.append(llm_summary + "\n")
             export_payload = "".join(export_text)
-
             file_name = f"plan_reflection_w{week}{session}.txt"
+            # ---------- END content build ----------
 
-            st.markdown("**📥 Please download your updated plan + this reflection (recommended)**")
-            st.download_button(
-                label="Download plan & reflection (.txt)",
-                data=export_payload,
-                file_name=file_name,
-                mime="text/plain",
-                key=f"dl_plan_reflection_{week}_{session}"
-            )
-            # ---------- END download (no gating) ----------
-
-            # persist UI state and show navigation
+            # Persist state for safety
             save_reflection_state(needs_restore=False)
 
-            st.success("Reflection submitted and saved!")
+            # ----- Final success banner + buttons row (download sits with the other buttons) -----
+            st.success(
+                "✅ Reflection submitted and saved!\n\n"
+                "📥 **Recommended:** Please download your updated plan and this reflection using the button below."
+            )
 
-            col1, col2 = st.columns(2)
-            with col1:
+            c1, c2, c3 = st.columns([1, 1, 1])
+            with c1:
                 if st.button("⬅️ Return to Main Menu"):
                     set_state(chat_state="menu", needs_restore=False)
                     st.query_params.pop("week", None)
@@ -798,8 +798,17 @@ def run_weekly_reflection():
                     st.session_state.pop("week", None)
                     st.session_state.pop("session", None)
                     st.rerun()
-            with col2:
+            with c2:
                 st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
+            with c3:
+                st.download_button(
+                    label="Download plan & reflection (.txt)",
+                    data=export_payload,
+                    file_name=file_name,
+                    mime="text/plain",
+                    key=f"dl_plan_reflection_{week}_{session}"
+                )
+
         for key in list(st.session_state.keys()):
             if (
                 key.startswith("reflection_") 
