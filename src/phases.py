@@ -249,13 +249,6 @@ smart_training_flow = {
     "time_feedback_yes": {
         "text": [
             "Exactly! That's all it takes, just picking a two-week deadline or a weekly target.",
-            "You're ready for the recap."
-        ],
-        "buttons": ["Continue"],
-        "next": {"Continue": "complete"}
-    },
-    "complete": {
-        "text": [
             "Awesome! You've now seen how a vague goal becomes SMART:",
             "<b>'I want to improve my job prospects by learning a new skill.'</b>",
             "→ <b>'I want to complete a free transcription course within 2 weeks.'</b>",
@@ -267,7 +260,7 @@ smart_training_flow = {
         "next": {"Continue to goal setting": "end"}
     },
     "end": {
-        "text": ["SMART goal training complete, let's help you set your own now!"],
+        "text": ["Let's help you set your own now!"],
         "complete": True
     }
 }
@@ -443,7 +436,7 @@ goal_setting_flow_score = {
     "initial_goal": {
         "text": [
             "</b>🔸 Goal Setting 🔸</b>",
-            "Let's get started! You'll choose one goal to focus on for the next 2 weeks.",
+            "Let's get started! You'll choose one goal to focus on for <b>the next 2 weeks</b>.",
             "Think of something meaningful you'd like to work toward. Not a quick task, but a mini project or habit.",
             "<b>👉 Please type your goal below to continue.</b>"
         ],
@@ -481,7 +474,7 @@ goal_setting_flow_score = {
         "text": [
             "📝 Your current goal: <i>{current_goal}</i>",
             "<b>Try rewriting your goal using the suggestions above.</b>",
-            "✏️ You'll be working on this for 2 weeks, so keep it focused, but broad enough to break into smaller tasks later."
+            "✏️ You'll be working on this for <b>2 weeks</b>, so keep it focused, but broad enough to break into smaller tasks later."
         ],
         "input_type": "text",
         "next": "check_measurable"
