@@ -669,16 +669,20 @@ def run_weekly_reflection():
             del st.session_state["summary_pending"]
         if "_post_submit" in st.session_state:
             del st.session_state["_post_submit"]
-        # st.session_state["chat_thread"].append({
-        #     "sender": "Assistant",
-        #     "message": summary
-        # })
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": summary
+        })
 
+        if len(frozen)<3:
+            msg_endsum="✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Goal and Tasks > Add Another Task </b>"
+        else:
+            msg_endsum="✅ Thanks for reflecting! Your responses are saved."
         
 
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
-            "message": "✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Goal and Tasks > Add Another Task </b>"
+            "message": msg_endsum
         })
         
         st.success("Reflection submitted and saved!")
