@@ -786,28 +786,31 @@ def run_weekly_reflection():
             # ----- Final success banner + buttons row (download sits with the other buttons) -----
             st.success(
                 "✅ Reflection submitted and saved!\n\n"
-                "📥 **Recommended:** Please download your updated plan and this reflection using the button below."
+                "📥 **Recommended:** Please download your updated plan and this reflection using the button below.\n\n"
+                "💸 Your bonus payment will be reviewed and released within 24 hours, just like your main study. "
+                "You're now safe to return to Prolific!"
             )
 
-            c1, c2, c3 = st.columns([1, 1, 1])
-            with c1:
-                if st.button("⬅️ Return to Main Menu"):
-                    set_state(chat_state="menu", needs_restore=False)
-                    st.query_params.pop("week", None)
-                    st.query_params.pop("session", None)
-                    st.session_state.pop("week", None)
-                    st.session_state.pop("session", None)
-                    st.rerun()
-            with c2:
-                st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
-            with c3:
-                st.download_button(
-                    label="Download plan & reflection (.txt)",
-                    data=export_payload,
-                    file_name=file_name,
-                    mime="text/plain",
-                    key=f"dl_plan_reflection_{week}_{session}"
-                )
+            # c1, c2, c3 = st.columns([1, 1, 1])
+            # with c1:
+            st.download_button(
+                label="Download plan & reflection (.txt)",
+                data=export_payload,
+                file_name=file_name,
+                mime="text/plain",
+                key=f"smart_plan_reflection_{week}_{session}"
+            )
+            # with c2:
+            #     if st.button("⬅️ Return to Main Menu"):
+            #         set_state(chat_state="menu", needs_restore=False)
+            #         st.query_params.pop("week", None)
+            #         st.query_params.pop("session", None)
+            #         st.session_state.pop("week", None)
+            #         st.session_state.pop("session", None)
+            #         st.rerun()
+            # with c3:
+            #     st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
+            
 
         for key in list(st.session_state.keys()):
             if (
