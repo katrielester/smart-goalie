@@ -626,7 +626,16 @@ def run_weekly_reflection():
                 
         # Save open-text question answers
         for key, answer in st.session_state["reflection_answers"].items():
-            save_reflection_response(reflection_id, answer_key=key, answer_text=answer)
+            task_id_for_key = None
+            answer_key = key
+            if key.startswith("justification_"):
+                try:
+                    task_id_for_key = int(key.split("_",1)[1])
+                    answer_key = "justification"
+                except Exception:
+                    task_id_for_key = None
+
+            save_reflection_response(reflection_id, task_id=task_id_for_key, answer_key=answer_key, answer_text=answer)
 
         update_user_phase(user_id, phase + 1)
 
@@ -674,7 +683,8 @@ def run_weekly_reflection():
             "message": summary
         })
 
-        if len(frozen)<3:
+        active_count=len(get_tasks(goal_id,active_only=True))
+        if active_count<3:
             msg_endsum="✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Goal and Tasks > Add Another Task </b>"
         else:
             msg_endsum="✅ Thanks for reflecting! Your responses are saved."
