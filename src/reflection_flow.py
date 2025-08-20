@@ -456,7 +456,7 @@ def run_weekly_reflection():
         if "ask_alignment" not in st.session_state:
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "🧭 Thinking about your tasks and your goal, do you feel your current tasks still <b>match the goal well</b>?<br><br>Feel free to share your thoughts, whether they align well, or if anything feels a bit off."
+                "message": "🧭 For the <b>coming week</b>, do your current tasks still <b>fit your goal</b>? <br><br>Share what still fits and what you’d change for next week."
             })
             st.session_state["ask_alignment"] = True
             save_reflection_state()
@@ -490,7 +490,7 @@ def run_weekly_reflection():
             if f"ask_update_{task_id}" not in st.session_state:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": f"What do you want to do with this task?<br><br><b>{task_text}</b>"
+                    "message": f"For the next week, what would you like to do with this task?<br><br><b>{task_text}</b>"
                 })
                 st.session_state[f"ask_update_{task_id}"] = True
                 st.rerun()
@@ -523,7 +523,7 @@ def run_weekly_reflection():
                 else:
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
-                        "message": "👍 Task kept as is."
+                        "message": "👍 Task kept for the next week."
                     })
                     st.session_state["update_task_idx"] += 1
                     save_reflection_state()
@@ -545,7 +545,7 @@ def run_weekly_reflection():
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
                         "message": (
-                        "💡 Based on your goal and what you just reflected, here are some fresh task ideas:<br><br>" + suggestions
+                        "💡 Based on your goal and what you shared, here are some fresh task ideas:<br><br>" + suggestions
                         )
                     })
                 # now ask them to write their updated task
@@ -652,49 +652,66 @@ def run_weekly_reflection():
         delete_reflection_draft(user_id, goal_id, week, session)
 
         # summary = summarize_reflection(reflection_text)
+        # --- replace just this "summary" section inside the +4 block ---
+
+        # 1) First run: show placeholder (unchanged)
         if "summary_pending" not in st.session_state:
-            # 1) show a placeholder
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": "🤖 Summarizing your reflection…"
             })
-            st.session_state["_post_submit"]= True
+            st.session_state["_post_submit"] = True
             st.session_state["summary_pending"] = True
+            # make sure the placeholder shows
+            save_reflection_state(needs_restore=True)
             st.rerun()
-        else:
-            # 2) actual call
+
+        # 2) Second run: replace placeholder with the summary, then rerun to repaint
+        elif not st.session_state.get("summary_appended", False):
             summary = summarize_reflection(reflection_text)
-            # 3) replace the placeholder
-            #    pop last message if it was our placeholder
-            if st.session_state["chat_thread"][-1]["message"].startswith("🤖 Summarizing"):
-                st.session_state["chat_thread"].pop()
+
+            # defensively pop the placeholder if it's last
+            try:
+                last = st.session_state["chat_thread"][-1]
+                if isinstance(last, dict) and last.get("message", "").startswith("🤖 Summarizing"):
+                    st.session_state["chat_thread"].pop()
+            except Exception:
+                pass  # safe to ignore
+
+            # append the actual summary (or a hard fallback)
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": summary
             })
-            # del st.session_state["summary_pending"]
-        
-        if "summary_pending" in st.session_state:
-            del st.session_state["summary_pending"]
-        if "_post_submit" in st.session_state:
-            del st.session_state["_post_submit"]
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": summary
-        })
 
-        active_count=len(get_tasks(goal_id,active_only=True))
-        if active_count<3:
-            msg_endsum="✅ Thanks for reflecting! Your responses are saved. <br><br> Note: If you would like to add more tasks, please <b> Return to the Main Menu > View Goal and Tasks > Add Another Task </b>"
+            # mark as appended and force a repaint BEFORE clearing flags
+            st.session_state["summary_appended"] = True
+            save_reflection_state(needs_restore=True)
+            st.rerun()
+
+        # 3) Third run: now that the summary is visible, clear flags and show end message
         else:
-            msg_endsum="✅ Thanks for reflecting! Your responses are saved."
-        
+            st.session_state.pop("summary_pending", None)
+            st.session_state.pop("_post_submit", None)
+            st.session_state.pop("summary_appended", None)
 
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": msg_endsum
-        })
-        
+            active_count = len(get_tasks(goal_id, active_only=True))
+            if active_count < 3:
+                msg_endsum = ("✅ Thanks for reflecting! Your responses are saved. <br><br> "
+                            "Note: If you would like to add more tasks, please "
+                            "<b> Return to the Main Menu > View Goal and Tasks > Add Another Task </b>")
+            else:
+                msg_endsum = "✅ Thanks for reflecting! Your responses are saved."
+
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": msg_endsum
+            })
+
+            # ensure the thanks message also renders reliably
+            save_reflection_state(needs_restore=False)
+            # optional: st.rerun()  # uncomment if you still see occasional misses
+        # --- end replacement ---
         st.success("Reflection submitted and saved!")
 
         col1, col2 = st.columns(2)
