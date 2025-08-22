@@ -17,10 +17,9 @@ GROUP_TREATMENT_ID = os.environ.get("PROLIFIC_GROUP_TREATMENT_ID")
 PROLIFIC_DRY_RUN = False
 
 # Base Qualtrics URL for the post-survey
-# Example: QUALTRICS_POST_BASE=https://tudelft.fra1.qualtrics.com/jfe/form/SV_bIxdpAN1XjhlegC
 QUALTRICS_POST_BASE = os.environ.get(
     "QUALTRICS_POST_BASE",
-    "https://tudelft.fra1.qualtrics.com/jfe/form/SV_bIxdpAN1XjhlegC"
+    "https://tudelft.fra1.qualtrics.com/jfe/form/SV_1X4F9qn17Zydgc6"
 )
 
 class StatusUpdate(BaseModel):
