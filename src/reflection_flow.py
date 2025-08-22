@@ -35,7 +35,6 @@ progress_numeric = {
 def build_postsurvey_link(user_id: str) -> str:
     """
     Build the Qualtrics Post-Survey link: ?user_id=<PROLIFIC_PID>&group=<0|1>
-    Mirrors the logic from your API code, but used locally in Streamlit.
     """
     base = os.environ.get(
         "QUALTRICS_POST_BASE",
@@ -890,7 +889,8 @@ def run_weekly_reflection():
             # Decide success message based on session
             if week == 2 and session == "b":
                 qx_link = build_postsurvey_link(user_id)
-                success_msg = (
+                banner_body = (
+                    "✅ Reflection submitted and saved!\n\n"
                     "📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. "
                     "At the end of the survey, you'll be redirected back to Prolific to finish."
                 )
@@ -898,46 +898,37 @@ def run_weekly_reflection():
             else:
                 _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
                 show_qx_button = False
+                banner_body = (
+                    "✅ Reflection submitted and saved!\n\n"
+                    "📥 **Recommended:** Download a copy of your updated plan and reflection so you can revisit it anytime.\n\n"
+                    f"{success_msg}"
+                )
 
-            # ----- Final success banner + buttons row (download sits with the other buttons) -----
-            st.success(
-                "✅ Reflection submitted and saved!\n\n"
-                "📥 **Recommended:** Download a copy of your updated plan and reflection so you can revisit it anytime.\n\n"
-                f"{success_msg}"
-            )
-
-            # Download button (as you had)
-            st.download_button(
-                label="Download plan & reflection (.txt)",
-                data=export_payload,
-                file_name=file_name,
-                mime="text/plain",
-                key=f"smart_plan_reflection_{week}_{session}"
-            )
+            st.success(banner_body)
 
             # For Week 2B, also surface a prominent Qualtrics button (no Prolific button here)
             if show_qx_button:
                 st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
-
-            # c1, c2, c3 = st.columns([1, 1, 1])
-            # with c1:
-            st.download_button(
-                label="Download plan & reflection (.txt)",
-                data=export_payload,
-                file_name=file_name,
-                mime="text/plain",
-                key=f"smart_plan_reflection_{week}_{session}"
-            )
-            # with c2:
-            #     if st.button("⬅️ Return to Main Menu"):
-            #         set_state(chat_state="menu", needs_restore=False)
-            #         st.query_params.pop("week", None)
-            #         st.query_params.pop("session", None)
-            #         st.session_state.pop("week", None)
-            #         st.session_state.pop("session", None)
-            #         st.rerun()
-            # with c3:
-            #     st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
+            else:
+                c1, c2, c3 = st.columns([1, 1, 1])
+                with c1:
+                    st.download_button(
+                        label="Download plan & reflection (.txt)",
+                        data=export_payload,
+                        file_name=file_name,
+                        mime="text/plain",
+                        key=f"smart_plan_reflection_{week}_{session}"
+                    )
+                with c2:
+                    if st.button("⬅️ Return to Main Menu"):
+                        set_state(chat_state="menu", needs_restore=False)
+                        st.query_params.pop("week", None)
+                        st.query_params.pop("session", None)
+                        st.session_state.pop("week", None)
+                        st.session_state.pop("session", None)
+                        st.rerun()
+                with c3:
+                    st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
             
 
         for key in list(st.session_state.keys()):
