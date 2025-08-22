@@ -255,7 +255,7 @@ with st.sidebar:
             "⏳ **Please be patient**\n\n"
             "When you click or submit, Goalie might take a moment and the page may refresh. That’s normal! \n\n Just wait for the next message to appear, no need to click or type twice. Double-pressing can sometimes add extra text or jump ahead."
         )
-    with st.expander("💡 Tip & Help", expanded=True):
+    with st.expander("💡 Tip & Help", expanded=False):
         st.write(
             "\n\n• Hit **View Goal & Tasks** to see, download, and add tasks to your plan.  \n\n"
             "• You can set up to 3 weekly tasks. \n\n"

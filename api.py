@@ -5,9 +5,9 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse
 from db import execute_query
 
 PROLIFIC_API_TOKEN = os.environ.get("PROLIFIC_API_TOKEN")
@@ -15,6 +15,13 @@ PROLIFIC_API_BASE  = os.environ.get("PROLIFIC_API_BASE", "https://api.prolific.c
 GROUP_CONTROL_ID   = os.environ.get("PROLIFIC_GROUP_CONTROL_ID")
 GROUP_TREATMENT_ID = os.environ.get("PROLIFIC_GROUP_TREATMENT_ID")
 PROLIFIC_DRY_RUN = False
+
+# Base Qualtrics URL for the post-survey
+# Example: QUALTRICS_POST_BASE=https://tudelft.fra1.qualtrics.com/jfe/form/SV_bIxdpAN1XjhlegC
+QUALTRICS_POST_BASE = os.environ.get(
+    "QUALTRICS_POST_BASE",
+    "https://tudelft.fra1.qualtrics.com/jfe/form/SV_bIxdpAN1XjhlegC"
+)
 
 class StatusUpdate(BaseModel):
     prolific_id: str          # Prolific PID from Qualtrics
@@ -35,7 +42,7 @@ def _add_to_prolific_group(prolific_pid: str, group_code: str) -> tuple[bool, st
     if not group_id:
         return False, "Missing group id env var"
 
-
+    # Example membership endpoint path (check Prolific API docs in your workspace):
     # POST https://api.prolific.com/api/v1/participant-groups/{id}/participants/
     # Body: { "participant_ids": ["<PID>"] }
 
@@ -93,6 +100,47 @@ def update_flag(prolific_id: str, stage: str, group: str | None = None) -> dict:
 
     return {"db_ok": db_ok, "group_ok": group_ok, "group_msg": group_msg}
 
+
+# Fetch user_id and group from your users table by Prolific PID
+def _get_user_and_group_by_pid(pid: str):
+    row = execute_query(
+        "SELECT user_id, group_assignment FROM users WHERE prolific_code = %s",
+        (pid,),
+        fetch="one"
+    )
+    if not row:
+        return None, None
+    return str(row["user_id"]).strip(), str(row["group_assignment"]).strip()
+
+@app.get("/go/postsurvey")
+async def go_postsurvey(req: Request):
+    # Read Prolific PID that Prolific appends automatically
+    pid = req.query_params.get("PROLIFIC_PID")
+
+    # Validate presence of PID
+    if not pid:
+        return PlainTextResponse(
+            "Missing PROLIFIC_PID. Please return to Prolific and open the link again.",
+            status_code=400
+        )
+
+    # Look up user and group
+    user_id, group = _get_user_and_group_by_pid(pid)
+
+    # Handle missing records
+    if not user_id or group not in {"0", "1"}:
+        return PlainTextResponse(
+            "We couldn't find your assignment. Please return to Prolific and re-open the link.",
+            status_code=404
+        )
+
+    # Build Qualtrics target with required parameters
+    sep = "&" if "?" in QUALTRICS_POST_BASE else "?"
+    target = f"{QUALTRICS_POST_BASE}{sep}user_id={pid}&group={group}"
+
+    # 302 redirect to Qualtrics
+    return RedirectResponse(url=target, status_code=302)
+
 @app.post("/api/update_status")
 async def update_status(data: StatusUpdate):
     result = update_flag(data.prolific_id, data.stage, data.group)
@@ -134,3 +182,4 @@ async def get_goal_and_tasks(prolific_id: str):
         "goal": goal_text,
         "tasks": [{"task_text": t["task_text"], "completed": t["completed"]} for t in tasks],
     }
+

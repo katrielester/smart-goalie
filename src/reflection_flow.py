@@ -12,6 +12,8 @@ import json
 from chat_thread import ChatThread
 from db_utils import set_state
 
+separate_studies = False
+
 progress_options = [
     "Not started",
     "Started",
@@ -45,6 +47,41 @@ def save_reflection_state(needs_restore=True):
       **dynamic
     )
 
+def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
+    # normalize
+    s = str(session).lower().strip()
+    b = (batch or "").strip().lower()
+
+    # your mapping (extend/replace with real codes)
+    COMPLETION = {
+        (1, "a", "1"): "W1A-B1-OK123",
+        (1, "b", "1"): "W1B-B1-OK456",
+        (2, "a", "1"): "W2A-OKGEN",
+        (2, "b", "1"): "W2B-OKGEN",
+        (1, "a", "2"): "W1A-OKGEN",
+        (1, "b", "2"): "W1B-OKGEN",
+        (2, "a", "2"): "W2A-OKGEN",
+        (2, "b", "2"): "W2B-OKGEN",
+    }
+    code = COMPLETION.get((int(week), s, b))
+    if not code:
+        base = f"W{week}{s.upper()}" + (f"-{b}" if b else "")
+        code = f"CC-{base}"
+
+    url = f"https://app.prolific.com/submissions/complete?cc={code}"
+
+    if separate_studies:
+        msg = (
+            "✍️ To finish, please submit this completion code on Prolific:\n\n"
+            f"`{code}`\n\n"
+            f"Or click this link: {url}"
+        )
+    else:
+        msg = (
+            "💸 Your bonus payment will be reviewed and released within 24 hours, just like your main study. "
+            "You're now safe to return to Prolific!"
+        )
+    return code, url, msg
 
 def run_weekly_reflection():
     query_params = st.query_params.to_dict()
@@ -129,32 +166,70 @@ def run_weekly_reflection():
     if reflection_exists(user_id, goal_id, week, session) \
         and not st.session_state.get("summary_pending") \
         and not post_submit:
-        st.success(
-            f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
-            "If you'd like to add more tasks, go back to **Main Menu → View Goal and Tasks → Add Another Task**.",
-            icon="✔️"
-        )
-        ack_key = f"reflection_ack_w{week}_s{session}"
 
+        if separate_studies:
+            # Build completion message (week/session + optional batch param ?b=…)
+            batch = st.query_params.get("b")
+            if isinstance(batch, list):
+                batch = batch[0]
+            st.session_state["batch"] = batch or st.session_state.get("batch", "")
+            _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
 
-        col1, col2 = st.columns(2)
-        if col1.button("⬅️ Return to Main Menu"):
-            set_state(
-                chat_state = "menu",
-                needs_restore = False
+            st.success(
+                f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
+                "📥 **Recommended:** Download a copy of your plan & reflection so you can revisit it anytime.\n\n"
+                f"{success_msg}",
+                icon="✔️"
             )
-            st.query_params.pop("week",None)
-            st.query_params.pop("session",None)
-            st.session_state.pop("week",None)
-            st.session_state.pop("session",None)
-            if ack_key in st.session_state:
-                del st.session_state[ack_key]
-            st.rerun()
 
-        with col2:
-            st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
+            # Return actions
+            ack_key = f"reflection_ack_w{week}_s{session}"
+            col1, col2 = st.columns(2)
+            if col1.button("⬅️ Return to Main Menu"):
+                set_state(
+                    chat_state="menu",
+                    needs_restore=False
+                )
+                st.query_params.pop("week", None)
+                st.query_params.pop("session", None)
+                st.session_state.pop("week", None)
+                st.session_state.pop("session", None)
+                if ack_key in st.session_state:
+                    del st.session_state[ack_key]
+                st.rerun()
 
-        return
+            with col2:
+                st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
+
+            return
+
+        else:
+            # ✅ ORIGINAL behavior when separate_studies is False
+            st.success(
+                f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
+                "If you'd like to add more tasks, go back to **Main Menu → View Goal and Tasks → Add Another Task**.",
+                icon="✔️"
+            )
+            ack_key = f"reflection_ack_w{week}_s{session}"
+
+            col1, col2 = st.columns(2)
+            if col1.button("⬅️ Return to Main Menu"):
+                set_state(
+                    chat_state = "menu",
+                    needs_restore = False
+                )
+                st.query_params.pop("week",None)
+                st.query_params.pop("session",None)
+                st.session_state.pop("week",None)
+                st.session_state.pop("session",None)
+                if ack_key in st.session_state:
+                    del st.session_state[ack_key]
+                st.rerun()
+
+            with col2:
+                st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
+
+            return
 
     tasks = get_tasks(goal_id, active_only=True)
     # st.write(tasks)
@@ -783,12 +858,17 @@ def run_weekly_reflection():
             # Persist state for safety
             save_reflection_state(needs_restore=False)
 
+            batch = st.query_params.get("b")
+            if isinstance(batch,list): batch=batch[0]
+            st.session_state["batch"] = batch or st.session_state.get("batch","")
+
+            _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
+
             # ----- Final success banner + buttons row (download sits with the other buttons) -----
             st.success(
                 "✅ Reflection submitted and saved!\n\n"
-                "📥 **Recommended:** Please download your updated plan and this reflection using the button below.\n\n"
-                "💸 Your bonus payment will be reviewed and released within 24 hours, just like your main study. "
-                "You're now safe to return to Prolific!"
+                "📥 **Recommended:** Download a copy of your updated plan and reflection so you can revisit it anytime.\n\n"
+                f"{success_msg}"
             )
 
             # c1, c2, c3 = st.columns([1, 1, 1])
