@@ -12,6 +12,9 @@ import json
 from chat_thread import ChatThread
 from db_utils import set_state
 
+import os
+
+
 separate_studies = False
 
 progress_options = [
@@ -28,6 +31,19 @@ progress_numeric = {
     "Mostly completed": 3,
     "Fully completed": 4,
 }
+
+def build_postsurvey_link(user_id: str) -> str:
+    """
+    Build the Qualtrics Post-Survey link: ?user_id=<PROLIFIC_PID>&group=<0|1>
+    Mirrors the logic from your API code, but used locally in Streamlit.
+    """
+    base = os.environ.get(
+        "QUALTRICS_POST_BASE",
+        "https://tudelft.fra1.qualtrics.com/jfe/form/SV_1X4F9qn17Zydgc6"
+    )
+    group = "1"
+    sep = "&" if "?" in base else "?"
+    return f"{base}{sep}user_id={user_id}&group={group}"
 
 def save_reflection_state(needs_restore=True):
     # also grab any one-off “asked” or “justifying” flags so they survive a reload/restore
@@ -57,11 +73,9 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
         (1, "a", "1"): "W1A-B1-OK123",
         (1, "b", "1"): "W1B-B1-OK456",
         (2, "a", "1"): "W2A-OKGEN",
-        (2, "b", "1"): "W2B-OKGEN",
         (1, "a", "2"): "W1A-OKGEN",
         (1, "b", "2"): "W1B-OKGEN",
         (2, "a", "2"): "W2A-OKGEN",
-        (2, "b", "2"): "W2B-OKGEN",
     }
     code = COMPLETION.get((int(week), s, b))
     if not code:
@@ -167,6 +181,19 @@ def run_weekly_reflection():
         and not st.session_state.get("summary_pending") \
         and not post_submit:
 
+        # --- Special case: Week 2, Session B => send to Qualtrics post-survey ---
+        if week == 2 and session == "b":
+            qx_link = build_postsurvey_link(user_id)
+            st.success(
+                f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
+                "📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. "
+                "At the end of the survey, you'll be redirected back to Prolific to finish.",
+                icon="✔️"
+            )
+            st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
+            return
+
+        # --- Otherwise, keep your existing behavior (separate_studies on/off) ---
         if separate_studies:
             # Build completion message (week/session + optional batch param ?b=…)
             batch = st.query_params.get("b")
@@ -182,7 +209,6 @@ def run_weekly_reflection():
                 icon="✔️"
             )
 
-            # Return actions
             ack_key = f"reflection_ack_w{week}_s{session}"
             col1, col2 = st.columns(2)
             if col1.button("⬅️ Return to Main Menu"):
@@ -204,7 +230,6 @@ def run_weekly_reflection():
             return
 
         else:
-            # ✅ ORIGINAL behavior when separate_studies is False
             st.success(
                 f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
                 "If you'd like to add more tasks, go back to **Main Menu → View Goal and Tasks → Add Another Task**.",
@@ -862,7 +887,17 @@ def run_weekly_reflection():
             if isinstance(batch,list): batch=batch[0]
             st.session_state["batch"] = batch or st.session_state.get("batch","")
 
-            _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
+            # Decide success message based on session
+            if week == 2 and session == "b":
+                qx_link = build_postsurvey_link(user_id)
+                success_msg = (
+                    "📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. "
+                    "At the end of the survey, you'll be redirected back to Prolific to finish."
+                )
+                show_qx_button = True
+            else:
+                _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
+                show_qx_button = False
 
             # ----- Final success banner + buttons row (download sits with the other buttons) -----
             st.success(
@@ -870,6 +905,19 @@ def run_weekly_reflection():
                 "📥 **Recommended:** Download a copy of your updated plan and reflection so you can revisit it anytime.\n\n"
                 f"{success_msg}"
             )
+
+            # Download button (as you had)
+            st.download_button(
+                label="Download plan & reflection (.txt)",
+                data=export_payload,
+                file_name=file_name,
+                mime="text/plain",
+                key=f"smart_plan_reflection_{week}_{session}"
+            )
+
+            # For Week 2B, also surface a prominent Qualtrics button (no Prolific button here)
+            if show_qx_button:
+                st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
 
             # c1, c2, c3 = st.columns([1, 1, 1])
             # with c1:
