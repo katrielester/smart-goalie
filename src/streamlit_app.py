@@ -311,11 +311,21 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         # default to control = "0"
         group = query_params.get("g", ["0"])[0]
         batch = query_params.get("b", ["-1"])[0]
-        create_user(user_id, prolific_code=user_id, group=group, batch=batch)
+        try:
+            batch_int = int(batch)
+        except:
+            batch_int = -1
+        create_user(user_id, prolific_code=user_id, group=group, batch=batch_int)
         st.session_state["group"] = "treatment" if group == "1" else "control"
+        st.session_state["batch"] = batch_int
     else:
         group = user_info["group_assignment"]
         st.session_state["group"] = "treatment" if str(group).strip() == "1" else "control"
+        db_batch = user_info.get("batch", -1)
+        try:
+            st.session_state["batch"] = int(db_batch)
+        except:
+            st.session_state["batch"] = -1
 
     print("🧬 DB restore fingerprint:", st.session_state.get("RESTORED_FROM_DB", "(not restored this run)"))
 
@@ -405,9 +415,14 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
                 [ t["task_text"] for t in tasks ]  # even if tasks is empty, this will still work
                 )
         gr_code = 1 if str(user_info["group_assignment"]).strip() == "1" else 0
+        batch_val = st.session_state.get("batch", user_info.get("batch", -1))
+        try:
+            batch_val = int(batch_val)
+        except:
+            batch_val = -1
         survey_url = (
                 "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
-                f"?user_id={user_info['prolific_code']}&group={gr_code}"
+                f"?user_id={user_info['prolific_code']}&group={gr_code}&batch={batch_val}"
             )
 
         # 1. Heading + warning

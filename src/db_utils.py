@@ -32,6 +32,7 @@ def set_state(**kwargs):
         # routing
         "chat_state",
         "group",
+        "batch",
 
         # SMART‑training
         "smart_step",

@@ -13,6 +13,7 @@ from chat_thread import ChatThread
 from db_utils import build_goal_tasks_text, set_state
 from study_text import study_period_phrase, reflection_invite_phrase
 
+
 def run_goal_setting():
 
     user_id = st.session_state.get("user_id")
@@ -464,9 +465,10 @@ def show_reflection_explanation():
     # st.session_state["download_content"] = content
 
     # 3) Finally, send them to Qualtrics
+    batch_val = st.session_state.get("batch", -1)
     survey_url = (
         "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
-        f"?user_id={user_id}&group={gr_code}"
+        f"?user_id={user_id}&group={gr_code}&batch={batch_val}"
     )
     st.session_state["chat_thread"].append({
         "sender": "Assistant",
