@@ -14,8 +14,8 @@ from db_utils import set_state
 
 import os
 
-
-separate_studies = False
+# CHANGE THIS BEFORE PUBLISHING, ALSO "PILOT" IN RENDER ENVIRONMENT
+separate_studies = True
 
 progress_options = [
     "Not started",

@@ -58,12 +58,12 @@ def execute_query(query, params=(), fetch="one", commit=False):
 # Helper functions
 # -------------------------------
 
-def create_user(user_id, prolific_code=None, group="0"):
+def create_user(user_id, prolific_code=None, group="0", batch="1"):
     execute_query("""
-        INSERT INTO users (user_id, prolific_code, group_assignment)
-        VALUES (%s, %s, %s)
+        INSERT INTO users (user_id, prolific_code, group_assignment, batch)
+        VALUES (%s, %s, %s, %s)
         ON CONFLICT (user_id) DO NOTHING
-    """, (user_id, prolific_code, group),  fetch=None, commit=True)
+    """, (user_id, prolific_code, group, batch),  fetch=None, commit=True)
 
 
 def get_user_info(user_id):
