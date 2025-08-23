@@ -87,7 +87,7 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
         msg = (
             "✍️ To finish, please submit this completion code on Prolific:\n\n"
             f"`{code}`\n\n"
-            f"Or click this link: {url}"
+            f"Or click this [completion link]{url}"
         )
     else:
         msg = (
@@ -223,8 +223,8 @@ def run_weekly_reflection():
                     del st.session_state[ack_key]
                 st.rerun()
 
-            with col2:
-                st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
+            # with col2:
+            #     st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
 
             return
 
@@ -910,7 +910,7 @@ def run_weekly_reflection():
             if show_qx_button:
                 st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
             else:
-                c1, c2, c3 = st.columns([1, 1, 1])
+                c1, c2 = st.columns([1, 1])
                 with c1:
                     st.download_button(
                         label="Download plan & reflection (.txt)",
@@ -927,8 +927,8 @@ def run_weekly_reflection():
                         st.session_state.pop("week", None)
                         st.session_state.pop("session", None)
                         st.rerun()
-                with c3:
-                    st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
+                # with c3:
+                #     st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
             
 
         for key in list(st.session_state.keys()):
