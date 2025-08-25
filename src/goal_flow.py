@@ -42,6 +42,9 @@ def run_goal_setting():
     if user_id and get_goals(user_id):
         st.warning("You've already set a goal. To update it, please go to Main Menu → View Goal and Tasks.")
         return
+    
+    if "chat_thread" not in st.session_state:
+        st.session_state["chat_thread"] = ChatThread(st.session_state.get("user_id", "anon"))
 
     USE_LLM_SCORING=True
 
@@ -133,7 +136,7 @@ def run_goal_setting():
         selected = None
         cols = st.columns(len(step["buttons"]))
         for idx, btn in enumerate(step["buttons"]):
-            if cols[idx].button(btn, key=f"btn_{btn}"):
+            if cols[idx].button(btn, key=f"btn_{st.session_state['goal_step']}_{btn}"):
                 selected = btn
                 break
         if selected:
@@ -307,6 +310,13 @@ def run_add_tasks():
     print("→ task_entry_stage:", st.session_state["task_entry_stage"])
 
     goal_id = st.session_state.get("goal_id_being_worked")
+    if not goal_id:
+        st.session_state["chat_thread"].append({
+            "sender": "Assistant",
+            "message": "I couldn’t find your saved goal yet. Let’s finish your goal first."            })
+        set_state(chat_state="goal_setting", goal_step="initial_goal", message_index=0)
+        st.rerun()
+
     existing_active_tasks = get_tasks(goal_id, active_only=True)
     if len(existing_active_tasks) >= 3:
         st.session_state["chat_thread"].append({
@@ -315,6 +325,7 @@ def run_add_tasks():
         })
         set_state(chat_state="menu", needs_restore=False)
         return
+    
 
     if not isinstance(st.session_state.get("tasks_saved"), list):
         st.session_state["tasks_saved"] = [
