@@ -14,6 +14,10 @@ from db_utils import build_goal_tasks_text, set_state
 from study_text import study_period_phrase, reflection_invite_phrase
 
 
+def _s(key, default=""):
+    v = st.session_state.get(key, default)
+    return default if v is None else v
+
 def is_valid_final_goal(text: str) -> bool:
     if not text:
         return False
@@ -118,13 +122,12 @@ def run_goal_setting():
 
     elif current_index < len(texts):
         current_text = texts[current_index]
-        current_text = current_text.replace(
-            "{current_goal}", st.session_state.get("current_goal", "")
-        )
-        if USE_LLM_SCORING:
-            current_text = current_text.replace(
-                "{llm_feedback}", st.session_state.get("llm_feedback_result", "")
-            )
+        # Normalize any None-y values that must be strings
+        for k in ["current_goal", "llm_feedback_result", "chat_state", "goal_step"]:
+            if st.session_state.get(k) is None:
+                st.session_state[k] = ""
+        if st.session_state.get("message_index") is None:
+            st.session_state["message_index"] = 0
         # Only pop if last message is our placeholder
         if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "🔎 Analyzing your goal…":
             st.session_state["chat_thread"].pop()
