@@ -458,10 +458,19 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         st.info("After you finish the survey, come back and refresh the page to continue.")
 
         # 5. GROUP EXPLANATION
+        batch_val = st.session_state.get("batch", -1)
+
+        if batch_val==1:
+            next_followup = "<b>3 days (Thursday)</b>"
+        elif batch_val==2:
+            next_followup="<b>3 days (Monday)</b>"
+        elif batch_val==3:
+            next_followup="<b>3 days (Friday)</b>"
         if st.session_state["group"] == "treatment":
             st.info(
-                f"Over {study_period_phrase()}, you will receive reflection invitations on Prolific {reflection_invite_phrase()}. "
-                "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created."
+                f"You're all set! Over {study_period_phrase()}, you will receive invitations on Prolific {reflection_invite_phrase()} to brief follow-ups. "
+                f"These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n Your first follow up will arrive in {next_followup}. "
+                "Looking forward to seeing your progress!"
             )
         else:
             st.info(

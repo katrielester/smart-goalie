@@ -8,8 +8,8 @@ def _int_env(name: str, default: int) -> int:
         return default
 
 # CONFIG
-STUDY_DURATION_DAYS = _int_env("STUDY_DURATION_DAYS", 14)  # 14 for full run, e.g. 3 for pilot
-REFLECTIONS_PER_WEEK = _int_env("REFLECTIONS_PER_WEEK", 2) # keep “2” for your design
+STUDY_DURATION_DAYS = 14  # 14 for full run, e.g. 3 for pilot
+REFLECTIONS_PER_WEEK = 2 # keep “2” for your design
 
 def study_period_phrase() -> str:
     """Human-friendly phrase for the consent, screens, and chatbot."""
@@ -31,5 +31,5 @@ def reflection_invite_phrase() -> str:
     if per_wk == 1:
         return "about once a week"
     if per_wk == 2:
-        return "roughly twice a week"
+        return "twice a week"
     return f"about {per_wk} times a week"

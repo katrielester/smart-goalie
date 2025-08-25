@@ -432,12 +432,19 @@ def show_reflection_explanation():
     group = st.session_state.get("group")
     gr_code = 1 if group == "treatment" else 0
     user_id = st.session_state.get("user_id")
+    batch_val = st.session_state.get("batch", -1)
 
+    if batch_val==1:
+        next_followup = "<b>3 days (Thursday)</b>"
+    elif batch_val==2:
+        next_followup="<b>3 days (Monday)</b>"
+    elif batch_val==3:
+        next_followup="<b>3 days (Friday)</b>"
     # 1) Reflection explanation message
     if group == "treatment":
         msg = (
-            f"You're all set! Over {study_period_phrase()}, you will receive reflection invitations on Prolific {reflection_invite_phrase()}. "
-            "These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n"
+            f"You're all set! Over {study_period_phrase()}, you will receive invitations on Prolific {reflection_invite_phrase()} to brief follow-ups. "
+            f"These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n Your first follow up will arrive in {next_followup}. "
             "Looking forward to seeing your progress!"
         )
     else:
@@ -465,7 +472,7 @@ def show_reflection_explanation():
     # st.session_state["download_content"] = content
 
     # 3) Finally, send them to Qualtrics
-    batch_val = st.session_state.get("batch", -1)
+
     survey_url = (
         "https://tudelft.fra1.qualtrics.com/jfe/form/SV_7VP8TpSQSHWq0U6"
         f"?user_id={user_id}&group={gr_code}&batch={batch_val}"
