@@ -473,7 +473,7 @@ goal_setting_flow_score = {
     "input_specific": {
         "text": [
             "📝 Your current goal: <i>{current_goal}</i>",
-            "<b>Try rewriting your goal using the suggestions above.</b>",
+            "<b>Please rewrite your full goal in one complete sentence.</b><br> ⚠️ Do not reply with “Number 1/2/3”, write the full goal in your own words.",
             "✏️ You'll be working on this for <b>2 weeks</b>, so keep it focused, but broad enough to break into smaller tasks later."
         ],
         "input_type": "text",
@@ -510,7 +510,7 @@ goal_setting_flow_score = {
     "input_measurable": {
         "text": [
             "📝 Here's your current goal: <i>{current_goal}</i>",
-            "<b>Try rewriting your goal to include a way to measure progress.</b>",
+            "<b>Please rewrite your full goal in one complete sentence including a way to measure progress.</b><br> ⚠️ Do not reply with “Number 1/2/3”, write the full goal in your own words.",
             "Still keep it broad enough to span the full 2 weeks."
         ],
         "input_type": "text",
@@ -546,7 +546,7 @@ goal_setting_flow_score = {
 
     "input_achievable": {
         "text": [
-            "<b>Try rewriting your goal to feel more doable over the next two weeks.</b>",
+            "<b>Please rewrite your full goal in one complete sentence to feel more doable over the next two weeks.</b><br> ⚠️ Do not reply with “Number 1/2/3”, write the full goal in your own words.",
             "📝 Your current goal: <i>{current_goal}</i>"
         ],
         "input_type": "text",
@@ -583,7 +583,7 @@ goal_setting_flow_score = {
     "input_relevant": {
         "text": [
             "📝 Your current goal: <i>{current_goal}</i>",
-            "<b>Try updating your goal so it connects more clearly to your values or priorities.</b>"
+            "<b>Please rewrite your full goal in one complete sentence so it connects more clearly to your values or priorities.</b><br> ⚠️ Do not reply with “Number 1/2/3”, write the full goal in your own words.",
         ],
         "input_type": "text",
         "next": "check_timebound"
@@ -619,7 +619,7 @@ goal_setting_flow_score = {
     "input_timebound": {
         "text": [
             "📝 Your current goal: <i>{current_goal}</i>",
-            "<b>Try rewriting your goal with a timeframe that fits the 2-week period.</b>"
+            "<b>Please rewrite your full goal in one complete sentence with a timeframe that fits the 2-week period.</b><br> ⚠️ Do not reply with “Number 1/2/3”, write the full goal in your own words."
         ],
         "input_type": "text",
         "next": "finalize_goal"
