@@ -14,31 +14,6 @@ from db_utils import build_goal_tasks_text, set_state
 from study_text import study_period_phrase, reflection_invite_phrase
 
 
-def _s(key, default=""):
-    v = st.session_state.get(key, default)
-    return default if v is None else v
-
-def is_valid_final_goal(text: str) -> bool:
-    if not text:
-        return False
-
-    s = text.strip()
-
-    if len(s) < 10:
-        return False
-
-    if s.isdigit():
-        return False
-
-    if not any(c.isalpha() for c in s):
-        return False
-
-    words = [w for w in s.split() if w.isalpha() or any(ch.isalnum() for ch in w)]
-    if len(words) < 4:
-        return False
-
-    return True
-
 def run_goal_setting():
 
     user_id = st.session_state.get("user_id")
@@ -46,9 +21,6 @@ def run_goal_setting():
     if user_id and get_goals(user_id):
         st.warning("You've already set a goal. To update it, please go to Main Menu → View Goal and Tasks.")
         return
-    
-    if "chat_thread" not in st.session_state:
-        st.session_state["chat_thread"] = ChatThread(st.session_state.get("user_id", "anon"))
 
     USE_LLM_SCORING=True
 
@@ -122,27 +94,25 @@ def run_goal_setting():
 
     elif current_index < len(texts):
         current_text = texts[current_index]
-
-        # Fill placeholders safely (prevents None→TypeError and renders values)
-        current_text = current_text.replace("{current_goal}", _s("current_goal", ""))
-        current_text = current_text.replace("{llm_feedback}", _s("llm_feedback_result", ""))
-
+        current_text = current_text.replace(
+            "{current_goal}", st.session_state.get("current_goal", "")
+        )
+        if USE_LLM_SCORING:
+            current_text = current_text.replace(
+                "{llm_feedback}", st.session_state.get("llm_feedback_result", "")
+            )
         # Only pop if last message is our placeholder
-        if (
-            st.session_state.get("chat_thread")
-            and st.session_state["chat_thread"][-1]["message"] == "🔎 Analyzing your goal…"
-        ):
+        if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "🔎 Analyzing your goal…":
             st.session_state["chat_thread"].pop()
-
         st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
-        st.session_state["message_index"] = (st.session_state.get("message_index", 0) + 1)
+        st.session_state["message_index"] += 1
         st.rerun()
 
     elif step.get("buttons"):
         selected = None
         cols = st.columns(len(step["buttons"]))
         for idx, btn in enumerate(step["buttons"]):
-            if cols[idx].button(btn, key=f"btn_{st.session_state['goal_step']}_{btn}"):
+            if cols[idx].button(btn, key=f"btn_{btn}"):
                 selected = btn
                 break
         if selected:
@@ -234,37 +204,19 @@ def run_goal_setting():
             st.rerun()
 
     elif step.get("complete"):
-        final_goal = st.session_state.get("current_goal", "").strip()
-
-        if not is_valid_final_goal(final_goal):
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": (
-                    "Let’s make that goal clearer so it actually guides your next 2 weeks. "
-                    "Please write a full sentence with purpose and a rough target. "
-                    "Numbers or single words alone won’t work.\n\n"
-                    "Example: <i>“Save $100 in the next 2 weeks by setting aside at least $8 per day and tracking expenses.”</i>"
-                )
-            })
-            set_state(
-                goal_step="edit_goal",
-                message_index=0
-            )
-            st.rerun()
-
         goal_id = save_goal(
             user_id=st.session_state["user_id"],
-            goal_text=final_goal
+            goal_text=st.session_state["current_goal"]
         )
 
         set_state(
-            goal_id_being_worked=goal_id
+            goal_id_being_worked = goal_id
         )
         st.session_state["task_count"] = 0
         st.session_state["tasks_entered"] = []
-
+        
         existing_tasks = [t["task_text"] for t in get_tasks(goal_id)]
-        suggested = suggest_tasks_for_goal(final_goal, existing_tasks)
+        suggested = suggest_tasks_for_goal(st.session_state["current_goal"], existing_tasks)
 
         st.session_state["chat_thread"].extend([
             {
@@ -283,8 +235,8 @@ def run_goal_setting():
             },
             {
                 "sender": "Assistant",
-                "message": "Here are some example tasks you can consider based on your goal:"
-                        + "<br><br>" + suggested
+                "message": "Here are some example tasks you can consider based on your goal:" 
+                    + "<br><br>" + suggested
             },
             {
                 "sender": "Assistant",
@@ -292,22 +244,14 @@ def run_goal_setting():
             }
         ])
         set_state(
-            task_entry_stage="entry",
-            chat_state="add_tasks",
+            task_entry_stage = "entry",
+            chat_state = "add_tasks",
             needs_restore=False
         )
         st.rerun()
 
 
 def run_add_tasks():
-    # initialize keys used in this flow
-    if "candidate_task" not in st.session_state:
-        st.session_state["candidate_task"] = None
-    if "task_entry_stage" not in st.session_state:
-        set_state(task_entry_stage="suggest")
-    if "confirm_saving" not in st.session_state:
-        st.session_state["confirm_saving"] = False
-        
     if st.session_state.get("task_entry_stage") == "reflection_explained":
         show_reflection_explanation()
         return
@@ -316,13 +260,6 @@ def run_add_tasks():
     print("→ task_entry_stage:", st.session_state["task_entry_stage"])
 
     goal_id = st.session_state.get("goal_id_being_worked")
-    if not goal_id:
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": "I couldn’t find your saved goal yet. Let’s finish your goal first."            })
-        set_state(chat_state="goal_setting", goal_step="initial_goal", message_index=0)
-        st.rerun()
-
     existing_active_tasks = get_tasks(goal_id, active_only=True)
     if len(existing_active_tasks) >= 3:
         st.session_state["chat_thread"].append({
@@ -331,7 +268,6 @@ def run_add_tasks():
         })
         set_state(chat_state="menu", needs_restore=False)
         return
-    
 
     if not isinstance(st.session_state.get("tasks_saved"), list):
         st.session_state["tasks_saved"] = [
@@ -397,14 +333,7 @@ def run_add_tasks():
 
     elif st.session_state["task_entry_stage"] == "confirm":
         col1, col2 = st.columns([1, 1])
-
         if col1.button("✅ Yes, save task", key="save_task_btn"):
-            st.session_state["confirm_saving"] = True
-            st.rerun()
-
-        if st.session_state.get("confirm_saving"):
-            st.session_state["confirm_saving"] = False
-
             existing_active_tasks = get_tasks(goal_id, active_only=True)
             if len(existing_active_tasks) >= 3:
                 st.session_state["chat_thread"].append({
@@ -419,20 +348,15 @@ def run_add_tasks():
                     update_user_phase(st.session_state["user_id"], 2)
                     st.rerun()
                 else:
-                    set_state(chat_state="menu", needs_restore=False)
-                    if "task_entry_stage" in st.session_state:
-                        del st.session_state["task_entry_stage"]
+                    set_state(
+                        chat_state    = "menu",
+                        needs_restore = False
+                        )
+                    
+                    del st.session_state["task_entry_stage"]
                     st.rerun()
 
-            task = st.session_state.pop("candidate_task", None)
-            if not task:
-                st.session_state["chat_thread"].append({
-                    "sender": "Assistant",
-                    "message": "I lost track of that task (window refresh or double click). Please re-enter it."
-                })
-                set_state(task_entry_stage="entry")
-                st.rerun()
-
+            task = st.session_state.pop("candidate_task")
             save_task(goal_id, task)
             st.session_state["force_task_handled"] = False
             st.session_state["tasks_saved"].append(task)
@@ -448,7 +372,7 @@ def run_add_tasks():
                     "sender": "Assistant",
                     "message": "Would you like to add another task?"
                 })
-                set_state(task_entry_stage="add_more_decision")
+                set_state(task_entry_stage = "add_more_decision")
                 st.rerun()
             else:
                 st.session_state["chat_thread"].append({
@@ -460,19 +384,22 @@ def run_add_tasks():
                     update_user_phase(st.session_state["user_id"], 2)
                     st.rerun()
                 else:
-                    set_state(chat_state="menu", needs_restore=False)
-                if "task_entry_stage" in st.session_state:
-                    del st.session_state["task_entry_stage"]
+                    set_state(
+                        chat_state    = "menu",
+                        needs_restore = False
+                        )
+                    
+                del st.session_state["task_entry_stage"]
                 st.rerun()
             return
 
-        if col2.button("❌ No, I want to edit", key="edit_task_btn"):
+        if col2.button("❌ No, I want to edit", key="edit_task_btn"): 
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": "No problem! Please enter a new task."
             })
-            set_state(task_entry_stage="entry")
-            st.session_state["candidate_task"] = None
+            set_state(task_entry_stage = "entry")
+            del st.session_state["candidate_task"]
             st.rerun()
     elif st.session_state["task_entry_stage"] == "add_more_decision":
         col1, col2 = st.columns([1, 1])
