@@ -122,17 +122,20 @@ def run_goal_setting():
 
     elif current_index < len(texts):
         current_text = texts[current_index]
-        # Normalize any None-y values that must be strings
-        for k in ["current_goal", "llm_feedback_result", "chat_state", "goal_step"]:
-            if st.session_state.get(k) is None:
-                st.session_state[k] = ""
-        if st.session_state.get("message_index") is None:
-            st.session_state["message_index"] = 0
+
+        # Fill placeholders safely (prevents None→TypeError and renders values)
+        current_text = current_text.replace("{current_goal}", _s("current_goal", ""))
+        current_text = current_text.replace("{llm_feedback}", _s("llm_feedback_result", ""))
+
         # Only pop if last message is our placeholder
-        if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "🔎 Analyzing your goal…":
+        if (
+            st.session_state.get("chat_thread")
+            and st.session_state["chat_thread"][-1]["message"] == "🔎 Analyzing your goal…"
+        ):
             st.session_state["chat_thread"].pop()
+
         st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
-        st.session_state["message_index"] += 1
+        st.session_state["message_index"] = (st.session_state.get("message_index", 0) + 1)
         st.rerun()
 
     elif step.get("buttons"):
