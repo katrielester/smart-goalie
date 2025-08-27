@@ -18,18 +18,18 @@ import os
 separate_studies = True
 
 progress_options = [
-    "Not started",
-    "Started",
-    "Halfway done",
-    "Mostly completed",
-    "Fully completed"
+    "Not at all",
+    "A little",
+    "About half",
+    "Most of it",
+    "All of it"
 ]
 progress_numeric = {
-    "Not started": 0,
-    "Started": 1,
-    "Halfway done": 2,
-    "Mostly completed": 3,
-    "Fully completed": 4,
+    "Not at all": 0,
+    "A little": 1,
+    "About half": 2,
+    "Most of it": 3,
+    "All of it": 4,
 }
 
 def build_postsurvey_link(user_id: str) -> str:
@@ -65,7 +65,7 @@ def save_reflection_state(needs_restore=True):
 def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
     # normalize
     s = str(session).lower().strip()
-    b = (batch or "").strip().lower()
+    b = str(batch).strip().lower()
 
     # your mapping (extend/replace with real codes)
     COMPLETION = {
@@ -78,8 +78,7 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
     }
     code = COMPLETION.get((int(week), s, b))
     if not code:
-        base = f"W{week}{s.upper()}" + (f"-{b}" if b else "")
-        code = f"CC-{base}"
+        code = "COMPLETE"
 
     url = f"https://app.prolific.com/submissions/complete?cc={code}"
 
@@ -87,7 +86,7 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
         msg = (
             "✍️ To finish, please submit this completion code on Prolific:\n\n"
             f"`{code}`\n\n"
-            f"Or click this [completion link]{url}"
+            f"Or click this [completion link]({url})"
         )
     else:
         msg = (
@@ -198,7 +197,7 @@ def run_weekly_reflection():
             batch = st.query_params.get("b")
             if isinstance(batch, list):
                 batch = batch[0]
-            st.session_state["batch"] = batch or st.session_state.get("batch", "")
+            st.session_state["batch"] = batch.strip() if isinstance(batch, str) else "-1"
             _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
 
             st.success(
@@ -884,7 +883,7 @@ def run_weekly_reflection():
 
             batch = st.query_params.get("b")
             if isinstance(batch,list): batch=batch[0]
-            st.session_state["batch"] = batch or st.session_state.get("batch",-1)
+            st.session_state["batch"] = batch.strip() if isinstance(batch, str) else "-1"
 
             # Decide success message based on session
             if week == 2 and session == "b":
