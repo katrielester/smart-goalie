@@ -97,11 +97,11 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
 
 def friendly_gate_msg(active_count: int, max_tasks: int) -> str:
     remaining = max_tasks - active_count
-    more = "one more" if remaining == 1 else "more"
+    more = "one more" if remaining == 1 else "more goals"
     return (
         f"✨ You currently have <b>{active_count}/{max_tasks}</b> active tasks. "
-        f"Adding {more} can help keep momentum next week. "
-        "Would you like to add another now? You can also finish now to get your Prolific code."
+        f"Adding {more} can help keep your momentum next week. "
+        "Would you like to add another now? You can also finish now."
     )
 
 def chat_append_once(state_key: str, html: str):
@@ -118,11 +118,12 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
     active = get_tasks(goal_id, active_only=True)
     active_count = len(active)
 
-    def finish_now_button(label="Finish", key="rt_finish_now_btn"):
+    def finish_now_button(label="Finish now", key="rt_finish_now_btn"):
         if st.button(label, key=key):
-            st.session_state.pop("rt_candidate_task", None)   # ← tidy
+            st.session_state.pop("rt_candidate_task", None)
             st.session_state["rt_gate_cleared"] = True
             st.session_state["rt_gate_active"] = False
+            st.session_state.pop("_post_submit", None)  # ← clear now, not earlier
             save_reflection_state()
             st.rerun()
 
@@ -132,6 +133,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
     if active_count >= max_tasks:
         st.session_state["rt_gate_cleared"] = True
         st.session_state["rt_gate_active"] = False
+        st.session_state.pop("_post_submit", None)
         save_reflection_state()
         return
 
@@ -256,21 +258,15 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
     # DECIDE_MORE → SUGGEST / DONE
     if stage == "decide_more":
         c1, c2 = st.columns(2)
-        if c1.button("➕ Yes, add another", key="rt_add_more_yes"):
-            st.session_state["rt_add_stage"] = "suggest"
-            save_reflection_state()
-            st.rerun()
-            return
+        with c1:
+            if st.button("➕ Yes, add another", key="rt_add_more_yes"):
+                st.session_state["rt_add_stage"] = "suggest"
+                save_reflection_state()
+                st.rerun()
 
-        if c2.button("✅ Finish now — show my Prolific code", key="rt_add_more_no"):
-            st.session_state["rt_add_stage"] = "done"
-            st.session_state["rt_gate_cleared"] = True
-            st.session_state["rt_gate_active"] = False
-            save_reflection_state()
-            st.rerun()
-            return
-
-        finish_now_button(key="rt_finish_decide")
+        # Single, consistent finish entry point:
+        with c2:
+            finish_now_button(label="✅ Finish for now", key="rt_finish_decide")
         return
 
     # DONE
@@ -983,7 +979,6 @@ def run_weekly_reflection():
         else:
             # clear flags
             st.session_state.pop("summary_pending", None)
-            st.session_state.pop("_post_submit", None)
             st.session_state.pop("summary_appended", None)
 
             # ----- Build final text for chat + success banner -----
