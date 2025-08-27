@@ -195,6 +195,17 @@ def run_weekly_reflection():
     goal_id = all_goals[0]["id"]
     goal_text = all_goals[0]["goal_text"]
 
+    # --- STICKY SUCCESS SCREEN: if we've already submitted, pin to final step on rerun ---
+    # (Prevents auto-jump to menu or "already submitted" screen after a download/rerun.)
+    if st.session_state.get("_post_submit"):
+        phase_key = f"reflection_{week}_{session}"
+        st.session_state["chat_state"] = phase_key
+        # Ensure we render the final screen again
+        st.session_state.setdefault(
+            "reflection_step",
+            len(get_tasks(goal_id, active_only=True)) + 6
+        )
+
     if reflection_exists(user_id, goal_id, week, session) \
         and not st.session_state.get("summary_pending", False) \
         and not post_submit \
@@ -791,6 +802,24 @@ def run_weekly_reflection():
 
         # ENTRY
         if stage == "entry":
+            # --- LLM SUGGESTIONS (once) ---
+            if not st.session_state.get("rt_msg_suggest"):
+                existing_tasks = [t["task_text"] for t in get_tasks(goal_id, active_only=True)]
+                reflection_answers = st.session_state.get("reflection_answers", {})
+                suggestions_html = suggest_tasks_with_context(goal_text, reflection_answers, existing_tasks)
+                # Only append if we received suggestions
+                if suggestions_html:
+                    st.session_state["chat_thread"].append({
+                        "sender": "Assistant",
+                        "message": "💡 Ideas for next week you can copy/paste or tweak:<br><br>" + suggestions_html
+                    })
+                # Always add a typing prompt bubble (once)
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "✍️ Type the task you'd like to add (or copy one of the suggestions)."
+                })
+                st.session_state["rt_msg_suggest"] = True
+                save_reflection_state(); st.rerun()
             new_txt = st.chat_input("Type a small task to add", key="rtw_new_task_input")
             if new_txt:
                 new_txt = new_txt.strip()
@@ -802,11 +831,6 @@ def run_weekly_reflection():
                 st.session_state["rt_candidate_task"] = new_txt
                 st.session_state["rt_add_stage"] = "confirm"
                 save_reflection_state(); st.rerun()
-            # # allow backing out
-            # if st.button("⬅️ Back", key="rtw_add_back"):
-            #     st.session_state.pop("rt_candidate_task", None)
-            #     st.session_state["rt_add_stage"] = "prompt"
-            #     save_reflection_state(); st.rerun()
             return
 
         # CONFIRM
@@ -825,7 +849,25 @@ def run_weekly_reflection():
                 save_reflection_state(); st.rerun()
 
             if c2.button("✏️ Edit", key="rtw_add_edit"):
-                st.session_state["rt_add_stage"] = "entry"
+                st.session_state["rt_add_stage"] = "edit"
+                st.session_state["chat_thread"].append({
+                    "sender":"Assistant",
+                    "message":"✏️ Update the task text below."
+                })
+                save_reflection_state(); st.rerun()
+            return
+        
+        if stage =="edit":
+            edited = st.chat_input("Type the updated task here...", key="rtw_edit_input")
+            if edited:
+                edited = edited.strip()
+                st.session_state["chat_thread"].append({"sender":"User","message": edited})
+                st.session_state["chat_thread"].append({
+                    "sender":"Assistant",
+                    "message": f"Save this task?<br><br><b>{new_txt}</b>"
+                })
+                st.session_state["rt_candidate_task"] = edited
+                st.session_state["rt_add_stage"] = "confirm"
                 save_reflection_state(); st.rerun()
             return
     elif st.session_state["reflection_step"] == len(tasks)+ 6:
@@ -904,18 +946,28 @@ def run_weekly_reflection():
                     set_state(chat_state="menu", needs_restore=False)
                     st.query_params.pop("week", None); st.query_params.pop("session", None)
                     st.session_state.pop("week", None);  st.session_state.pop("session", None)
+                    # --- CLEANUP ONLY ON EXPLICIT EXIT ---
+                    st.session_state.pop("_post_submit", None)
+                    for key in list(st.session_state.keys()):
+                        if (
+                            key.startswith("reflection_")
+                            or key.startswith(("ask_", "justifying_", "justified_"))
+                            or key in ["task_progress","reflection_answers","update_task_idx","reflection_q_idx"]
+                            or key.startswith("rt_")
+                        ):
+                            del st.session_state[key]
                     st.rerun()
 
         # Final cleanup (unchanged)
-        st.session_state.pop("_post_submit",None)
-        for key in list(st.session_state.keys()):
-            if (
-                key.startswith("reflection_")
-                or key.startswith(("ask_", "justifying_", "justified_"))
-                or key in ["task_progress","reflection_answers","update_task_idx","reflection_q_idx"]
-                or key.startswith("rt_")
-            ):
-                del st.session_state[key]
+        # st.session_state.pop("_post_submit",None)
+        # for key in list(st.session_state.keys()):
+        #     if (
+        #         key.startswith("reflection_")
+        #         or key.startswith(("ask_", "justifying_", "justified_"))
+        #         or key in ["task_progress","reflection_answers","update_task_idx","reflection_q_idx"]
+        #         or key.startswith("rt_")
+        #     ):
+        #         del st.session_state[key]
         st.stop()
 
     # elif st.session_state["reflection_step"] == len(tasks) + 4:
