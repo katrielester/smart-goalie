@@ -113,6 +113,7 @@ def chat_append_once(state_key: str, html: str):
         st.session_state["chat_thread"].append({"sender": "Assistant", "message": html})
         st.session_state[state_key] = True
         save_reflection_state()
+        st.rerun()
 
 def run_weekly_reflection():
     query_params = st.query_params.to_dict()
@@ -735,7 +736,8 @@ def run_weekly_reflection():
             )
 
         # Save once
-        if not st.session_state.get("reflection_committed"):
+        commit_key = f"ref_committed_w{week}_s{session}"
+        if not st.session_state.get(commit_key):
             reflection_id = save_reflection(user_id, goal_id, reflection_text, week_number=week, session_id=session)
             update_user_phase(user_id, phase + 1)
             for task in tasks:
@@ -751,7 +753,7 @@ def run_weekly_reflection():
                 save_reflection_response(reflection_id, task_id=task_id_for_key, answer_key=answer_key, answer_text=answer)
             delete_reflection_draft(user_id, goal_id, week, session)
 
-            st.session_state["reflection_committed"] = True
+            st.session_state[commit_key] = True
             st.session_state["reflection_text_cached"] = reflection_text  # for summary
             st.session_state["_post_submit"] = True  # <-- prevents early-exit on refresh
             save_reflection_state()
@@ -800,11 +802,11 @@ def run_weekly_reflection():
                 st.session_state["rt_candidate_task"] = new_txt
                 st.session_state["rt_add_stage"] = "confirm"
                 save_reflection_state(); st.rerun()
-            # allow backing out
-            if st.button("⬅️ Back", key="rtw_add_back"):
-                st.session_state.pop("rt_candidate_task", None)
-                st.session_state["rt_add_stage"] = "prompt"
-                save_reflection_state(); st.rerun()
+            # # allow backing out
+            # if st.button("⬅️ Back", key="rtw_add_back"):
+            #     st.session_state.pop("rt_candidate_task", None)
+            #     st.session_state["rt_add_stage"] = "prompt"
+            #     save_reflection_state(); st.rerun()
             return
 
         # CONFIRM
