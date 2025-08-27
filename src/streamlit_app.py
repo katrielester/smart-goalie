@@ -466,6 +466,8 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
             next_followup="<b>3 days (Monday)</b>"
         elif batch_val==3:
             next_followup="<b>3 days (Friday)</b>"
+        else:
+            next_followup="<b>3 days</b>"
         if st.session_state["group"] == "treatment":
             st.info(
                 f"You're all set! Over {study_period_phrase()}, you will receive invitations on Prolific {reflection_invite_phrase()} to brief follow-ups. "
