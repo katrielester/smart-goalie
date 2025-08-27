@@ -47,7 +47,7 @@ def build_postsurvey_link(user_id: str) -> str:
 def save_reflection_state(needs_restore=True):
     ALLOW_RT = {
         "rt_add_stage", "rt_gate_active", "rt_gate_cleared",
-        "rt_suggestions", "rt_msg_intro", "rt_msg_suggest", "rt_msg_prompt_entry"
+        "rt_suggestions", "rt_msg_intro", "rt_msg_suggest", "rt_msg_prompt_entry", "_post_submit"
     }
     dynamic = {
         k: v for k, v in st.session_state.items()
@@ -737,6 +737,7 @@ def run_weekly_reflection():
         # Save once
         if not st.session_state.get("reflection_committed"):
             reflection_id = save_reflection(user_id, goal_id, reflection_text, week_number=week, session_id=session)
+            update_user_phase(user_id, phase + 1)
             for task in tasks:
                 rating = st.session_state["task_progress"].get(task["id"], 0)
                 save_reflection_response(reflection_id, task_id=task["id"], progress_rating=rating)
@@ -748,19 +749,19 @@ def run_weekly_reflection():
                     except Exception:
                         task_id_for_key = None
                 save_reflection_response(reflection_id, task_id=task_id_for_key, answer_key=answer_key, answer_text=answer)
-
-            update_user_phase(user_id, phase + 1)
             delete_reflection_draft(user_id, goal_id, week, session)
 
             st.session_state["reflection_committed"] = True
             st.session_state["reflection_text_cached"] = reflection_text  # for summary
+            st.session_state["_post_submit"] = True  # <-- prevents early-exit on refresh
             save_reflection_state()
 
         # move to "add another?" step
-        st.session_state["rt_add_stage"] = "prompt"  # reuse your existing rt_* keys
-        st.session_state["reflection_step"] = len(tasks) + 5
+        st.session_state["rt_add_stage"] = "prompt"
+        st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 5
         save_reflection_state()
         st.rerun()
+
     elif st.session_state["reflection_step"] == len(tasks) + 5:
         active_count = len(get_tasks(goal_id, active_only=True))
         max_tasks = 3

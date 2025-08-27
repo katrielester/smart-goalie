@@ -61,6 +61,7 @@ def set_state(**kwargs):
         "editing_choice",
         "frozen_tasks",
         "frozen_len",
+        "_post_submit",
     ] + dynamic_flags
     
     # also save the “view goals” trigger if set
