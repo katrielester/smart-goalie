@@ -48,7 +48,7 @@ def save_reflection_state(needs_restore=True):
     # also grab any one-off “asked” or “justifying” flags so they survive a reload/restore
     dynamic = {
         k: v for k, v in st.session_state.items()
-        if k.startswith(("ask_", "justifying_", "justified_", "answered_"))
+        if k.startswith(("ask_", "justifying_", "justified_", "answered_", "rt_"))
         }
     set_state(
       reflection_step    = st.session_state["reflection_step"],
@@ -94,6 +94,191 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
             "You're now safe to return to Prolific!"
         )
     return code, url, msg
+
+def friendly_gate_msg(active_count: int, max_tasks: int) -> str:
+    remaining = max_tasks - active_count
+    more = "one more" if remaining == 1 else "another"
+    return (
+        f"✨ You currently have <b>{active_count}/{max_tasks}</b> active tasks. "
+        f"Adding {more} can help keep momentum next week. "
+        "Would you like to add another now? You can also finish now to get your Prolific code."
+    )
+
+def chat_append_once(state_key: str, html: str):
+    """Append an assistant bubble exactly once (survives reruns)."""
+    if not st.session_state.get(state_key):
+        st.session_state["chat_thread"].append({"sender": "Assistant", "message": html})
+        st.session_state[state_key] = True
+        save_reflection_state()
+
+def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
+    st.session_state.setdefault("rt_add_stage", "intro")
+    st.session_state.setdefault("rt_gate_active", True)
+
+    active = get_tasks(goal_id, active_only=True)
+    active_count = len(active)
+
+    def finish_now_button(label="Finish now — show my Prolific code", key="rt_finish_now_btn"):
+        if st.button(label, key=key):
+            st.session_state.pop("rt_candidate_task", None)   # ← tidy
+            st.session_state["rt_gate_cleared"] = True
+            st.session_state["rt_gate_active"] = False
+            save_reflection_state()
+            st.rerun()
+
+    stage = st.session_state["rt_add_stage"]
+
+    # already full → nothing to add
+    if active_count >= max_tasks:
+        st.session_state["rt_gate_cleared"] = True
+        st.session_state["rt_gate_active"] = False
+        save_reflection_state()
+        return
+
+    # INTRO → SUGGEST (append to chat instead of st.info)
+    if stage == "intro":
+        chat_append_once("rt_msg_intro", friendly_gate_msg(active_count, max_tasks))
+        # cache suggestions once using reflection context
+        if "rt_suggestions" not in st.session_state:
+            try:
+                existing = [t["task_text"] for t in active]
+                suggestions = suggest_tasks_with_context(
+                    goal_text,
+                    st.session_state.get("reflection_answers", {}),
+                    existing
+                ) or ""
+            except Exception:
+                suggestions = ""
+            st.session_state["rt_suggestions"] = suggestions
+
+        # show finish button immediately
+        finish_now_button(key="rt_finish_intro")
+        st.session_state["rt_add_stage"] = "suggest"
+        save_reflection_state()
+        st.rerun()
+        return
+
+    # SUGGEST → ENTRY (chat bubbles + finish)
+    if stage == "suggest":
+        sugg = st.session_state.get("rt_suggestions", "")
+        if sugg and not st.session_state.get("rt_msg_suggest"):
+            st.session_state["chat_thread"].append({
+                "sender":"Assistant",
+                "message":"💡 Based on your goal & reflection, here are some ideas:<br><br>" + sugg
+            })
+            st.session_state["rt_msg_suggest"] = True
+            save_reflection_state()
+
+        chat_append_once("rt_msg_prompt_entry", "Your turn — type one small task you’d like to add.")
+        finish_now_button(key="rt_finish_suggest")
+
+        st.session_state["rt_add_stage"] = "entry"
+        save_reflection_state()
+        st.rerun()
+        return
+
+    # ENTRY → CONFIRM
+    if stage == "entry":
+        task_input = st.chat_input("Type a small task you'd like to add", key="rt_task_entry_input")
+        if task_input:
+            txt = task_input.strip()
+            st.session_state["chat_thread"].append({"sender":"User","message": txt})
+            st.session_state["chat_thread"].append({
+                "sender":"Assistant",
+                "message": f"Save this task?<br><br><b>{txt}</b><br><br>Please confirm below."
+            })
+            st.session_state["rt_candidate_task"] = txt
+            st.session_state["rt_add_stage"] = "confirm"
+            save_reflection_state()
+            st.rerun()
+            return
+
+        finish_now_button(key="rt_finish_entry")
+        return
+
+    # CONFIRM → (SAVE) → DECIDE_MORE / DONE
+    if stage == "confirm":
+        c1, c2 = st.columns(2)
+        if c1.button("✅ Yes, save task", key="rt_save_task_btn"):
+            if len(get_tasks(goal_id, active_only=True)) >= max_tasks:
+                st.session_state["chat_thread"].append({
+                    "sender":"Assistant",
+                    "message":"⚠️ You already have the maximum number of active tasks."
+                })
+                st.session_state["rt_add_stage"] = "done"
+                save_reflection_state()
+                st.rerun()
+                return
+
+            candidate = st.session_state.pop("rt_candidate_task", None)
+            if not candidate:
+                st.session_state["chat_thread"].append({
+                    "sender":"Assistant",
+                    "message":"I lost the pending task due to a refresh. Please re-enter it."
+                })
+                st.session_state["rt_add_stage"] = "entry"
+                save_reflection_state()
+                st.rerun()
+                return
+
+            save_task(goal_id, candidate)
+            st.session_state["chat_thread"].append({
+                "sender":"Assistant",
+                "message": f"Saved: <b>{candidate}</b>"
+            })
+
+            if len(get_tasks(goal_id, active_only=True)) < max_tasks:
+                st.session_state["chat_thread"].append({
+                    "sender":"Assistant",
+                    "message":"Would you like to add another to keep the momentum?"
+                })
+                st.session_state["rt_add_stage"] = "decide_more"
+            else:
+                st.session_state["rt_add_stage"] = "done"
+
+            save_reflection_state()
+            st.rerun()
+            return
+
+        if c2.button("✏️ No, edit it", key="rt_edit_task_btn"):
+            st.session_state["chat_thread"].append({
+                "sender":"Assistant",
+                "message":"No problem! Please enter a new task."
+            })
+            st.session_state["rt_add_stage"] = "entry"
+            save_reflection_state()
+            st.rerun()
+            return
+
+        finish_now_button(key="rt_finish_confirm")
+        return
+
+    # DECIDE_MORE → SUGGEST / DONE
+    if stage == "decide_more":
+        c1, c2 = st.columns(2)
+        if c1.button("➕ Yes, add another", key="rt_add_more_yes"):
+            st.session_state["rt_add_stage"] = "suggest"
+            save_reflection_state()
+            st.rerun()
+            return
+
+        if c2.button("✅ Finish now — show my Prolific code", key="rt_add_more_no"):
+            st.session_state["rt_add_stage"] = "done"
+            st.session_state["rt_gate_cleared"] = True
+            st.session_state["rt_gate_active"] = False
+            save_reflection_state()
+            st.rerun()
+            return
+
+        finish_now_button(key="rt_finish_decide")
+        return
+
+    # DONE
+    if stage == "done":
+        st.session_state["rt_gate_cleared"] = True
+        st.session_state["rt_gate_active"] = False
+        save_reflection_state()
+        return
 
 def run_weekly_reflection():
     query_params = st.query_params.to_dict()
@@ -176,8 +361,9 @@ def run_weekly_reflection():
     goal_text = all_goals[0]["goal_text"]
 
     if reflection_exists(user_id, goal_id, week, session) \
-        and not st.session_state.get("summary_pending") \
-        and not post_submit:
+        and not st.session_state.get("summary_pending", False) \
+        and not post_submit \
+        and not st.session_state.get("rt_gate_active", False):
 
         # --- Special case: Week 2, Session B => send to Qualtrics post-survey ---
         if week == 2 and session == "b":
@@ -194,7 +380,7 @@ def run_weekly_reflection():
         # --- Otherwise, keep your existing behavior (separate_studies on/off) ---
         if separate_studies:
             # Build completion message (week/session + optional batch param ?b=…)
-            batch = st.query_params.get("b")
+            batch = st.query_params.get("b","-1")
             if isinstance(batch, list):
                 batch = batch[0]
             st.session_state["batch"] = batch.strip() if isinstance(batch, str) else "-1"
@@ -798,13 +984,14 @@ def run_weekly_reflection():
             st.session_state.pop("summary_appended", None)
 
             # ----- Build final text for chat + success banner -----
+            # ----- GATE: add-task prompt BEFORE showing completion code -----
             active_count = len(get_tasks(goal_id, active_only=True))
-            if active_count < 3:
-                msg_endsum = (
-                    "✅ Thanks for reflecting! Your responses are saved. "
-                    "If you'd like, you can add more tasks via "
-                    "<b>Main Menu → View Goal and Tasks → Add Another Task</b>."
-                )
+            if active_count < 3 and not st.session_state.get("rt_gate_cleared"):
+                st.session_state["rt_gate_active"] = True  # survives refresh
+                # The intro message is appended inside run_reflection_add_tasks()
+                run_reflection_add_tasks(goal_id, goal_text)  # renders inline UI + chat bubbles
+                st.stop()
+            # ----- END GATE -----
             else:
                 msg_endsum = "✅ Thanks for reflecting! Your responses are saved."
 
@@ -932,15 +1119,14 @@ def run_weekly_reflection():
 
         for key in list(st.session_state.keys()):
             if (
-                key.startswith("reflection_") 
+                key.startswith("reflection_")
                 or key.startswith(("ask_", "justifying_", "justified_"))
-                or key in [
-                "task_progress", "reflection_answers",
-                "update_task_idx", "reflection_q_idx"]
-                ):
+                or key in ["task_progress","reflection_answers","update_task_idx","reflection_q_idx"]
+                or key.startswith("rt_")  # ← add this
+            ):
                 del st.session_state[key]
-        # st.rerun()
         st.stop()
+        # st.rerun()
 
 def init_reflection_session():
     if "chat_thread" not in st.session_state:
