@@ -9,8 +9,7 @@ import json
 
 logger = setup_logger()
 
-DATABASE_URL = "postgresql://smart_goalie_db_user:C2FCtmsiG3XKlApXVBtDO73noloz72LR@dpg-d19rim95pdvs73a49kn0-a.frankfurt-postgres.render.com/smart_goalie_db"
-# DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set")

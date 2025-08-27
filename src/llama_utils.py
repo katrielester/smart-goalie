@@ -35,7 +35,7 @@ def fake_response(goal_text, type_):
         return (
             f"1. Scale it down, e.g., 'Do a first draft' instead of 'Finish the full project'<br>"
             f"2. Choose just one focus area, e.g., 'Just research background sources'<br>"
-            f"3. Limit time, e.g., '{goal_text}, but only for 1 hour per session'"
+            f"3. Limit time, e.g., '{goal_text}, for 1 hour per session'"
         )
     elif type_ == "relevant":
         return (

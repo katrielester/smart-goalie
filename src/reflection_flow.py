@@ -884,7 +884,7 @@ def run_weekly_reflection():
 
             batch = st.query_params.get("b")
             if isinstance(batch,list): batch=batch[0]
-            st.session_state["batch"] = batch or st.session_state.get("batch","")
+            st.session_state["batch"] = batch or st.session_state.get("batch",-1)
 
             # Decide success message based on session
             if week == 2 and session == "b":

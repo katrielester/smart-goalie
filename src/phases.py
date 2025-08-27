@@ -129,16 +129,16 @@ smart_training_flow = {
     },
     "measurable_almost": {
         "text": [
-            "Not bad, it's measurable by whether you finish or not.",
-            "But we can be more detailed by including how many modules or lessons to complete each week."
+            "That's right, finishing the course is measurable as a yes/no outcome.",
+            "But we can strengthen it by by adding smaller milestone, such as how many modules or lessons to complete each week."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "measurable_example"}
     },
     "measurable_right": {
         "text": [
-            "Correct! Course completion is not a clear, trackable outcome.",
-            "Adding lesson or module targets makes it even stronger."
+            "Exactly, while course completion is measurable in a basic sense, it doesn't show progress along the way.",
+            "Adding lesson or module targets makes it much clearer and trackable week by week."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "measurable_example"}
@@ -157,8 +157,7 @@ smart_training_flow = {
     },
     "measurable_explain": {
         "text": [
-            "That's measurable, but we can make it more structured by setting a weekly target.",
-            "This helps track progress along the way."
+            "That's measurable, but weekly targets make it easier to track progress and adjust if needed."
         ],
         "buttons": ["Continue"],
         "next": {"Continue": "achievable_intro"}

@@ -235,18 +235,18 @@ def run_goal_setting():
             },
             {
                 "sender": "Assistant",
-                "message": "Here are some example tasks you can consider based on your goal:" 
+                "message": "Here are some task suggestions you can consider based on your goal:" 
                     + "<br><br>" + suggested
             },
             {
                 "sender": "Assistant",
-                "message": "Now it's your turn! What's one small task you'd like to add first?"
+                "message": "Now it's your turn! What's one small task you'd like to add first?<br> ⚠️ Do not reply with “Number 1/2/3”, write the full task in your own words."
             }
         ])
         set_state(
             task_entry_stage = "entry",
             chat_state = "add_tasks",
-            needs_restore=False
+            needs_restore=True
         )
         st.rerun()
 
@@ -327,7 +327,9 @@ def run_add_tasks():
                            "Please confirm below."
             })
             set_state(
-                task_entry_stage = "confirm"
+                candidate_task=task_input.strip(),
+                task_entry_stage="confirm",
+                needs_restore=True
             )
             st.rerun()
 
@@ -356,7 +358,14 @@ def run_add_tasks():
                     del st.session_state["task_entry_stage"]
                     st.rerun()
 
-            task = st.session_state.pop("candidate_task")
+            task = st.session_state.pop("candidate_task", None)
+            if not task:
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": "I lost the pending task due to a refresh. Please re-enter it."
+                })
+                set_state(task_entry_stage="entry", needs_restore=True)
+                st.rerun
             save_task(goal_id, task)
             st.session_state["force_task_handled"] = False
             st.session_state["tasks_saved"].append(task)
