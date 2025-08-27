@@ -24,7 +24,7 @@ def set_state(**kwargs):
         st.session_state[k] = v
     
     dynamic_flags = [k for k in st.session_state.keys()
-                     if k.startswith(("ask_", "justifying_", "justified_", "answered_"))]
+                     if k.startswith(("ask_", "justifying_", "justified_", "answered_, rt_"))]
     
     keys_to_save = [
         "needs_restore",

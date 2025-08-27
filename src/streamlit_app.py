@@ -454,24 +454,21 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         with col2:
             st.link_button("🚀 Open Pre-Survey",survey_url)
 
-        # 4. Friendly reminder
-        st.info("After you finish the survey, come back and refresh the page to continue.")
-
         # 5. GROUP EXPLANATION
         batch_val = st.session_state.get("batch", -1)
 
         if batch_val==1:
-            next_followup = "<b>3 days (Thursday)</b>"
+            next_followup = "3 days (Thursday)"
         elif batch_val==2:
-            next_followup="<b>3 days (Monday)</b>"
+            next_followup="3 days (Monday)"
         elif batch_val==3:
-            next_followup="<b>3 days (Friday)</b>"
+            next_followup="3 days (Friday)"
         else:
-            next_followup="<b>3 days</b>"
+            next_followup="3 days"
         if st.session_state["group"] == "treatment":
             st.info(
-                f"You're all set! Over {study_period_phrase()}, you will receive invitations on Prolific {reflection_invite_phrase()} to brief follow-ups. "
-                f"These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n Your first follow up will arrive in {next_followup}. "
+                f"After the survey, over {study_period_phrase()}, you will receive invitations on Prolific {reflection_invite_phrase()} to brief follow-ups. "
+                f"These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n Your first follow up will arrive in **{next_followup}**. "
                 "Looking forward to seeing your progress!"
             )
         else:

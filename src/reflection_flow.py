@@ -97,7 +97,7 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
 
 def friendly_gate_msg(active_count: int, max_tasks: int) -> str:
     remaining = max_tasks - active_count
-    more = "one more" if remaining == 1 else "another"
+    more = "one more" if remaining == 1 else "more"
     return (
         f"✨ You currently have <b>{active_count}/{max_tasks}</b> active tasks. "
         f"Adding {more} can help keep momentum next week. "
@@ -118,7 +118,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
     active = get_tasks(goal_id, active_only=True)
     active_count = len(active)
 
-    def finish_now_button(label="Finish now — show my Prolific code", key="rt_finish_now_btn"):
+    def finish_now_button(label="Finish", key="rt_finish_now_btn"):
         if st.button(label, key=key):
             st.session_state.pop("rt_candidate_task", None)   # ← tidy
             st.session_state["rt_gate_cleared"] = True
@@ -973,6 +973,9 @@ def run_weekly_reflection():
 
             # mark as appended and force a repaint BEFORE clearing flags
             st.session_state["summary_appended"] = True
+            st.session_state["rt_gate_active"] = True
+            # keep post-submit true until the gate is cleared
+            st.session_state["_post_submit"] = True
             save_reflection_state(needs_restore=True)
             st.rerun()
 
