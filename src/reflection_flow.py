@@ -762,13 +762,13 @@ def run_weekly_reflection():
         save_reflection_state()
         st.rerun()
 
-    elif st.session_state["reflection_step"] == len(tasks) + 5:
+    elif st.session_state["reflection_step"] == len(get_tasks(goal_id, active_only=True)) + 5:
         active_count = len(get_tasks(goal_id, active_only=True))
         max_tasks = 3
 
         # Already full? Skip straight to summary
         if active_count >= max_tasks:
-            st.session_state["reflection_step"] = len(tasks) + 6
+            st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
             save_reflection_state()
             st.rerun()
 
@@ -905,6 +905,7 @@ def run_weekly_reflection():
                     st.rerun()
 
         # Final cleanup (unchanged)
+        st.session_state.pop("_post_submit",None)
         for key in list(st.session_state.keys()):
             if (
                 key.startswith("reflection_")
