@@ -118,7 +118,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
     active = get_tasks(goal_id, active_only=True)
     active_count = len(active)
 
-    def finish_now_button(label="Finish now", key="rt_finish_now_btn"):
+    def finish_now_button(label="Finish now", key="rtw_finish_now_btn"):
         if st.button(label, key=key):
             st.session_state.pop("rt_candidate_task", None)
             st.session_state["rt_gate_cleared"] = True
@@ -154,7 +154,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             st.session_state["rt_suggestions"] = suggestions
 
         # show finish button immediately
-        finish_now_button(key="rt_finish_intro")
+        finish_now_button(key="rtw_finish_intro")
         st.session_state["rt_add_stage"] = "suggest"
         save_reflection_state()
         st.rerun()
@@ -171,8 +171,8 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             st.session_state["rt_msg_suggest"] = True
             save_reflection_state()
 
-        chat_append_once("rt_msg_prompt_entry", "Your turn — type one small task you’d like to add.")
-        finish_now_button(key="rt_finish_suggest")
+        chat_append_once("rt_msg_prompt_entry", "Your turn, type one small task you’d like to add.")
+        finish_now_button(key="rtw_finish_suggest")
 
         st.session_state["rt_add_stage"] = "entry"
         save_reflection_state()
@@ -195,7 +195,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             st.rerun()
             return
 
-        finish_now_button(key="rt_finish_entry")
+        finish_now_button(key="rtw_finish_entry")
         return
 
     # CONFIRM → (SAVE) → DECIDE_MORE / DONE
@@ -252,7 +252,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             st.rerun()
             return
 
-        finish_now_button(key="rt_finish_confirm")
+        finish_now_button(key="rtw_finish_confirm")
         return
 
     # DECIDE_MORE → SUGGEST / DONE
@@ -266,7 +266,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
 
         # Single, consistent finish entry point:
         with c2:
-            finish_now_button(label="✅ Finish for now", key="rt_finish_decide")
+            finish_now_button(label="✅ Finish for now", key="rtw_finish_decide")
         return
 
     # DONE
