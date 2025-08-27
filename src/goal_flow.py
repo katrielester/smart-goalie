@@ -257,7 +257,7 @@ def run_add_tasks():
         return
 
     print("DEBUG: run_add_tasks() triggered")
-    print("→ task_entry_stage:", st.session_state["task_entry_stage"])
+    print("→ task_entry_stage:", st.session_state.get("task_entry_stage"))
 
     goal_id = st.session_state.get("goal_id_being_worked")
     existing_active_tasks = get_tasks(goal_id, active_only=True)
@@ -366,6 +366,7 @@ def run_add_tasks():
                 })
                 set_state(task_entry_stage="entry", needs_restore=True)
                 st.rerun
+                return
             save_task(goal_id, task)
             st.session_state["force_task_handled"] = False
             st.session_state["tasks_saved"].append(task)
@@ -449,6 +450,8 @@ def show_reflection_explanation():
         next_followup="<b>3 days (Monday)</b>"
     elif batch_val==3:
         next_followup="<b>3 days (Friday)</b>"
+    else:
+        next_followup="<b>3 days</b>"
     # 1) Reflection explanation message
     if group == "treatment":
         msg = (

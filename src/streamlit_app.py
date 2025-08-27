@@ -362,7 +362,7 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
         history = get_chat_history(user_id, current_phase)
 
         # 3) Create a fresh ChatThread and disable DB writes for replay
-        if current_phase in ("view_goals", "add_tasks"):
+        if current_phase in ("view_goals"):
             ct = ChatThread(user_id)
         else:
             orig_append = ChatThread.append
@@ -803,7 +803,8 @@ def run_smart_training():
             message_index = st.session_state["message_index"] + 1,
             needs_restore=first
             )
-        time.sleep(0.3)
+        # delay
+        # time.sleep(0.3)
         st.rerun()
 
     # Step 2: Handle buttons or input after all messages are rendered
