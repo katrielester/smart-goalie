@@ -229,7 +229,7 @@ def run_goal_setting():
                     "Now, let's break your goal into weekly tasks. <br>"
                     "<b>Here's how it works:</b><br>"
                     "- You'll set up to 3 smaller tasks to complete this week<br>"
-                    "- These tasks should help you make progress on your goal<br>"
+                    "- These small tasks will help you make progress and keep momentum on your goal<br>"
                     "Try to keep your tasks small, realistic, and clearly tied to this week's focus."
                 )
             },
@@ -380,14 +380,14 @@ def run_add_tasks():
             if total_active < 3:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": "Would you like to add another task?"
+                    "message": "Would you like to add another task? Tip: adding more tasks can boost your chances of progress!"
                 })
                 set_state(task_entry_stage = "add_more_decision")
                 st.rerun()
             else:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": "You've added 3 tasks! You're all set for now."
+                    "message": "Great job, you've added 3 tasks! You're all set for now."
                 })
                 if get_user_phase(st.session_state["user_id"]) < 2:
                     set_state(task_entry_stage="reflection_explained")

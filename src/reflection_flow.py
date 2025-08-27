@@ -45,10 +45,13 @@ def build_postsurvey_link(user_id: str) -> str:
     return f"{base}{sep}user_id={user_id}&group={group}"
 
 def save_reflection_state(needs_restore=True):
-    # also grab any one-off “asked” or “justifying” flags so they survive a reload/restore
+    ALLOW_RT = {
+        "rt_add_stage", "rt_gate_active", "rt_gate_cleared",
+        "rt_suggestions", "rt_msg_intro", "rt_msg_suggest", "rt_msg_prompt_entry"
+    }
     dynamic = {
         k: v for k, v in st.session_state.items()
-        if k.startswith(("ask_", "justifying_", "justified_", "answered_", "rt_"))
+        if k in ALLOW_RT or k.startswith(("ask_", "justifying_", "justified_", "answered_"))
         }
     set_state(
       reflection_step    = st.session_state["reflection_step"],
@@ -154,7 +157,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             st.session_state["rt_suggestions"] = suggestions
 
         # show finish button immediately
-        finish_now_button(key="rtw_finish_intro")
+        # finish_now_button(key="rtw_finish_intro")
         st.session_state["rt_add_stage"] = "suggest"
         save_reflection_state()
         st.rerun()
@@ -172,7 +175,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             save_reflection_state()
 
         chat_append_once("rt_msg_prompt_entry", "Your turn, type one small task you’d like to add.")
-        finish_now_button(key="rtw_finish_suggest")
+        # finish_now_button(key="rtw_finish_suggest")
 
         st.session_state["rt_add_stage"] = "entry"
         save_reflection_state()
@@ -181,7 +184,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
 
     # ENTRY → CONFIRM
     if stage == "entry":
-        task_input = st.chat_input("Type a small task you'd like to add", key="rt_task_entry_input")
+        task_input = st.chat_input("Type a small task you'd like to add", key="rti_task_entry_input")
         if task_input:
             txt = task_input.strip()
             st.session_state["chat_thread"].append({"sender":"User","message": txt})
@@ -195,13 +198,13 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             st.rerun()
             return
 
-        finish_now_button(key="rtw_finish_entry")
+        # finish_now_button(key="rtw_finish_entry")
         return
 
     # CONFIRM → (SAVE) → DECIDE_MORE / DONE
     if stage == "confirm":
         c1, c2 = st.columns(2)
-        if c1.button("✅ Yes, save task", key="rt_save_task_btn"):
+        if c1.button("✅ Yes, save task", key="rtw_save_task_btn"):
             if len(get_tasks(goal_id, active_only=True)) >= max_tasks:
                 st.session_state["chat_thread"].append({
                     "sender":"Assistant",
@@ -242,7 +245,7 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             st.rerun()
             return
 
-        if c2.button("✏️ No, edit it", key="rt_edit_task_btn"):
+        if c2.button("✏️ No, edit it", key="rtw_edit_task_btn"):
             st.session_state["chat_thread"].append({
                 "sender":"Assistant",
                 "message":"No problem! Please enter a new task."
@@ -252,14 +255,14 @@ def run_reflection_add_tasks(goal_id: int, goal_text: str, max_tasks:int=3):
             st.rerun()
             return
 
-        finish_now_button(key="rtw_finish_confirm")
+        # finish_now_button(key="rtw_finish_confirm")
         return
 
     # DECIDE_MORE → SUGGEST / DONE
     if stage == "decide_more":
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("➕ Yes, add another", key="rt_add_more_yes"):
+            if st.button("➕ Yes, add another", key="rtw_add_more_yes"):
                 st.session_state["rt_add_stage"] = "suggest"
                 save_reflection_state()
                 st.rerun()
