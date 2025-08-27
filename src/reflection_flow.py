@@ -78,6 +78,20 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
         (1, "a", "2"): "PLACEHOLDER",
         (1, "b", "2"): "PLACEHOLDER",
         (2, "a", "2"): "PLACEHOLDER",
+        (1, "a", "3"): "PLACEHOLDER",
+        (1, "b", "3"): "PLACEHOLDER",
+        (2, "a", "3"): "PLACEHOLDER",
+    }
+    SCHEDULE = {
+        (1, "a", "1"): "4 days (Monday)",
+        (1, "b", "1"): "3 days (Thursday)",
+        (2, "a", "1"): "4 days (Monday)",
+        (1, "a", "2"): "4 days (Friday)",
+        (1, "b", "2"): "3 days (Monday)",
+        (2, "a", "2"): "4 days (Friday)",
+        (1, "a", "3"): "4 days (Tuesday)",
+        (1, "b", "3"): "3 days (Friday)",
+        (2, "a", "3"): "4 days (Tuesday)",
     }
     code = COMPLETION.get((int(week), s, b))
     if not code:
@@ -85,11 +99,15 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
 
     url = f"https://app.prolific.com/submissions/complete?cc={code}"
 
+    sched = SCHEDULE.get((int(week), s, b))
+    if not sched:
+        sched = "3-4 days"
+
     if separate_studies:
         msg = (
-            "✍️ To finish, please submit this completion code on Prolific:\n\n"
-            f"`{code}`\n\n"
-            f"Or click this [completion link]({url})"
+            f"🗓️ You will be invited to the next reflection session in **{sched}**.\n"
+            "✍️ To finish, please click this [completion link]({url}) or submit this completion code on Prolific:\n"
+            f"**{code}**\n\n"
         )
     else:
         msg = (
@@ -864,7 +882,7 @@ def run_weekly_reflection():
                 st.session_state["chat_thread"].append({"sender":"User","message": edited})
                 st.session_state["chat_thread"].append({
                     "sender":"Assistant",
-                    "message": f"Save this task?<br><br><b>{new_txt}</b>"
+                    "message": f"Save this task?<br><br><b>{edited}</b>"
                 })
                 st.session_state["rt_candidate_task"] = edited
                 st.session_state["rt_add_stage"] = "confirm"
@@ -875,15 +893,15 @@ def run_weekly_reflection():
         if not st.session_state.get("summary_appended"):
             summary = summarize_reflection(st.session_state.get("reflection_text_cached",""))
             st.session_state["chat_thread"].append({"sender":"Assistant","message": summary})
+            # Final message
+            st.session_state["chat_thread"].append({
+                "sender":"Assistant",
+                "message":"✅ Thanks for reflecting! Your responses are saved."
+            })
             st.session_state["last_reflection_summary"] = summary or ""
             st.session_state["summary_appended"] = True
             save_reflection_state(); st.rerun()
 
-        # Final message
-        st.session_state["chat_thread"].append({
-            "sender":"Assistant",
-            "message":"✅ Thanks for reflecting! Your responses are saved."
-        })
 
         # Build/export (same as your existing code, shortened)
         active_tasks_now = [t["task_text"] for t in get_tasks(goal_id, active_only=True)]
@@ -927,7 +945,7 @@ def run_weekly_reflection():
         st.session_state["batch"] = (batch.strip() if isinstance(batch, str) else "-1")
         if week == 2 and session == "b":
             qx_link = build_postsurvey_link(user_id)
-            st.success("✅ Reflection submitted and saved!\n\n📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now.")
+            st.success("✅ Reflection submitted and saved!\n\n📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. At the end of the survey, you'll be redirected back to Prolific to finish.")
             st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
         else:
             _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
