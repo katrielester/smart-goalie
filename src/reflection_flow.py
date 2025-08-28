@@ -220,13 +220,22 @@ def run_weekly_reflection():
     goal_id = all_goals[0]["id"]
     goal_text = all_goals[0]["goal_text"]
 
-    # --- STICKY SUCCESS SCREEN: if we've already submitted, pin to final step on rerun ---
-    # Only pin after the add-another flow is finished (no rt_add_stage set)
-    if st.session_state.get("_post_submit") and not st.session_state.get("rt_add_stage"):
+    # --- STICKY SUCCESS SCREEN: handle cold reloads safely ---
+    if st.session_state.get("_post_submit"):
         phase_key = f"reflection_{week}_{session}"
         st.session_state["chat_state"] = phase_key
-        set_state(chat_state=st.session_state["chat_state"], needs_restore=True) 
-        st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
+        set_state(chat_state=st.session_state["chat_state"], needs_restore=True)
+
+        add_step   = len(get_tasks(goal_id, active_only=True)) + 5
+        final_step = len(get_tasks(goal_id, active_only=True)) + 6
+
+        if st.session_state.get("summary_appended"):
+            # We are truly done → pin to final
+            st.session_state["reflection_step"] = final_step
+        else:
+            # We are between submit and summary → force the add-another gate
+            st.session_state.setdefault("rt_add_stage", "prompt")
+            st.session_state["reflection_step"] = add_step
 
     if reflection_exists(user_id, goal_id, week, session) \
         and not st.session_state.get("summary_pending", False) \
@@ -819,7 +828,7 @@ def run_weekly_reflection():
         # PROMPT
         if stage == "prompt":
             chat_append_once("rt_simple_add_prompt",
-                f"✨ You have <b>{active_count}/{max_tasks}</b> active tasks. Add another?")
+                f"✨ You have <b>{active_count}/{max_tasks}</b> active tasks. Add another? <br><br> Tip: Adding more tasks can help keep your momentum next week.")
             col1, col2 = st.columns(2)
             if col1.button("➕ Yes, add another task", key="rtw_add_yes"):
                 st.session_state["rt_add_stage"] = "entry"
@@ -908,7 +917,7 @@ def run_weekly_reflection():
             st.session_state["_post_submit"] = True
             save_reflection_state()
         # Append summary exactly once
-        last_msg_exists = any("Thanks for reflecting!" in m["message"] for m in st.session_state["chat_thread"])
+        last_msg_exists = any("Thanks for reflecting!" in (m.get("message") or "") for m in st.session_state["chat_thread"])
         if not st.session_state.get("summary_appended") and not last_msg_exists:
             summary = summarize_reflection(st.session_state.get("reflection_text_cached",""))
             st.session_state["chat_thread"].append({"sender":"Assistant","message": summary})

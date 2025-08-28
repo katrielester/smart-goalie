@@ -63,6 +63,9 @@ def set_state(**kwargs):
         "frozen_tasks",
         "frozen_len",
         "_post_submit",
+        "summary_appended",
+        "reflection_text_cached",
+        "last_reflection_summary",
     ] + dynamic_flags
     
     # also save the “view goals” trigger if set
