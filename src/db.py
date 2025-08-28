@@ -251,6 +251,7 @@ def replace_or_modify_task(goal_id, old_task_id, new_task_text, reason="Modified
     execute_query(
         "UPDATE tasks SET status = 'archived' WHERE id = %s",
         (old_task_id,),
+        fetch=None,
         commit=True
         )
         
