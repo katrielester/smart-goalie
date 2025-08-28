@@ -239,6 +239,30 @@ def run_weekly_reflection():
         "_post_submit=", st.session_state.get("_post_submit"),
         "summary_appended=", st.session_state.get("summary_appended"),
         "rt_add_stage=", st.session_state.get("rt_add_stage"))
+        
+        if reflection_exists(user_id, goal_id, week, session) and not st.session_state.get("rt_add_stage"):
+            batch = st.query_params.get("b", "-1")
+            if isinstance(batch, list):
+                batch = batch[0]
+            st.session_state["batch"] = batch.strip() if isinstance(batch, str) else "-1"
+
+            if week == 2 and session == "b":
+                qx_link = build_postsurvey_link(user_id)
+                st.success(
+                    f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
+                    "📣 **Final step:** Please complete the **Post-Survey** on Qualtrics.",
+                    icon="✔️"
+                )
+                st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
+            else:
+                _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
+                st.success(
+                    f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
+                    "📥 **Recommended:** Download a copy of your plan & reflection so you can revisit it anytime.\n\n"
+                    f"{success_msg}",
+                    icon="✔️"
+                )
+            return
 
         if st.session_state.get("summary_appended"):
             # Truly done → pin to final (idempotent)
