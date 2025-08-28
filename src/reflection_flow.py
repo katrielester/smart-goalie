@@ -180,9 +180,6 @@ def run_weekly_reflection():
     elif st.session_state["group"] != "treatment":
         st.warning("Reflections are only available for the treatment group.")
         st.stop()
-    elif not st.session_state.get("chat_state", "").startswith("reflection"):
-        st.warning("You're not currently in reflection mode.")
-        st.stop()
 
     user_id = st.session_state["user_id"]
     week_val = query_params.get("week") if "week" in query_params else st.session_state.get("week", 1)
@@ -191,27 +188,27 @@ def run_weekly_reflection():
         week_val = week_val[0]
     if isinstance(sess_val, list):
         sess_val = sess_val[0]
-    
+
     try:
         week = int(str(week_val).strip())
     except Exception:
         st.error("Invalid reflection session.")
         st.stop()
-    
+
     session = str(sess_val or "a").strip().lower()
-    
-    # Hard guard against invalid sessions
     if (week, session) not in valid_sessions:
         st.error("Invalid reflection session.")
         st.stop()
 
+    # 👇 Force reflection mode for this run BEFORE any guard could stop us
     st.session_state["week"] = week
     st.session_state["session"] = session
+    st.session_state["chat_state"] = f"reflection_{week}_{session}"
 
     post_submit = st.session_state.get("_post_submit", False)
 
-    phase_key = f"reflection_{week}_{session}"
-    st.session_state["chat_state"] = phase_key
+    # 💡 Now REMOVE the old "not in reflection mode" guard entirely.
+    # That guard is redundant since this function itself puts us in reflection mode.
 
     phase = get_user_phase(user_id)
 
