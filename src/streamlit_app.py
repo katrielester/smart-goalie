@@ -335,14 +335,19 @@ if st.session_state.get("authenticated") and "chat_state" not in st.session_stat
     w = q.get("week", [None])[0] if isinstance(q.get("week"), list) else q.get("week")
     s = q.get("session", [None])[0] if isinstance(q.get("session"), list) else q.get("session")
 
+    # 🔒 Hard deep-link override: force the target reflection as current phase
+    if w and s:
+        phase_key = f"reflection_{str(w).strip()}_{str(s).strip().lower()}"
+        set_state(chat_state=phase_key, week=int(w), session=str(s).strip().lower(), needs_restore=True)
+        # refresh snapshot so the restore below pulls this phase
+        saved = get_session_state(user_id) or {}
+
     deep_link_present = bool(w and s)
     deep_target = f"reflection_{str(w).strip()}_{str(s).strip().lower()}" if deep_link_present else None
     saved_chat_state = saved.get("chat_state")
 
     # Only skip restore if there is a deep link AND it points to a different reflection
     should_skip_restore = deep_link_present and (deep_target != saved_chat_state)
-
-    print ("restored_done" in st.session_state)
 
     if saved.get("needs_restore") and "restored_done" not in st.session_state and not should_skip_restore:
         logger.info("🔄 Restoring session from DB | user_id=%s | restore_id=%s", user_id, restore_id)
@@ -1081,12 +1086,12 @@ if st.session_state.get("group") == "treatment" and w and s:
                         session=s,
                         needs_restore=True
                     )
-                else:
-                    # Already submitted, drop week/session so user can use the menu
-                    st.toast(f"You have already submitted reflection session for Week {w}, Session {s}!", icon="✅")
-                    st.query_params.pop("week", None)
-                    st.query_params.pop("session", None)
-                    set_state(chat_state="menu", needs_restore=False)
+                # else:
+                #     # Already submitted, drop week/session so user can use the menu
+                #     st.toast(f"You have already submitted reflection session for Week {w}, Session {s}!", icon="✅")
+                #     st.query_params.pop("week", None)
+                #     st.query_params.pop("session", None)
+                #     set_state(chat_state="menu", needs_restore=False)
             else:
                 # No goal yet, reflection makes no sense; clear params and stay menu
                 st.query_params.pop("week", None)
