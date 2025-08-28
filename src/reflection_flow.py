@@ -851,7 +851,7 @@ def run_weekly_reflection():
                 if suggestions_html:
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
-                        "message": "💡 Ideas for next week you can copy/paste or tweak:<br><br>" + suggestions_html
+                        "message": "💡 Ideas for next week's task:<br><br>" + suggestions_html
                     })
                 # Always add a typing prompt bubble (once)
                 st.session_state["chat_thread"].append({
@@ -882,8 +882,10 @@ def run_weekly_reflection():
                     save_task(goal_id, candidate)
                     st.session_state["chat_thread"].append({"sender":"Assistant","message": f"Saved: <b>{candidate}</b>"})
                 # After saving, either ask again (if still < 3) or finish
-                if len(get_tasks(goal_id, active_only=True)) < max_tasks:
+                if len(get_tasks(goal_id, active_only=True)) < 3:
                     st.session_state["rt_add_stage"] = "prompt"
+                    st.session_state["rt_msg_suggest"] = False
+                    st.session_state["chat_thread"].append({"sender":"Assistant","message": f"Would you like to add another?"})
                 else:
                     st.session_state["_post_submit"] = True
                     st.session_state.pop("rt_add_stage", None)
