@@ -266,7 +266,7 @@ def run_weekly_reflection():
 
             ack_key = f"reflection_ack_w{week}_s{session}"
             col1, col2 = st.columns(2)
-            if col1.button("⬅️ Return to Main Menu"):
+            if col1.button("⬅️ Return to Main Menu", key="menu_1"):
                 set_state(
                     chat_state="menu",
                     needs_restore=False
@@ -293,7 +293,7 @@ def run_weekly_reflection():
             ack_key = f"reflection_ack_w{week}_s{session}"
 
             col1, col2 = st.columns(2)
-            if col1.button("⬅️ Return to Main Menu"):
+            if col1.button("⬅️ Return to Main Menu", key="menu_2"):
                 set_state(
                     chat_state = "menu",
                     needs_restore = False
@@ -973,7 +973,7 @@ def run_weekly_reflection():
                     key=f"smart_plan_reflection_{week}_{session}"
                 )
             with c2:
-                if st.button("⬅️ Return to Main Menu"):
+                if st.button("⬅️ Return to Main Menu", key="menu_3"):
                     set_state(chat_state="menu", needs_restore=False)
                     st.query_params.pop("week", None); st.query_params.pop("session", None)
                     st.session_state.pop("week", None);  st.session_state.pop("session", None)
