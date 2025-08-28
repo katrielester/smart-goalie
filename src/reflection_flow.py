@@ -239,30 +239,6 @@ def run_weekly_reflection():
         "_post_submit=", st.session_state.get("_post_submit"),
         "summary_appended=", st.session_state.get("summary_appended"),
         "rt_add_stage=", st.session_state.get("rt_add_stage"))
-        
-        if reflection_exists(user_id, goal_id, week, session) and not st.session_state.get("rt_add_stage"):
-            batch = st.query_params.get("b", "-1")
-            if isinstance(batch, list):
-                batch = batch[0]
-            st.session_state["batch"] = batch.strip() if isinstance(batch, str) else "-1"
-
-            if week == 2 and session == "b":
-                qx_link = build_postsurvey_link(user_id)
-                st.success(
-                    f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
-                    "📣 **Final step:** Please complete the **Post-Survey** on Qualtrics.",
-                    icon="✔️"
-                )
-                st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
-            else:
-                _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
-                st.success(
-                    f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
-                    "📥 **Recommended:** Download a copy of your plan & reflection so you can revisit it anytime.\n\n"
-                    f"{success_msg}",
-                    icon="✔️"
-                )
-            return
 
         if st.session_state.get("summary_appended"):
             # Truly done → pin to final (idempotent)
@@ -275,7 +251,7 @@ def run_weekly_reflection():
             # Already at or past the add gate → do NOT re-create rt_add_stage
             # and do NOT downgrade reflection_step
             pass
-        
+
 
     if reflection_exists(user_id, goal_id, week, session) \
         and not st.session_state.get("summary_pending", False) \
@@ -1029,288 +1005,22 @@ def run_weekly_reflection():
                     mime="text/plain",
                     key=f"smart_plan_reflection_{week}_{session}"
                 )
-            with c2:
-                if st.button("⬅️ Return to Main Menu", key="menu_3"):
-                    set_state(chat_state="menu", needs_restore=False)
-                    st.query_params.pop("week", None); st.query_params.pop("session", None)
-                    st.session_state.pop("week", None);  st.session_state.pop("session", None)
-                    # --- CLEANUP ONLY ON EXPLICIT EXIT ---
-                    st.session_state.pop("_post_submit", None)
-                    for key in list(st.session_state.keys()):
-                        if (
-                            key.startswith("reflection_")
-                            or key.startswith(("ask_", "justifying_", "justified_"))
-                            or key in ["task_progress","reflection_answers","update_task_idx","reflection_q_idx"]
-                            or key.startswith("rt_")
-                        ):
-                            del st.session_state[key]
-                    st.rerun()
-
-        # Final cleanup (unchanged)
-        # st.session_state.pop("_post_submit",None)
-        # for key in list(st.session_state.keys()):
-        #     if (
-        #         key.startswith("reflection_")
-        #         or key.startswith(("ask_", "justifying_", "justified_"))
-        #         or key in ["task_progress","reflection_answers","update_task_idx","reflection_q_idx"]
-        #         or key.startswith("rt_")
-        #     ):
-        #         del st.session_state[key]
-        st.stop()
-
-    # elif st.session_state["reflection_step"] == len(tasks) + 4:
-    #     task_results = []
-    #     for task in tasks:  
-    #         task_id = task["id"]
-    #         task_text = task["task_text"]
-    #         val = st.session_state["task_progress"].get(task_id, 0)
-    #         label = [k for k, v in progress_numeric.items() if v == val][0]
-    #         task_results.append(f"{task_text}: {label}")
-    #     progress_str = "<br>".join(task_results)
-
-    #     answers = st.session_state["reflection_answers"]
-    #     alignment = answers.get("task_alignment", None)
-    #     if "what" in answers:
-    #         reflection_text = (
-    #             f"Task Progress:<br>{progress_str}<br><br>"
-    #             + (f"ALIGNMENT: {alignment}<br><br>" if alignment else "")
-    #             + f"WHAT: {answers.get('what')}<br>SO WHAT: {answers.get('so_what')}<br>NOW WHAT: {answers.get('now_what')}<br>"
-    #         )
-    #     else:
-    #         reflection_text = (
-    #             f"Task Progress:<br>{progress_str}<br><br>"
-    #             + (f"ALIGNMENT: {alignment}<br><br>" if alignment else "")
-    #             + f"OUTCOME: {answers.get('outcome')}<br>OBSTACLE: {answers.get('obstacle')}<br>PLAN: {answers.get('plan')}<br>"
-    #         )
-
-    #     reflection_id = save_reflection(user_id, goal_id, reflection_text, week_number=week, session_id=session)
-
-    #     # Save task progress
-    #     for task in tasks:
-    #         task_id = task["id"]
-    #         rating = st.session_state["task_progress"].get(task_id, 0)
-    #         save_reflection_response(reflection_id, task_id=task_id, progress_rating=rating)
-            
-                
-    #     # Save open-text question answers
-    #     for key, answer in st.session_state["reflection_answers"].items():
-    #         task_id_for_key = None
-    #         answer_key = key
-    #         if key.startswith("justification_"):
-    #             try:
-    #                 task_id_for_key = int(key.split("_",1)[1])
-    #                 answer_key = "justification"
-    #             except Exception:
-    #                 task_id_for_key = None
-
-    #         save_reflection_response(reflection_id, task_id=task_id_for_key, answer_key=answer_key, answer_text=answer)
-
-    #     update_user_phase(user_id, phase + 1)
-
-    #     active_tasks = get_tasks(goal_id)
-    #     if not active_tasks:
-    #         st.warning("⚠️ You have no active tasks left. Please add new tasks before the next reflection.")
-    #         if st.button("➕ Add Tasks Now"):
-    #             set_state(
-    #                 chat_state = "add_tasks",
-    #                 needs_restore = False
-    #             )
-    #             st.rerun()
-
-    #     delete_reflection_draft(user_id, goal_id, week, session)
-
-    #     # summary = summarize_reflection(reflection_text)
-
-    #     # 1) First run: show placeholder (unchanged)
-    #     if "summary_pending" not in st.session_state:
-    #         st.session_state["chat_thread"].append({
-    #             "sender": "Assistant",
-    #             "message": "🤖 Summarizing your reflection…"
-    #         })
-    #         st.session_state["_post_submit"] = True
-    #         st.session_state["summary_pending"] = True
-    #         # make sure the placeholder shows
-    #         save_reflection_state(needs_restore=True)
-    #         st.rerun()
-
-    #     # 2) Second run: replace placeholder with the summary, then rerun to repaint
-    #     elif not st.session_state.get("summary_appended", False):
-    #         summary = summarize_reflection(reflection_text)
-
-    #         # defensively pop the placeholder if it's last
-    #         try:
-    #             last = st.session_state["chat_thread"][-1]
-    #             if isinstance(last, dict) and last.get("message", "").startswith("🤖 Summarizing"):
-    #                 st.session_state["chat_thread"].pop()
-    #         except Exception:
-    #             pass  # safe to ignore
-
-    #         # append the actual summary (or a hard fallback)
-    #         st.session_state["chat_thread"].append({
-    #             "sender": "Assistant",
-    #             "message": summary
-    #         })
-
-    #         st.session_state["last_reflection_summary"] = summary or ""
-
-    #         # mark as appended and force a repaint BEFORE clearing flags
-    #         st.session_state["summary_appended"] = True
-    #         st.session_state["rt_gate_active"] = True
-    #         # keep post-submit true until the gate is cleared
-    #         st.session_state["_post_submit"] = True
-    #         save_reflection_state(needs_restore=True)
-    #         st.rerun()
-
-    #     # 3) Third run: now that the summary is visible, clear flags and show end UI
-    #     else:
-    #         # clear flags
-    #         st.session_state.pop("summary_pending", None)
-    #         st.session_state.pop("summary_appended", None)
-
-    #         # ----- Build final text for chat + success banner -----
-    #         # ----- GATE: add-task prompt BEFORE showing completion code -----
-    #         active_count = len(get_tasks(goal_id, active_only=True))
-    #         if active_count < 3 and not st.session_state.get("rt_gate_cleared"):
-    #             st.session_state["rt_gate_active"] = True  # survives refresh
-    #             # The intro message is appended inside run_reflection_add_tasks()
-    #             run_reflection_add_tasks(goal_id, goal_text)  # renders inline UI + chat bubbles
-    #             st.stop()
-    #         # ----- END GATE -----
-    #         else:
-    #             msg_endsum = "✅ Thanks for reflecting! Your responses are saved."
-
-    #         # Put the final message in the chat thread (keeps your transcript tidy)
-    #         st.session_state["chat_thread"].append({
-    #             "sender": "Assistant",
-    #             "message": msg_endsum
-    #         })
-
-    #         # ---------- DOWNLOAD (plan + reflection) content ----------
-    #         # Gather active tasks for the new plan
-    #         active_tasks = [t["task_text"] for t in get_tasks(goal_id, active_only=True)]
-
-    #         # Progress (clean list; safe label mapping)
-    #         def progress_label(v):
-    #             return next((k for k, vv in progress_numeric.items() if vv == v), "Unknown")
-
-    #         progress_lines = []
-    #         for t in get_tasks(goal_id, active_only=False):
-    #             tid = t["id"]
-    #             if tid in st.session_state["task_progress"]:
-    #                 v = st.session_state["task_progress"][tid]
-    #                 progress_lines.append(f"- {t['task_text']}: {progress_label(v)}")
-
-    #         # Open-ended answers
-    #         answers = st.session_state.get("reflection_answers", {})
-    #         def label_for(k: str) -> str:
-    #             if k.startswith("justification_"): return "Task justification"
-    #             mapping = {
-    #                 "what": "What helped",
-    #                 "so_what": "Why it worked",
-    #                 "now_what": "Keep doing next week",
-    #                 "outcome": "Desired outcome",
-    #                 "obstacle": "Obstacle",
-    #                 "plan": "Plan for obstacle",
-    #                 "task_alignment": "Goal–task alignment",
-    #             }
-    #             return mapping.get(k, k)
-
-    #         answers_block = [f"{label_for(k)}: {answers[k]}" for k in sorted(answers.keys())]
-
-    #         # LLM summary (if any)
-    #         llm_summary = st.session_state.get("last_reflection_summary", "").strip()
-
-    #         # Compose export body
-    #         export_text = []
-    #         export_text.append("SMART Goal & Weekly Plan — Download\n")
-    #         export_text.append(f"Week {week}, Session {session.upper()}\n")
-    #         export_text.append("-" * 40 + "\n")
-    #         export_text.append(f"GOAL:\n{goal_text}\n\n")
-    #         export_text.append("THIS WEEK'S PLAN (Active Tasks):\n")
-    #         if active_tasks:
-    #             for i, txt in enumerate(active_tasks, 1):
-    #                 export_text.append(f"{i}. {txt}\n")
-    #         else:
-    #             export_text.append("(no active tasks)\n")
-    #         export_text.append("\nPROGRESS THIS WEEK:\n")
-    #         if progress_lines:
-    #             export_text.extend([line + "\n" for line in progress_lines])
-    #         else:
-    #             export_text.append("(no progress entries)\n")
-    #         export_text.append("\nREFLECTION ANSWERS:\n")
-    #         if answers_block:
-    #             export_text.extend([a + "\n" for a in answers_block])
-    #         else:
-    #             export_text.append("(no answers)\n")
-    #         if llm_summary:
-    #             export_text.append("\n")
-    #             export_text.append(llm_summary + "\n")
-    #         export_payload = "".join(export_text)
-    #         file_name = f"plan_reflection_w{week}{session}.txt"
-    #         # ---------- END content build ----------
-
-    #         # Persist state for safety
-    #         save_reflection_state(needs_restore=False)
-
-    #         batch = st.query_params.get("b")
-    #         if isinstance(batch,list): batch=batch[0]
-    #         st.session_state["batch"] = batch.strip() if isinstance(batch, str) else "-1"
-
-    #         # Decide success message based on session
-    #         if week == 2 and session == "b":
-    #             qx_link = build_postsurvey_link(user_id)
-    #             banner_body = (
-    #                 "✅ Reflection submitted and saved!\n\n"
-    #                 "📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. "
-    #                 "At the end of the survey, you'll be redirected back to Prolific to finish."
-    #             )
-    #             show_qx_button = True
-    #         else:
-    #             _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
-    #             show_qx_button = False
-    #             banner_body = (
-    #                 "✅ Reflection submitted and saved!\n\n"
-    #                 "📥 **Recommended:** Download a copy of your updated plan and reflection so you can revisit it anytime.\n\n"
-    #                 f"{success_msg}"
-    #             )
-
-    #         st.success(banner_body)
-
-    #         # For Week 2B, also surface a prominent Qualtrics button (no Prolific button here)
-    #         if show_qx_button:
-    #             st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
-    #         else:
-    #             c1, c2 = st.columns([1, 1])
-    #             with c1:
-    #                 st.download_button(
-    #                     label="Download plan & reflection (.txt)",
-    #                     data=export_payload,
-    #                     file_name=file_name,
-    #                     mime="text/plain",
-    #                     key=f"smart_plan_reflection_{week}_{session}"
-    #                 )
-    #             with c2:
-    #                 if st.button("⬅️ Return to Main Menu"):
-    #                     set_state(chat_state="menu", needs_restore=False)
-    #                     st.query_params.pop("week", None)
-    #                     st.query_params.pop("session", None)
-    #                     st.session_state.pop("week", None)
-    #                     st.session_state.pop("session", None)
-    #                     st.rerun()
-    #             # with c3:
-    #             #     st.link_button("⬅️ Return to Prolific", "https://app.prolific.com/participant")
-            
-
-    #     for key in list(st.session_state.keys()):
-    #         if (
-    #             key.startswith("reflection_")
-    #             or key.startswith(("ask_", "justifying_", "justified_"))
-    #             or key in ["task_progress","reflection_answers","update_task_idx","reflection_q_idx"]
-    #             or key.startswith("rt_")  # ← add this
-    #         ):
-    #             del st.session_state[key]
-    #     st.stop()
-    #     # st.rerun()
+            # with c2:
+            #     if st.button("⬅️ Return to Main Menu", key="menu_3"):
+            #         set_state(chat_state="menu", needs_restore=False)
+            #         st.query_params.pop("week", None); st.query_params.pop("session", None)
+            #         st.session_state.pop("week", None);  st.session_state.pop("session", None)
+            #         # --- CLEANUP ONLY ON EXPLICIT EXIT ---
+            #         st.session_state.pop("_post_submit", None)
+            #         for key in list(st.session_state.keys()):
+            #             if (
+            #                 key.startswith("reflection_")
+            #                 or key.startswith(("ask_", "justifying_", "justified_"))
+            #                 or key in ["task_progress","reflection_answers","update_task_idx","reflection_q_idx"]
+            #                 or key.startswith("rt_")
+            #             ):
+            #                 del st.session_state[key]
+            #         st.rerun()
 
 def init_reflection_session():
     if "chat_thread" not in st.session_state:
