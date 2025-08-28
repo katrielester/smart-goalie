@@ -226,16 +226,30 @@ def run_weekly_reflection():
         st.session_state["chat_state"] = phase_key
         set_state(chat_state=st.session_state["chat_state"], needs_restore=True)
 
-        add_step   = len(get_tasks(goal_id, active_only=True)) + 5
-        final_step = len(get_tasks(goal_id, active_only=True)) + 6
+        active_now = len(get_tasks(goal_id, active_only=True))
+        add_step   = active_now + 5
+        final_step = active_now + 6
+        cur_step   = st.session_state.get("reflection_step", 0)
 
         if st.session_state.get("summary_appended"):
-            # We are truly done → pin to final
+            # Truly done → pin to final (idempotent)
             st.session_state["reflection_step"] = final_step
-        else:
-            # We are between submit and summary → force the add-another gate
+        elif cur_step < add_step:
+            # Only the first time after submit, move to the add-gate
             st.session_state.setdefault("rt_add_stage", "prompt")
             st.session_state["reflection_step"] = add_step
+        else:
+            # Already at or past the add gate → do NOT re-create rt_add_stage
+            # and do NOT downgrade reflection_step
+            pass
+        
+    print("DBG sticky:",
+      "cur=", st.session_state.get("reflection_step"),
+      "add=", add_step,
+      "final=", final_step,
+      "_post_submit=", st.session_state.get("_post_submit"),
+      "summary_appended=", st.session_state.get("summary_appended"),
+      "rt_add_stage=", st.session_state.get("rt_add_stage"))
 
     if reflection_exists(user_id, goal_id, week, session) \
         and not st.session_state.get("summary_pending", False) \
