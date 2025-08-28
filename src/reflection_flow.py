@@ -65,6 +65,7 @@ def save_reflection_state(needs_restore=True):
         if k in ALLOW_RT or k.startswith(("ask_", "justifying_", "justified_", "answered_"))
         }
     set_state(
+        chat_state          = st.session_state.get("chat_state"),
         reflection_step     = st.session_state["reflection_step"],
         task_progress       = st.session_state["task_progress"],
         reflection_answers  = st.session_state["reflection_answers"],
@@ -332,7 +333,11 @@ def run_weekly_reflection():
     
     for t in tasks:
         st.session_state["task_progress"].setdefault(t["id"], 0)
-
+    
+    # make restored state safe even if keys exist but are None/wrong type
+    for k, default in (("reflection_step", 0), ("task_progress", {}), ("reflection_answers", {})):
+        if not isinstance(st.session_state.get(k), type(default)):
+            st.session_state[k] = default
 
 
     # --- PATCH: Early branch if in edit mode ---
@@ -347,7 +352,7 @@ def run_weekly_reflection():
             frozen = [{"id": t["id"], "task_text": t["task_text"]} for t in tasks]
             st.session_state["frozen_tasks"] = frozen
             set_state(frozen_tasks=frozen)
-        task = frozen[idx] if idx < len(frozen) else None
+        task = frozen[idx] if idx < len(frozen) else None 
         task_id = task["id"] if task else None
         # Suggestion message should appear only once
         if st.session_state["awaiting_task_edit"] == True:
@@ -788,7 +793,7 @@ def run_weekly_reflection():
 
             st.session_state[commit_key] = True
             st.session_state["reflection_text_cached"] = reflection_text  # for summary
-            # st.session_state["_post_submit"] = True  # <-- prevents early-exit on refresh
+            st.session_state["_post_submit"] = True  # <-- prevents early-exit on refresh
             save_reflection_state()
 
         # move to "add another?" step
