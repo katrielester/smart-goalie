@@ -65,7 +65,6 @@ def save_reflection_state(needs_restore=True):
         if k in ALLOW_RT or k.startswith(("ask_", "justifying_", "justified_", "answered_"))
         }
     set_state(
-        chat_state          = st.session_state.get("chat_state"),
         reflection_step     = st.session_state["reflection_step"],
         task_progress       = st.session_state["task_progress"],
         reflection_answers  = st.session_state["reflection_answers"],
@@ -225,6 +224,7 @@ def run_weekly_reflection():
     if st.session_state.get("_post_submit") and not st.session_state.get("rt_add_stage"):
         phase_key = f"reflection_{week}_{session}"
         st.session_state["chat_state"] = phase_key
+        set_state(chat_state=st.session_state["chat_state"], needs_restore=True) 
         st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
 
     if reflection_exists(user_id, goal_id, week, session) \
@@ -329,9 +329,6 @@ def run_weekly_reflection():
             )
         st.rerun()
 
-    # guarantee dicts before use (handles None)
-    if not isinstance(st.session_state.get("task_progress"), dict):
-        st.session_state["task_progress"] = {}
     
     for t in tasks:
         st.session_state["task_progress"].setdefault(t["id"], 0)
