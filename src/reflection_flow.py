@@ -637,9 +637,17 @@ def run_weekly_reflection():
     # Goal Alignment Reflection
     elif st.session_state["reflection_step"] == len(tasks) + 2:
         if "ask_alignment" not in st.session_state:
+            frozen = st.session_state.get("frozen_tasks")
+            items = frozen if frozen else [{"task_text": t["task_text"]} for t in tasks]
+            task_list_html = "".join(f"<li>{x['task_text']}</li>" for x in items)
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "🧭 For the <b>coming week</b>, do your current tasks still <b>fit your goal</b>? <br><br>Share what still fits and what you'd change for next week."
+                "message": (
+                    f"📌 <b>Your goal</b><br>{goal_text}"
+                    f"<br><br>📋 <b>Current tasks</b><ul>{task_list_html}</ul>"
+                    "🧭 For the <b>coming week</b>, do these still <b>fit your goal</b>? "
+                    "Tell me what still fits and what you'd change for next week."
+                )
             })
             st.session_state["ask_alignment"] = True
             save_reflection_state()
