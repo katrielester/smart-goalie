@@ -329,6 +329,9 @@ def run_weekly_reflection():
             )
         st.rerun()
 
+    # guarantee dicts before use (handles None)
+    if not isinstance(st.session_state.get("task_progress"), dict):
+        st.session_state["task_progress"] = {}
     
     for t in tasks:
         st.session_state["task_progress"].setdefault(t["id"], 0)
