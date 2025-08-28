@@ -231,7 +231,8 @@ def run_weekly_reflection():
     if reflection_exists(user_id, goal_id, week, session) \
         and not st.session_state.get("summary_pending", False) \
         and not post_submit \
-        and not st.session_state.get("rt_gate_active", False):
+        and not st.session_state.get("rt_gate_active", False) \
+        and not st.session_state.get("rt_add_stage"):
 
         # --- Special case: Week 2, Session B => send to Qualtrics post-survey ---
         if week == 2 and session == "b":
@@ -899,6 +900,9 @@ def run_weekly_reflection():
                 save_reflection_state(); st.rerun()
             return
     elif st.session_state["reflection_step"] == len(tasks)+ 6:
+        if not st.session_state.get("_post_submit"):
+            st.session_state["_post_submit"] = True
+            save_reflection_state()
         # Append summary exactly once
         if not st.session_state.get("summary_appended"):
             summary = summarize_reflection(st.session_state.get("reflection_text_cached",""))
