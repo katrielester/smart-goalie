@@ -908,7 +908,8 @@ def run_weekly_reflection():
             st.session_state["_post_submit"] = True
             save_reflection_state()
         # Append summary exactly once
-        if not st.session_state.get("summary_appended"):
+        last_msg_exists = any("Thanks for reflecting!" in m["message"] for m in st.session_state["chat_thread"])
+        if not st.session_state.get("summary_appended") and not last_msg_exists:
             summary = summarize_reflection(st.session_state.get("reflection_text_cached",""))
             st.session_state["chat_thread"].append({"sender":"Assistant","message": summary})
             # Final message
