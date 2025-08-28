@@ -65,7 +65,7 @@ def save_reflection_state(needs_restore=True):
         if k in ALLOW_RT or k.startswith(("ask_", "justifying_", "justified_", "answered_"))
         }
     set_state(
-        chat_state          = st.sessionstate.get("chat_state"),
+        chat_state          = st.session_state.get("chat_state"),
         reflection_step     = st.session_state["reflection_step"],
         task_progress       = st.session_state["task_progress"],
         reflection_answers  = st.session_state["reflection_answers"],
