@@ -549,7 +549,8 @@ if (
             goal_id_being_worked = goal_with_no_active_tasks["id"],
             current_goal = goal_with_no_active_tasks["goal_text"],
             task_entry_stage = "suggest",
-            needs_restore = False
+            needs_restore = True,
+            first_time=True
             )
         ct = ChatThread(st.session_state["user_id"])
         ct.append({
@@ -581,6 +582,7 @@ if vals:
         set_state(
             chat_state="add_tasks",
             needs_restore = False,
+            first_time=False,
             goal_id_being_worked = goal_id,
             current_goal = goal["goal_text"],
             task_entry_stage = "suggest"
@@ -1005,6 +1007,14 @@ def run_view_goals():
             "tasks_saved":existing_active.copy(),
             "task_entry_stage":"suggest"
         })
+        set_state(
+            chat_state="add_tasks",
+            goal_id_being_worked=goal_id,
+            current_goal=goal_text,
+            task_entry_stage="suggest",
+            needs_restore=False,
+            first_time=False
+        )
         # reset thread to just the “adding tasks” prompt
         ct = ChatThread(user_id)
         ct.append({

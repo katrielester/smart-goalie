@@ -218,6 +218,12 @@ def run_goal_setting():
         existing_tasks = [t["task_text"] for t in get_tasks(goal_id)]
         suggested = suggest_tasks_for_goal(st.session_state["current_goal"], existing_tasks)
 
+        set_state(
+            task_entry_stage = "entry",
+            chat_state = "add_tasks",
+            needs_restore=True,
+            first_time=True
+        )
         st.session_state["chat_thread"].extend([
             {
                 "sender": "Assistant",
@@ -243,11 +249,6 @@ def run_goal_setting():
                 "message": "Now it's your turn! What's one small task you'd like to add first?<br> ⚠️ Do not reply with “Number 1/2/3”, write the full task in your own words."
             }
         ])
-        set_state(
-            task_entry_stage = "entry",
-            chat_state = "add_tasks",
-            needs_restore=True
-        )
         st.rerun()
 
 
@@ -266,7 +267,7 @@ def run_add_tasks():
             "sender": "Assistant",
             "message": "⚠️ You already have 3 active tasks for this goal."
         })
-        set_state(chat_state="menu", needs_restore=False)
+        set_state(chat_state="menu", needs_restore=False, first_time=False)
         return
 
     if not isinstance(st.session_state.get("tasks_saved"), list):
@@ -284,7 +285,7 @@ def run_add_tasks():
         if "suggestion_pending" not in st.session_state:
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": "Thinking of task suggestions for you… ✍️"
+                "message": "Thinking of task suggestions for you... ✍️"
             })
             st.session_state["suggestion_pending"] = True
             st.rerun()
@@ -300,11 +301,12 @@ def run_add_tasks():
                     "3. Set a reminder to check your progress"
                 )
 
-            if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "Thinking of task suggestions for you… ✍️":
+            if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "Thinking of task suggestions for you... ✍️":
                 st.session_state["chat_thread"].pop()
+                
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
-                "message": f"Here are some task ideas based on your goal:<br>{suggested}<br><br> Type one of these or add your own!"
+                "message": f"Here are some task ideas based on your goal:<br>{suggested}<br><br> Copy one of these or type your own!"
             })
             set_state(
                 task_entry_stage = "entry"
@@ -329,7 +331,7 @@ def run_add_tasks():
             set_state(
                 candidate_task=task_input.strip(),
                 task_entry_stage="confirm",
-                needs_restore=True
+                needs_restore=bool(st.session_state.get("first_time", False))
             )
             st.rerun()
 
@@ -352,7 +354,8 @@ def run_add_tasks():
                 else:
                     set_state(
                         chat_state    = "menu",
-                        needs_restore = False
+                        needs_restore = False,
+                        first_time=False
                         )
                     
                     del st.session_state["task_entry_stage"]
@@ -364,7 +367,7 @@ def run_add_tasks():
                     "sender": "Assistant",
                     "message": "I lost the pending task due to a refresh. Please re-enter it."
                 })
-                set_state(task_entry_stage="entry", needs_restore=True)
+                set_state(task_entry_stage="entry", needs_restore=bool(st.session_state.get("first_time", False)))
                 st.rerun
                 return
             save_task(goal_id, task)
@@ -380,7 +383,7 @@ def run_add_tasks():
             if total_active < 3:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": "Would you like to add another task? Tip: adding more tasks can boost your chances of progress!"
+                    "message": "Would you like to add another task?\n 💡 Tip: adding more tasks can boost your chances of progress!"
                 })
                 set_state(task_entry_stage = "add_more_decision")
                 st.rerun()
@@ -396,7 +399,8 @@ def run_add_tasks():
                 else:
                     set_state(
                         chat_state    = "menu",
-                        needs_restore = False
+                        needs_restore = False,
+                        first_time=False
                         )
                     
                 del st.session_state["task_entry_stage"]
@@ -431,7 +435,8 @@ def run_add_tasks():
             else:
                 set_state(
                     chat_state    = "menu",
-                    needs_restore = False
+                    needs_restore = False,
+                    first_time=False
                     )
                 del st.session_state["task_entry_stage"]
                 st.rerun()
@@ -497,5 +502,5 @@ def show_reflection_explanation():
         )
     })
 
-    set_state(needs_restore=False)
+    set_state(needs_restore=False, first_time=False)
     st.stop()

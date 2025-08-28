@@ -46,8 +46,19 @@ def build_postsurvey_link(user_id: str) -> str:
 
 def save_reflection_state(needs_restore=True):
     ALLOW_RT = {
-        "rt_add_stage", "rt_gate_active", "rt_gate_cleared",
-        "rt_suggestions", "rt_msg_intro", "rt_msg_suggest", "rt_msg_prompt_entry", "_post_submit"
+        # Active add-task mini-flow
+        "rt_add_stage",
+        "rt_msg_suggest",
+        # Post-submit sticky state
+        "_post_submit",
+        # Final-step guards so summary + thanks are appended exactly once
+        "summary_appended",
+        "reflection_text_cached",
+        "last_reflection_summary",
+        # (Tighter UX) keep typed candidate across refresh on Confirm
+        "rt_candidate_task",
+        # (Tighter UX) prevent duplicate “Add another?” bubble on hard refresh
+        "rt_simple_add_prompt",
     }
     dynamic = {
         k: v for k, v in st.session_state.items()
@@ -106,7 +117,7 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
     if separate_studies:
         msg = (
             f"🗓️ You will be invited to the next reflection session in **{sched}**.\n"
-            "✍️ To finish, please click this [completion link]({url}) or submit this completion code on Prolific:\n"
+            f"✍️ To finish, please click this [completion link]({url}) or submit this completion code on Prolific:\n"
             f"**{code}**\n\n"
         )
     else:
@@ -219,10 +230,11 @@ def run_weekly_reflection():
         phase_key = f"reflection_{week}_{session}"
         st.session_state["chat_state"] = phase_key
         # Ensure we render the final screen again
-        st.session_state.setdefault(
-            "reflection_step",
-            len(get_tasks(goal_id, active_only=True)) + 6
-        )
+        # st.session_state.setdefault(
+        #     "reflection_step",
+        #     len(get_tasks(goal_id, active_only=True)) + 6
+        # )
+        st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
 
     if reflection_exists(user_id, goal_id, week, session) \
         and not st.session_state.get("summary_pending", False) \
@@ -814,7 +826,7 @@ def run_weekly_reflection():
                 st.session_state["rt_add_stage"] = "entry"
                 save_reflection_state(); st.rerun()
             if col2.button("✅ No, finish", key="rtw_add_no"):
-                st.session_state["reflection_step"] = len(tasks) + 6
+                st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
                 save_reflection_state(); st.rerun()
             return
 
@@ -863,7 +875,7 @@ def run_weekly_reflection():
                 if len(get_tasks(goal_id, active_only=True)) < max_tasks:
                     st.session_state["rt_add_stage"] = "prompt"
                 else:
-                    st.session_state["reflection_step"] = len(tasks) + 6
+                    st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
                 save_reflection_state(); st.rerun()
 
             if c2.button("✏️ Edit", key="rtw_add_edit"):

@@ -41,6 +41,7 @@ def set_state(**kwargs):
         # Goal‑setting
         "goal_step",
         "current_goal",
+        "first_time",
 
         # Task‑entry
         "goal_id_being_worked",
