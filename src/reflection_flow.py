@@ -65,15 +65,16 @@ def save_reflection_state(needs_restore=True):
         if k in ALLOW_RT or k.startswith(("ask_", "justifying_", "justified_", "answered_"))
         }
     set_state(
-      reflection_step    = st.session_state["reflection_step"],
-      task_progress      = st.session_state["task_progress"],
-      reflection_answers = st.session_state["reflection_answers"],
-      update_task_idx    = st.session_state["update_task_idx"],
-      reflection_q_idx   = st.session_state["reflection_q_idx"],
-      awaiting_task_edit = st.session_state["awaiting_task_edit"],
-      editing_choice     = st.session_state["editing_choice"],
-      needs_restore      = needs_restore,
-      **dynamic
+        chat_state          = st.sessionstate.get("chat_state"),
+        reflection_step     = st.session_state["reflection_step"],
+        task_progress       = st.session_state["task_progress"],
+        reflection_answers  = st.session_state["reflection_answers"],
+        update_task_idx     = st.session_state["update_task_idx"],
+        reflection_q_idx    = st.session_state["reflection_q_idx"],
+        awaiting_task_edit  = st.session_state["awaiting_task_edit"],
+        editing_choice      = st.session_state["editing_choice"],
+        needs_restore       = needs_restore,
+        **dynamic
     )
 
 def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
@@ -200,15 +201,13 @@ def run_weekly_reflection():
         st.error("Invalid reflection session.")
         st.stop()
 
-    # 👇 Force reflection mode for this run BEFORE any guard could stop us
+    # Force reflection mode for this run BEFORE any guard could stop us
     st.session_state["week"] = week
     st.session_state["session"] = session
     st.session_state["chat_state"] = f"reflection_{week}_{session}"
+    set_state(chat_state=st.session_state["chat_state"], needs_restore=True) 
 
     post_submit = st.session_state.get("_post_submit", False)
-
-    # 💡 Now REMOVE the old "not in reflection mode" guard entirely.
-    # That guard is redundant since this function itself puts us in reflection mode.
 
     phase = get_user_phase(user_id)
 
