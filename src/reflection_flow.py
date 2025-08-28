@@ -231,6 +231,15 @@ def run_weekly_reflection():
         final_step = active_now + 6
         cur_step   = st.session_state.get("reflection_step", 0)
 
+
+        print("DBG sticky:",
+        "cur=", st.session_state.get("reflection_step"),
+        "add=", add_step,
+        "final=", final_step,
+        "_post_submit=", st.session_state.get("_post_submit"),
+        "summary_appended=", st.session_state.get("summary_appended"),
+        "rt_add_stage=", st.session_state.get("rt_add_stage"))
+
         if st.session_state.get("summary_appended"):
             # Truly done → pin to final (idempotent)
             st.session_state["reflection_step"] = final_step
@@ -243,13 +252,6 @@ def run_weekly_reflection():
             # and do NOT downgrade reflection_step
             pass
         
-    print("DBG sticky:",
-      "cur=", st.session_state.get("reflection_step"),
-      "add=", add_step,
-      "final=", final_step,
-      "_post_submit=", st.session_state.get("_post_submit"),
-      "summary_appended=", st.session_state.get("summary_appended"),
-      "rt_add_stage=", st.session_state.get("rt_add_stage"))
 
     if reflection_exists(user_id, goal_id, week, session) \
         and not st.session_state.get("summary_pending", False) \
