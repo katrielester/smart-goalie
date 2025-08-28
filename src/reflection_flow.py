@@ -960,7 +960,7 @@ def run_weekly_reflection():
                 progress_lines.append(f"- {t['task_text']}: {progress_label(v)}")
         answers = st.session_state.get("reflection_answers", {})
         def label_for(k):
-            if k.startswith("justification_"): return "Task justification"
+            if k.startswith("justification_"): return "Note:"
             return {"what":"What helped","so_what":"Why it worked","now_what":"Keep doing next week",
                     "outcome":"Desired outcome","obstacle":"Obstacle","plan":"Plan for obstacle",
                     "task_alignment":"Goal–task alignment"}.get(k, k)
@@ -968,7 +968,7 @@ def run_weekly_reflection():
         llm_summary = st.session_state.get("last_reflection_summary","").strip()
 
         export_text = []
-        export_text.append("SMART Goal & Weekly Plan — Download\n")
+        export_text.append("SMART Goal & Weekly Plan\n")
         export_text.append(f"Week {week}, Session {session.upper()}\n")
         export_text.append("-"*40 + "\n")
         export_text.append(f"GOAL:\n{goal_text}\n\n")
@@ -980,8 +980,8 @@ def run_weekly_reflection():
             export_text.append("(no active tasks)\n")
         export_text.append("\nPROGRESS THIS WEEK:\n")
         export_text.extend([line+"\n" for line in progress_lines] or ["(no progress entries)\n"])
-        export_text.append("\nREFLECTION ANSWERS:\n")
-        export_text.extend([a+"\n" for a in answers_block] or ["(no answers)\n"])
+        export_text.append("\nPROGRESS NOTES:\n")
+        export_text.extend([a+"\n" for a in answers_block] or ["(none)\n"])
         if llm_summary:
             export_text.append("\n" + llm_summary + "\n")
         export_payload = "".join(export_text)
