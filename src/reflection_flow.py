@@ -116,7 +116,7 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
 
     if separate_studies:
         msg = (
-            f"🗓️ You will be invited to the next reflection session in **{sched}**.\n"
+            f"🗓️ You will be invited to the next reflection session in **{sched}**.\n\n"
             f"✍️ To finish, please click this [completion link]({url}) or submit this completion code on Prolific:\n"
             f"**{code}**\n\n"
         )
@@ -225,15 +225,10 @@ def run_weekly_reflection():
     goal_text = all_goals[0]["goal_text"]
 
     # --- STICKY SUCCESS SCREEN: if we've already submitted, pin to final step on rerun ---
-    # (Prevents auto-jump to menu or "already submitted" screen after a download/rerun.)
-    if st.session_state.get("_post_submit"):
+    # Only pin after the add-another flow is finished (no rt_add_stage set)
+    if st.session_state.get("_post_submit") and not st.session_state.get("rt_add_stage"):
         phase_key = f"reflection_{week}_{session}"
         st.session_state["chat_state"] = phase_key
-        # Ensure we render the final screen again
-        # st.session_state.setdefault(
-        #     "reflection_step",
-        #     len(get_tasks(goal_id, active_only=True)) + 6
-        # )
         st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
 
     if reflection_exists(user_id, goal_id, week, session) \
@@ -796,7 +791,7 @@ def run_weekly_reflection():
 
             st.session_state[commit_key] = True
             st.session_state["reflection_text_cached"] = reflection_text  # for summary
-            st.session_state["_post_submit"] = True  # <-- prevents early-exit on refresh
+            # st.session_state["_post_submit"] = True  # <-- prevents early-exit on refresh
             save_reflection_state()
 
         # move to "add another?" step
@@ -811,6 +806,8 @@ def run_weekly_reflection():
 
         # Already full? Skip straight to summary
         if active_count >= max_tasks:
+            st.session_state["_post_submit"] = True
+            st.session_state.pop("rt_add_stage", None)
             st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
             save_reflection_state()
             st.rerun()
@@ -826,6 +823,8 @@ def run_weekly_reflection():
                 st.session_state["rt_add_stage"] = "entry"
                 save_reflection_state(); st.rerun()
             if col2.button("✅ No, finish", key="rtw_add_no"):
+                st.session_state["_post_submit"] = True
+                st.session_state.pop("rt_add_stage", None)
                 st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
                 save_reflection_state(); st.rerun()
             return
@@ -871,10 +870,12 @@ def run_weekly_reflection():
                 if candidate:
                     save_task(goal_id, candidate)
                     st.session_state["chat_thread"].append({"sender":"Assistant","message": f"Saved: <b>{candidate}</b>"})
-                # After saving, either ask again (if still < 3) or move to summary
+                # After saving, either ask again (if still < 3) or finish
                 if len(get_tasks(goal_id, active_only=True)) < max_tasks:
                     st.session_state["rt_add_stage"] = "prompt"
                 else:
+                    st.session_state["_post_submit"] = True
+                    st.session_state.pop("rt_add_stage", None)
                     st.session_state["reflection_step"] = len(get_tasks(goal_id, active_only=True)) + 6
                 save_reflection_state(); st.rerun()
 

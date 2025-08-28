@@ -383,7 +383,7 @@ def run_add_tasks():
             if total_active < 3:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": "Would you like to add another task?\n 💡 Tip: adding more tasks can boost your chances of progress!"
+                    "message": "Would you like to add another task?<br> 💡 Tip: adding more tasks can boost your chances of progress!"
                 })
                 set_state(task_entry_stage = "add_more_decision")
                 st.rerun()
@@ -461,13 +461,13 @@ def show_reflection_explanation():
     if group == "treatment":
         msg = (
             f"You're all set! Over {study_period_phrase()}, you will receive invitations on Prolific {reflection_invite_phrase()} to brief follow-ups. "
-            f"These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.\n\n Your first follow up will arrive in {next_followup}. "
+            f"These check‑ins will help you reflect on your SMART goal and the weekly tasks you just created.<br><br> Your first follow up will arrive in {next_followup}.<br>"
             "Looking forward to seeing your progress!"
         )
     else:
         msg = (
             f"You're all set! Over {study_period_phrase()}, please work on the goal and tasks you just created at your own pace. "
-            f"We'll be in touch again in {study_period_phrase()} with a brief follow-up.\n\n"
+            f"We'll be in touch again in {study_period_phrase()} with a brief follow-up.<br><br>"
             "Thanks again for being part of the study!"
         )
 
