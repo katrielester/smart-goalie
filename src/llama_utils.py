@@ -453,7 +453,7 @@ Stylistic samples:
         prompt = f"""
 You are a goal support assistant.
 
-RULE: Give one short, friendly sentence evaluating how relevant the goal is, without rewriting it.
+RULE: Give one short, friendly sentence evaluating if the goal states why it is relevant, without rewriting it.
 
 Focus only on whether the goal aligns with personal values or priorities.
 
@@ -466,6 +466,7 @@ Guidelines:
 
 Stylistic samples:
 – Excellent, this goal aligns with what matters to you!
+- Good start, adding why you want to achieve this would make it even better!
 – Feels a bit generic; adding your “why” could help.
 
 [Goal]
