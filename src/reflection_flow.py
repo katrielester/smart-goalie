@@ -85,9 +85,9 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
     # your mapping (extend/replace with real codes)
     COMPLETION = {
         (1, "a", "1"): "CKM762BU",
-        (1, "b", "1"): "PLACEHOLDER",
+        (1, "b", "1"): "CKM762BU",
         (2, "a", "1"): "PLACEHOLDER",
-        (1, "a", "2"): "PLACEHOLDER",
+        (1, "a", "2"): "CKM762BU",
         (1, "b", "2"): "PLACEHOLDER",
         (2, "a", "2"): "PLACEHOLDER",
         (1, "a", "3"): "PLACEHOLDER",
