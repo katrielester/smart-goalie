@@ -485,40 +485,39 @@ def run_weekly_reflection():
             last_content = last_reflection["reflection_text"].strip()
             last_week = last_reflection["week_number"]
 
-            # Try friendly 1–2 sentence recap first
             recap = summarize_last_reflection_for_preview(last_content)
             recap = (recap or "").strip()
 
-            if recap:
-                st.session_state["chat_thread"].append({
-                    "sender": "Assistant",
-                    "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{recap}"
-                })
+            # 1) Turn stored <br> into real newlines so they render as line breaks
+            plain = last_content.replace("<br><br>", "\n\n").replace("<br>", "\n")
+
+            # 2) Keep first N lines visible; put the rest in a collapsible so it never truncates the bubble
+            lines = [ln.rstrip() for ln in plain.splitlines()]
+            N = 8
+            head = "\n".join([ln for ln in lines[:N] if ln])
+            tail = "\n".join(lines[N:]).strip()
+
+            if tail:
+                body = (
+                    f"<div style='white-space:pre-wrap; line-height:1.35'>{head}</div>"
+                    "<details style='margin-top:6px'>"
+                    "<summary>Show full previous reflection</summary>"
+                    f"<div style='white-space:pre-wrap; line-height:1.35; margin-top:6px'>{tail}</div>"
+                    "</details>"
+                )
             else:
-                # 1) Turn stored <br> into real newlines
-                plain = last_content.replace("<br><br>", "\n\n").replace("<br>", "\n")
+                body = f"<div style='white-space:pre-wrap; line-height:1.35'>{head}</div>"
 
-                # 2) Keep the first N lines for the bubble, show the rest in a collapsible
-                lines = [ln.strip() for ln in plain.splitlines()]
-                N = 8
-                head = "\n".join([ln for ln in lines[:N] if ln])
-                tail = "\n".join(lines[N:]).strip()
+            # 3) Compose message: optional recap + formatted full content
+            msg = f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>"
+            if recap:
+                msg += f"📝 <i>Recap:</i> {recap}<br><br>"
+            msg += body
 
-                if tail:
-                    body = (
-                        f"<div style='white-space:pre-wrap; line-height:1.35'>{head}</div>"
-                        "<details style='margin-top:6px'>"
-                        "<summary>Show full previous reflection</summary>"
-                        f"<div style='white-space:pre-wrap; line-height:1.35; margin-top:6px'>{tail}</div>"
-                        "</details>"
-                    )
-                else:
-                    body = f"<div style='white-space:pre-wrap; line-height:1.35'>{head}</div>"
-
-                st.session_state["chat_thread"].append({
-                    "sender": "Assistant",
-                    "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{body}"
-                })
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": msg
+            })
 
         # ⬇️ Add disclaimer as first chat message
         st.session_state["chat_thread"].append({
