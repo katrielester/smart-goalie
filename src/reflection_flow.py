@@ -485,22 +485,33 @@ def run_weekly_reflection():
             last_content = last_reflection["reflection_text"].strip()
             last_week = last_reflection["week_number"]
 
-            # Try friendly 1–2 sentence recap first
-            recap = summarize_last_reflection_for_preview(last_content) or ""
-            recap = recap.strip()
+            # 1) Try friendly 1–2 sentence recap first
+            recap = summarize_last_reflection_for_preview(last_content)
+            recap = (recap or "").strip()
 
             if recap:
-                # Friendly recap
+                # keep recap short and add a line break after the heading
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
                     "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{recap}"
                 })
             else:
-                # Fallback to the raw list you already store
+                # 2) Fallback: format raw reflection nicely (few lines, no wall of text)
+                #    - split by <br>, keep the first 6 non-empty lines
+                #    - rejoin with real breaks and add an ellipsis if we truncated
+                lines = [ln.strip() for ln in last_content.split("<br>") if ln.strip()]
+                show = lines[:6]
+                suffix = "<br>…" if len(lines) > 6 else ""
+                formatted = "<br>".join(show) + suffix
+
+                # ensure breaks render properly; also prevent long-line cutoffs
+                formatted = formatted.replace("\n", " ")
+
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{last_content}"
+                    "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{formatted}"
                 })
+                
         # ⬇️ Add disclaimer as first chat message
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
