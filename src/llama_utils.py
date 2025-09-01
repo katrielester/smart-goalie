@@ -279,31 +279,6 @@ Return only the summary. End with a short positive note (e.g., "See you next tim
 """
     return smart_wrapper(prompt, reflection_text, "summary")
 
-def summarize_last_reflection_for_preview(reflection_text):
-    prompt = f"""
-You are a supportive goal coach.
-
-Summarize this prior reflection for a tiny recap at the start of a new check-in.
-
-The reflection may include these labels:
-- WHAT HELPED: what worked this week
-- WHY IT WORKED: why it felt easier/motivating
-- KEEP DOING NEXT WEEK: next step to continue
-- DESIRED OUTCOME: hoped-for benefit/result
-- OBSTACLE: what got in the way
-- PLAN: how they’ll handle the obstacle next time
-- GOAL–TASK ALIGNMENT: whether tasks fit the goal
-
-Rules:
-- 1–2 short sentences, ~160 characters total.
-- Mention one concrete progress point AND either one obstacle or next step (if present).
-- Paraphrase; do not quote.
-- Output plain text only (no headings, no bullets, no HTML).
-
-Reflection:
-{reflection_text}
-"""
-    return smart_wrapper(prompt, reflection_text, "preview")
 
 def summarize_goal_reflection(goal, alignment_answer, confidence_answer):
     prompt = f"""

@@ -7,7 +7,7 @@ from db import (
     get_user_phase, update_user_phase, get_user_group, replace_or_modify_task,
     save_reflection_response, save_reflection_draft, load_reflection_draft, delete_reflection_draft
 )
-from llama_utils import summarize_reflection, suggest_tasks_with_context, summarize_last_reflection_for_preview
+from llama_utils import summarize_reflection, suggest_tasks_with_context
 import json
 from chat_thread import ChatThread
 from db_utils import set_state
@@ -483,49 +483,21 @@ def run_weekly_reflection():
 
         if last_reflection and last_reflection.get("reflection_text", "").strip():
             last_content = last_reflection["reflection_text"].strip()
-            last_week = last_reflection["week_number"]
+            
+            plain = last_content.replace("<br><br>", "\n\n").replace("<br>", "\n")
+            body = f"<div style='white-space:pre-wrap; line-height:1.35'>{plain}</div>"
+                       
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": f"📄 Here's where we left off:<br><br>{body}"
+            })
 
-            # 1) Try tiny LLM recap
-            recap = summarize_last_reflection_for_preview(last_content)
-            recap = (recap or "").strip()
-            is_real_recap = bool(recap) and recap.upper() != "NOLLM"
-
-            if is_real_recap:
-                # ✅ Show only the recap, no DB draft body
-                st.session_state["chat_thread"].append({
-                    "sender": "Assistant",
-                    "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{recap}"
-                })
-            else:
-                # ❌ No real LLM recap → show the nicely formatted stored reflection (with collapsible)
-                plain = last_content.replace("<br><br>", "\n\n").replace("<br>", "\n")
-                lines = [ln.rstrip() for ln in plain.splitlines()]
-                N = 8
-                head = "\n".join([ln for ln in lines[:N] if ln])
-                tail = "\n".join(lines[N:]).strip()
-
-                if tail:
-                    body = (
-                        f"<div style='white-space:pre-wrap; line-height:1.35'>{head}</div>"
-                        "<details style='margin-top:6px'>"
-                        "<summary>Show full previous reflection</summary>"
-                        f"<div style='white-space:pre-wrap; line-height:1.35; margin-top:6px'>{tail}</div>"
-                        "</details>"
-                    )
-                else:
-                    body = f"<div style='white-space:pre-wrap; line-height:1.35'>{head}</div>"
-
-                st.session_state["chat_thread"].append({
-                    "sender": "Assistant",
-                    "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{body}"
-                })
-
-        # ⬇️ Add disclaimer as first chat message
+        # ⬇️ Add disclaimer
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
             "message": (
-                "⏳ <b>Before we start:</b> Sometimes the assistant needs a moment to load "
-                "the next message. Please wait for it to appear and avoid double-clicking "
+                "⏳ <b>Before we start:</b> Sometimes the messages may take a moment to load. "
+                "Please wait for it to appear and avoid double-clicking "
                 "or submitting twice. Everything will be saved automatically ✅"
             )
         })
@@ -827,14 +799,18 @@ def run_weekly_reflection():
         if "what" in answers:
             reflection_text = (
                 f"Task Progress:<br>{progress_str}<br><br>"
-                + (f"GOAL-TASK ALIGNMENT: {alignment}<br><br>" if alignment else "")
-                + f"WHAT HELPED: {answers.get('what')}<br>WHY IT WORKED: {answers.get('so_what')}<br>KEEP DOING NEXT WEEK: {answers.get('now_what')}<br>"
+                + (f"Do these tasks still fit your goal? {alignment}<br><br>" if alignment else "")
+                + f"What helped: {answers.get('what')}<br>"
+                f"Why it worked: {answers.get('so_what')}<br>"
+                f"Keep doing next week: {answers.get('now_what')}<br>"
             )
         else:
             reflection_text = (
                 f"Task Progress:<br>{progress_str}<br><br>"
-                + (f"Still fits goal? {alignment}<br><br>" if alignment else "")
-                + f"OUTCOME: {answers.get('outcome')}<br>OBSTACLE: {answers.get('obstacle')}<br>PLAN: {answers.get('plan')}<br>"
+                + (f"Do these tasks still fit your goal? {alignment}<br><br>" if alignment else "")
+                + f"Benefit hoped for: {answers.get('outcome')}<br>"
+                f"Obstacle: {answers.get('obstacle')}<br>"
+                f"Plan if it happens again: {answers.get('plan')}<br>"
             )
 
         # Save once
