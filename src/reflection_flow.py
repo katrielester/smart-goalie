@@ -7,7 +7,7 @@ from db import (
     get_user_phase, update_user_phase, get_user_group, replace_or_modify_task,
     save_reflection_response, save_reflection_draft, load_reflection_draft, delete_reflection_draft
 )
-from llama_utils import summarize_reflection, suggest_tasks_with_context
+from llama_utils import summarize_reflection, suggest_tasks_with_context, summarize_last_reflection_for_preview
 import json
 from chat_thread import ChatThread
 from db_utils import set_state
@@ -476,19 +476,31 @@ def run_weekly_reflection():
 
         last_reflection = get_last_reflection(user_id, goal_id)
 
-        
-
-        if last_reflection and last_reflection.get("reflection_text", "").strip():
-            last_content = last_reflection["reflection_text"]
-            last_week = last_reflection["week_number"]
-            st.session_state["chat_thread"].append({
-                "sender": "Assistant",
-                "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{last_content.strip()}"
-            })
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
             "message": "🔸 Reflection Time 🔸"
         })
+
+        if last_reflection and last_reflection.get("reflection_text", "").strip():
+            last_content = last_reflection["reflection_text"].strip()
+            last_week = last_reflection["week_number"]
+
+            # Try friendly 1–2 sentence recap first
+            recap = summarize_last_reflection_for_preview(last_content) or ""
+            recap = recap.strip()
+
+            if recap:
+                # Friendly recap
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{recap}"
+                })
+            else:
+                # Fallback to the raw list you already store
+                st.session_state["chat_thread"].append({
+                    "sender": "Assistant",
+                    "message": f"📄 <b>Last Reflection (Week {last_week}):</b><br><br>{last_content}"
+                })
         # ⬇️ Add disclaimer as first chat message
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
@@ -796,13 +808,13 @@ def run_weekly_reflection():
         if "what" in answers:
             reflection_text = (
                 f"Task Progress:<br>{progress_str}<br><br>"
-                + (f"ALIGNMENT: {alignment}<br><br>" if alignment else "")
-                + f"WHAT: {answers.get('what')}<br>SO WHAT: {answers.get('so_what')}<br>NOW WHAT: {answers.get('now_what')}<br>"
+                + (f"GOAL-TASK ALIGNMENT: {alignment}<br><br>" if alignment else "")
+                + f"WHAT HELPED: {answers.get('what')}<br>WHY IT WORKED: {answers.get('so_what')}<br>KEEP DOING NEXT WEEK: {answers.get('now_what')}<br>"
             )
         else:
             reflection_text = (
                 f"Task Progress:<br>{progress_str}<br><br>"
-                + (f"ALIGNMENT: {alignment}<br><br>" if alignment else "")
+                + (f"Still fits goal? {alignment}<br><br>" if alignment else "")
                 + f"OUTCOME: {answers.get('outcome')}<br>OBSTACLE: {answers.get('obstacle')}<br>PLAN: {answers.get('plan')}<br>"
             )
 

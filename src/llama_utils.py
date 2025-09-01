@@ -74,6 +74,13 @@ def fake_response(goal_text, type_):
 
     elif type_ == "check_timebound":
         return "Good start, consider adding when or how long to work on this."
+    
+    elif type_ == "preview":
+        # `goal_text` here is actually the reflection_text passed into smart_wrapper
+        txt = re.sub(r"<br\s*/?>", " ", goal_text or "")
+        txt = re.sub(r"\s+", " ", txt).strip()
+        # keep it tiny like the LLM would
+        return (txt[:157] + "...") if len(txt) > 160 else txt
     return "No fallback guidance available for this type."
 
 def smart_wrapper(prompt, goal_text, type_):
@@ -275,6 +282,32 @@ Reflection:
 Return only the summary. End with a short positive note (e.g., "See you next time!" or "You're doing great,  keep it up!")
 """
     return smart_wrapper(prompt, reflection_text, "summary")
+
+def summarize_last_reflection_for_preview(reflection_text):
+    prompt = f"""
+You are a supportive goal coach.
+
+Summarize this prior reflection for a tiny recap at the start of a new check-in.
+
+The reflection may include these labels:
+- WHAT HELPED: what worked this week
+- WHY IT WORKED: why it felt easier/motivating
+- KEEP DOING NEXT WEEK: next step to continue
+- DESIRED OUTCOME: hoped-for benefit/result
+- OBSTACLE: what got in the way
+- PLAN: how they’ll handle the obstacle next time
+- GOAL–TASK ALIGNMENT: whether tasks fit the goal
+
+Rules:
+- 1–2 short sentences, ~160 characters total.
+- Mention one concrete progress point AND either one obstacle or next step (if present).
+- Paraphrase; do not quote.
+- Output plain text only (no headings, no bullets, no HTML).
+
+Reflection:
+{reflection_text}
+"""
+    return smart_wrapper(prompt, reflection_text, "preview")
 
 def summarize_goal_reflection(goal, alignment_answer, confidence_answer):
     prompt = f"""
