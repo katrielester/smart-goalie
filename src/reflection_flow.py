@@ -488,9 +488,6 @@ def run_weekly_reflection():
         # Jump to intro gate (persisted via reflection_step—no new flags needed)
         st.session_state["reflection_step"] = -1
         save_reflection_state()
-        st.rerun()
-
-    elif st.session_state["reflection_step"] == -1:
         # Before we start + Ready prompt
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
@@ -500,6 +497,9 @@ def run_weekly_reflection():
                 "Ready to begin?"
             )
         })
+        st.rerun()
+
+    elif st.session_state["reflection_step"] == -1:
         c1, c2 = st.columns(2)
         if c1.button("✅ I’m ready", key="intro_ready_yes"):
             st.session_state["chat_thread"].append({
