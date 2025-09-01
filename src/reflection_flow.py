@@ -645,8 +645,8 @@ def run_weekly_reflection():
                 "message": (
                     f"📌 <b>Your goal</b><br>{goal_text}"
                     f"<br><br>📋 <b>Current tasks</b><ul>{task_list_html}</ul>"
-                    "🧭 For the <b>coming week</b>, do these still <b>fit your goal</b>? "
-                    "Tell me what still fits and what you'd change for next week."
+                    "🧭 For the <b>coming week</b>, do these tasks still <b>fit your goal</b>?<br> "
+                    "Tell me what still works and what you'd tweak for next week, whether that means making it lighter, more challenging, or changing focus."
                 )
             })
             st.session_state["ask_alignment"] = True
@@ -852,7 +852,7 @@ def run_weekly_reflection():
         # PROMPT
         if stage == "prompt":
             chat_append_once("rt_simple_add_prompt",
-                f"✨ You have <b>{active_count}/{max_tasks}</b> active tasks. Add another? <br><br> Tip: Adding more tasks can help keep your momentum next week.")
+                f"✨ You have <b>{active_count}/{max_tasks}</b> active tasks. Want to add another to stay on track? <br><br> 💡 Tip: Adding more tasks can help keep your momentum next week.")
             col1, col2 = st.columns(2)
             if col1.button("➕ Yes, add another task", key="rtw_add_yes"):
                 st.session_state["rt_add_stage"] = "entry"
