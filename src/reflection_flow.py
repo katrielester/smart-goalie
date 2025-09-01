@@ -472,7 +472,7 @@ def run_weekly_reflection():
             set_state(frozen_tasks=st.session_state["frozen_tasks"])
 
         # Header
-        st.session_state["chat_thread"].append({"sender":"Assistant","message":"🔸 Reflection Time 🔸"})
+        st.session_state["chat_thread"].append({"sender":"Assistant","message":"🔸 <b>Reflection Time</b> 🔸"})
 
         # Prior reflection (if any), humanized, no LLM, no collapsible
         last_reflection = get_last_reflection(user_id, goal_id)
@@ -488,9 +488,6 @@ def run_weekly_reflection():
         # Jump to intro gate (persisted via reflection_step—no new flags needed)
         st.session_state["reflection_step"] = -1
         save_reflection_state()
-        st.rerun()
-
-    elif st.session_state["reflection_step"] == -1:
         # Before we start + Ready prompt
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
@@ -500,6 +497,10 @@ def run_weekly_reflection():
                 "Ready to begin?"
             )
         })
+        st.rerun()
+
+    elif st.session_state["reflection_step"] == -1:
+        
         c1, c2 = st.columns(2)
         if c1.button("✅ I’m ready", key="intro_ready_yes"):
             st.session_state["chat_thread"].append({
