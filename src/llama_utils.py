@@ -76,11 +76,7 @@ def fake_response(goal_text, type_):
         return "Good start, consider adding when or how long to work on this."
     
     elif type_ == "preview":
-        # `goal_text` here is actually the reflection_text passed into smart_wrapper
-        txt = re.sub(r"<br\s*/?>", " ", goal_text or "")
-        txt = re.sub(r"\s+", " ", txt).strip()
-        # keep it tiny like the LLM would
-        return (txt[:157] + "...") if len(txt) > 160 else txt
+        return "NOLLM"
     return "No fallback guidance available for this type."
 
 def smart_wrapper(prompt, goal_text, type_):
