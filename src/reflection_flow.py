@@ -463,53 +463,61 @@ def run_weekly_reflection():
             return
     # --- END PATCH ---
 
-
-
     if st.session_state["reflection_step"] == 0:
-        print("Reflection step:", st.session_state.get("reflection_step"))
-
+        # Freeze tasks once
         if "frozen_tasks" not in st.session_state:
             st.session_state["frozen_tasks"] = [
                 {"id": t["id"], "task_text": t["task_text"]} for t in tasks
-                ]
+            ]
             set_state(frozen_tasks=st.session_state["frozen_tasks"])
 
+        # Header
+        st.session_state["chat_thread"].append({"sender":"Assistant","message":"🔸 Reflection Time 🔸"})
+
+        # Prior reflection (if any), humanized, no LLM, no collapsible
         last_reflection = get_last_reflection(user_id, goal_id)
-
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": "🔸 Reflection Time 🔸"
-        })
-
-        if last_reflection and last_reflection.get("reflection_text", "").strip():
+        if last_reflection and (last_reflection.get("reflection_text") or "").strip():
             last_content = last_reflection["reflection_text"].strip()
-            
             plain = last_content.replace("<br><br>", "\n\n").replace("<br>", "\n")
             body = f"<div style='white-space:pre-wrap; line-height:1.35'>{plain}</div>"
-                       
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": f"📄 Here's where we left off:<br><br>{body}"
             })
 
-        # ⬇️ Add disclaimer
+        # Jump to intro gate (persisted via reflection_step—no new flags needed)
+        st.session_state["reflection_step"] = -1
+        save_reflection_state()
+        st.rerun()
+
+    elif st.session_state["reflection_step"] == -1:
+        # Before we start + Ready prompt
         st.session_state["chat_thread"].append({
             "sender": "Assistant",
             "message": (
                 "⏳ <b>Before we start:</b> Sometimes the messages may take a moment to load. "
-                "Please wait for it to appear and avoid double-clicking "
-                "or submitting twice. Everything will be saved automatically ✅"
+                "Please avoid double-clicking—everything saves automatically ✅<br><br>"
+                "Ready to begin?"
             )
         })
-        st.session_state["chat_thread"].append({
-            "sender": "Assistant",
-            "message": f"Let's check in on how your goal is going:<br><br><b>{goal_text}</b><br><br>I'll walk you through your tasks one by one. Just answer honestly, no pressure."
-        })
-
-        st.session_state["reflection_step"] = 1
-        save_reflection_state()
-
-        st.rerun()
+        c1, c2 = st.columns(2)
+        if c1.button("✅ I’m ready", key="intro_ready_yes"):
+            st.session_state["chat_thread"].append({
+                "sender":"Assistant",
+                "message": (
+                    f"Let’s check in on how your goal is going:<br><br><b>{goal_text}</b>"
+                    "<br><br>I’ll walk you through your tasks one by one. Just answer honestly, no pressure."
+                )
+            })
+            st.session_state["reflection_step"] = 1
+            save_reflection_state(); st.rerun()
+        if c2.button("⏸️ Not now", key="intro_ready_later"):
+            st.session_state["chat_thread"].append({
+                "sender":"Assistant",
+                "message":"No worries, come back anytime. Your progress is saved."
+            })
+            save_reflection_state(); st.stop()
+        return
         
 
     if 1 <= st.session_state["reflection_step"] <= len(tasks):
