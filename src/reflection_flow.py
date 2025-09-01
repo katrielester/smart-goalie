@@ -656,6 +656,11 @@ def run_weekly_reflection():
                 "message": (
                     f"📌 <b>Your goal</b><br>{goal_text}"
                     f"<br><br>📋 <b>Current tasks</b><ul>{task_list_html}</ul>"
+                )
+            })
+            st.session_state["chat_thread"].append({
+                "sender": "Assistant",
+                "message": (
                     "🧭 For the <b>coming week</b>, do these tasks still <b>fit your goal</b>?<br> "
                     "Tell me what still works and what you'd tweak for next week, whether that means making it lighter, more challenging, or changing focus."
                 )
