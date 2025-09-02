@@ -692,7 +692,7 @@ with st.container():
                 if (i >= newMessages.length) return;
                 newMessages[i].style.display = "block";
                 chatBox.scrollTop = chatBox.scrollHeight;
-                setTimeout(() => revealMessages(i + 1), 100);
+                setTimeout(() => revealMessages(i + 1), 0);
             }}
 
             chatBox.scrollTop = chatBox.scrollHeight;
