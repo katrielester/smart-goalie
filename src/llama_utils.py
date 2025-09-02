@@ -21,33 +21,33 @@ def extract_goal_variants(response_text):
 def fake_response(goal_text, type_):
     if type_ == "specific":
         return (
-            f"1. Clarify and define exactly what you plan to do. e.g., instead of '{goal_text}', say 'Research and outline my topic for the article'<br>"
-            f"2. Replace general terms with actionable verbs. e.g., 'Draft the first two sections of my article'<br>"
-            f"3. Add a clear action phrase, e.g., 'Schedule two sessions to focus on writing this week'"
+            f"- Clarify and define exactly what you plan to do. e.g., instead of '{goal_text}', say 'Research and outline my topic for the article'<br>"
+            f"- Replace general terms with actionable verbs. e.g., 'Draft the first two sections of my article'<br>"
+            f"- Add a clear action phrase, e.g., 'Schedule two sessions to focus on writing this week'"
         )
     elif type_ == "measurable":
         return (
-            f"1. Add frequency, e.g., '{goal_text}, three times this week'<br>"
-            f"2. Add quantity, e.g., '{goal_text}, for at least 30 minutes each time'<br>"
-            f"3. Define success, e.g., 'Complete one full version of the task'"
+            f"- Add frequency, e.g., '{goal_text}, three times this week'<br>"
+            f"- Add quantity, e.g., '{goal_text}, for at least 30 minutes each time'<br>"
+            f"- Define success, e.g., 'Complete one full version of the task'"
         )
     elif type_ == "achievable":
         return (
-            f"1. Scale it down, e.g., 'Do a first draft' instead of 'Finish the full project'<br>"
-            f"2. Choose just one focus area, e.g., 'Just research background sources'<br>"
-            f"3. Limit time, e.g., '{goal_text}, for 1 hour per session'"
+            f"- Scale it down, e.g., 'Do a first draft' instead of 'Finish the full project'<br>"
+            f"- Choose just one focus area, e.g., 'Just research background sources'<br>"
+            f"- Limit time, e.g., '{goal_text}, for 1 hour per session'"
         )
     elif type_ == "relevant":
         return (
-            f"1. Add motivation, e.g., '{goal_text} to prepare for job interviews'<br>"
-            f"2. Tie to a deadline, e.g., '{goal_text} because the application is due next month'<br>"
-            f"3. Link to values, e.g., '{goal_text} to improve my skills in something I care about'"
+            f"- Add motivation, e.g., '{goal_text} to prepare for job interviews'<br>"
+            f"- Tie to a deadline, e.g., '{goal_text} because the application is due next month'<br>"
+            f"- Link to values, e.g., '{goal_text} to improve my skills in something I care about'"
         )
     elif type_ == "timebound":
         return (
-            f"1. Add a deadline, e.g., '{goal_text} every 2 days'<br>"
-            f"2. Use a schedule, e.g., '{goal_text} every morning at 9 AM'<br>"
-            f"3. Set a timeframe, e.g., '{goal_text} for the next 2 weeks'"
+            f"- Add a deadline, e.g., '{goal_text} every 2 days'<br>"
+            f"- Use a schedule, e.g., '{goal_text} every morning at 9 AM'<br>"
+            f"- Set a timeframe, e.g., '{goal_text} for the next 2 weeks'"
         )
     elif type_ == "summary":
         return (
@@ -56,9 +56,9 @@ def fake_response(goal_text, type_):
         )
     elif type_ == "tasks":
         return (
-            f"1. Break '{goal_text}' into smaller, manageable parts<br>"
-            "2. Schedule your first step for this week<br>"
-            "3. Pick one simple, concrete action to complete by Friday"
+            f"- Break '{goal_text}' into smaller, manageable parts<br>"
+            "- Schedule your first step for this week<br>"
+            "- Pick one simple, concrete action to complete by Friday"
         )
     elif type_ == "check_specific":
         return "Good start! Try to clarify the outcome a bit more."
@@ -146,9 +146,9 @@ Goal:
 {goal_text}
 
 Return only 3 revised versions:
-1. ...
-2. ...
-3. ...
+- ...
+- ...
+- ...
 """
     return smart_wrapper(prompt, goal_text, "specific")
 
@@ -175,9 +175,9 @@ Goal:
 {goal_text}
 
 Return only 3 revised versions:
-1. ...
-2. ...
-3. ...
+- ...
+- ...
+- ...
 """
     return smart_wrapper(prompt, goal_text, "measurable")
 
@@ -199,9 +199,9 @@ Goal:
 {goal_text}
 
 Return only 3 revised versions:
-1. ...
-2. ...
-3. ...
+- ...
+- ...
+- ...
 """
     return smart_wrapper(prompt, goal_text, "achievable")
 
@@ -223,9 +223,9 @@ Goal:
 {goal_text}
 
 Return only 3 revised versions:
-1. ...
-2. ...
-3. ...
+- ...
+- ...
+- ...
 """
     return smart_wrapper(prompt, goal_text, "relevant")
 
@@ -246,9 +246,9 @@ Goal:
 {goal_text}
 
 Return only 3 revised versions:
-1. ...
-2. ...
-3. ...
+- ...
+- ...
+- ...
 """
     return smart_wrapper(prompt, goal_text, "timebound")
 
@@ -376,9 +376,9 @@ Avoid:
 
 Respond with only the 3 tasks, in this format:
 
-1. ...
-2. ...
-3. ...
+- ...
+- ...
+- ...
 """
     return smart_wrapper(prompt, goal_text, "tasks")
 

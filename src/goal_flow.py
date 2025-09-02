@@ -241,12 +241,12 @@ def run_goal_setting():
             },
             {
                 "sender": "Assistant",
-                "message": "Here are some task suggestions you can consider based on your goal:" 
+                "message": "Here are some ideas for small tasks you could set this week:" 
                     + "<br><br>" + suggested
             },
             {
                 "sender": "Assistant",
-                "message": "Now it's your turn! What's one small task you'd like to add first?<br> ⚠️ Do not reply with “Number 1/2/3”, write the full task in your own words."
+                "message": "Now let's add your tasks one at a time. What's one small task you'd like to add first?<br> ⚠️ Do not reply with “Number 1/2/3”, write the full task in your own words."
             }
         ])
         st.rerun()
@@ -296,9 +296,9 @@ def run_add_tasks():
                 suggested = extract_goal_variants(suggest_tasks_for_goal(current_goal, existing_tasks))
             except:
                 suggested = (
-                    "1. Break down your goal into a 30-minute session<br>"
-                    "2. Block calendar time to work on it<br>"
-                    "3. Set a reminder to check your progress"
+                    "- Break down your goal into a 30-minute session<br>"
+                    "- Block calendar time to work on it<br>"
+                    "- Set a reminder to check your progress"
                 )
 
             if st.session_state["chat_thread"] and st.session_state["chat_thread"][-1]["message"] == "Thinking of task suggestions for you... ✍️":
