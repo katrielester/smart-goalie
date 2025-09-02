@@ -805,7 +805,7 @@ def run_smart_training():
             needs_restore=first
             )
         # delay
-        # time.sleep(0.3)
+        time.sleep(0.5)
         st.rerun()
 
     # Step 2: Handle buttons or input after all messages are rendered
