@@ -788,25 +788,16 @@ def run_smart_training():
     current_index = st.session_state.get("message_index", 0)
     all_texts_rendered = current_index >= len(texts)
 
-    # Step 1: Show assistant messages one-by-one
     if not all_texts_rendered:
-        rendered_messages = [entry["message"] for entry in st.session_state["chat_thread"] if entry["sender"] == "Assistant"]
-        current_text = texts[current_index]
-        current_text = current_text.replace("{user_name}", st.session_state.get("user_name", ""))
-        current_text = current_text.replace("{full_goal}", st.session_state.get("full_goal", ""))
-
-        if current_text not in rendered_messages:
-            st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
-
-        # Always advance index after rendering
-        # st.session_state["message_index"] += 1
-        set_state(
-            message_index = st.session_state["message_index"] + 1,
-            needs_restore=first
-            )
-        # delay
-        time.sleep(0.5)
-        st.rerun()
+        rendered_messages = [m["message"] for m in st.session_state["chat_thread"] if m["sender"] == "Assistant"]
+        for i in range(current_index, len(texts)):
+            current_text = texts[i]
+            current_text = current_text.replace("{user_name}", st.session_state.get("user_name", "")) \
+                                       .replace("{full_goal}", st.session_state.get("full_goal", ""))
+            if current_text not in rendered_messages:
+                st.session_state["chat_thread"].append({"sender": "Assistant", "message": current_text})
+        set_state(message_index=len(texts), needs_restore=first)
+        st.rerun()  # one refresh so buttons/input render immediately
 
     # Step 2: Handle buttons or input after all messages are rendered
     else:
