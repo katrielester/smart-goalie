@@ -51,8 +51,7 @@ def fake_response(goal_text, type_):
         )
     elif type_ == "summary":
         return (
-            "This week, you made progress on your goal. Stay consistent and focus on one step at a time. "
-            "You're doing great, keep going!"
+            "NOLLM"
         )
     elif type_ == "tasks":
         return (

@@ -14,6 +14,7 @@ from db_utils import set_state
 
 import os
 
+
 # CHANGE THIS BEFORE PUBLISHING, ALSO "PILOT" IN RENDER ENVIRONMENT
 separate_studies = True
 
@@ -501,12 +502,12 @@ def run_weekly_reflection():
 
     elif st.session_state["reflection_step"] == -1:
         c1, c2 = st.columns(2)
-        if c1.button("✅ I’m ready", key="intro_ready_yes"):
+        if c1.button("✅ I'm ready", key="intro_ready_yes"):
             st.session_state["chat_thread"].append({
                 "sender":"Assistant",
                 "message": (
-                    f"Let’s check in on how your goal is going:<br><br><b>{goal_text}</b>"
-                    "<br><br>I’ll walk you through your tasks one by one. Just answer honestly, no pressure."
+                    f"Let's check in on how your goal is going:<br><br><b>{goal_text}</b>"
+                    "<br><br>I'll walk you through your tasks one by one. Just answer honestly, no pressure."
                 )
             })
             st.session_state["reflection_step"] = 1
@@ -965,9 +966,35 @@ def run_weekly_reflection():
         # Append summary exactly once
         last_msg_exists = any("Thanks for reflecting!" in (m.get("message") or "") for m in st.session_state["chat_thread"])
         if not st.session_state.get("summary_appended") and not last_msg_exists:
-            summary = summarize_reflection(st.session_state.get("reflection_text_cached",""))
+            # 1) Try LLM; if it returns "NOLLM"/empty → fallback to deterministic summary
+            try:
+                summary = summarize_reflection(st.session_state.get("reflection_text_cached", ""))
+            except Exception:
+                summary = None
+
+            if not summary or summary.strip().upper() == "NOLLM":
+                # ---- PROGRESS-BASED FALLBACK (no LLM) ----
+                _tasks_active = get_tasks(goal_id, active_only=True)
+                n = len(_tasks_active)
+                if n == 0:
+                    summary = (
+                        "Thanks for checking in. Set one tiny, concrete task for next week to get moving!"
+                    )
+                else:
+                    max_possible = 4 * n
+                    total = sum(st.session_state.get("task_progress", {}).get(t["id"], 0) for t in _tasks_active)
+                    ratio = (total / max_possible) if max_possible else 0.0
+
+                    if ratio >= 0.70:
+                        summary = "Great momentum this week—you made strong progress and built good habits. Keep it up!"
+                    elif ratio >= 0.40:
+                        summary = "Nice steady progress—keep what worked and add one small step next week."
+                    elif ratio > 0:
+                        summary = "Slow week, but you still moved forward. Pick one tiny, doable step and try again."
+                    else:
+                        summary = "No visible progress this time, and that's okay. Start with one tiny step to regain momentum, you've got this!"
+
             st.session_state["chat_thread"].append({"sender":"Assistant","message": summary})
-            # Final message
             st.session_state["chat_thread"].append({
                 "sender":"Assistant",
                 "message":"✅ Thanks for reflecting! Your responses are saved."
