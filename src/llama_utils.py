@@ -338,47 +338,110 @@ def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     """
     return smart_wrapper(prompt, goal_text, "tasks")
 
-def suggest_tasks_with_context(goal_text, reflection_answers=None, existing_tasks=None):
-    reflection_context = ""
-    if reflection_answers:
-        for k, v in reflection_answers.items():
-            reflection_context += f"{k.upper()}: {v}\n"
+def suggest_tasks_with_context(
+    goal_text,
+    reflection_answers=None,
+    existing_tasks=None,
+    edit_mode=None,      # "modify" | "replace" | None
+    last_task=None,      # text of the task being edited (if any)
+    count=3              # how many suggestions to ask for
+):
+    """
+    Return short weekly task suggestions tailored by goal + reflection context.
+    - Keeps original behavior if edit_mode/last_task are not provided.
+    - If edit_mode == "modify": keep the same intent, tweak scope/clarity/timing.
+    - If edit_mode == "replace": propose different tasks, not rephrases of last_task.
+    """
 
+    ra = reflection_answers or {}
+
+    # --- Pull the most helpful bits from reflection answers (optional keys) ---
+    def _grab(label, key):
+        v = ra.get(key)
+        return f"- {label}: {v.strip()}" if isinstance(v, str) and v.strip() else None
+
+    highlights = list(filter(None, [
+        _grab("Keep doing",        "now_what"),
+        _grab("What helped",       "what"),
+        _grab("Plan if obstacle",  "plan"),
+        _grab("Obstacle",          "obstacle"),
+        _grab("Task fit for next week", "task_alignment"),
+    ]))
+
+    # Add up to 2 quick per-task notes (from justification_*), if present
+    justs = [
+        v.strip() for k, v in ra.items()
+        if isinstance(k, str) and k.startswith("justification_")
+        and isinstance(v, str) and v.strip()
+    ][:2]
+    for j in justs:
+        highlights.append(f"- Note: {j}")
+
+    reflection_context = "\n".join(highlights) if highlights else "None"
+
+    # --- Tasks we must NOT repeat/rephrase ---
     existing_tasks = existing_tasks or []
-    existing_list = "<br>".join(f"- {task}" for task in existing_tasks) if existing_tasks else "None"
+    existing_list = "\n".join(f"- {t}" for t in existing_tasks) if existing_tasks else "None"
 
+    # --- Edit mode block (optional) ---
+    mode_block = ""
+    em = (edit_mode or "").strip().lower()
+    lt = (last_task or "").strip()
+
+    if em == "modify" and lt:
+        mode_block = f"""
+You are EDITING an existing weekly task.
+
+[Current task]
+{lt}
+[/Current task]
+
+Rules for MODIFY:
+- Keep the same intent.
+- Offer clearer wording and/or smaller scope or adjusted timing.
+- Include ONE easier/smaller variant among the suggestions.
+"""
+    elif em == "replace" and lt:
+        mode_block = f"""
+You are REPLACING an old weekly task.
+
+[Old task]
+{lt}
+[/Old task]
+
+Rules for REPLACE:
+- Do NOT rephrase or reuse this old task.
+- Propose different actions that still support the goal.
+"""
+
+    # --- Build the prompt (simple, Mistral-friendly) ---
     prompt = f"""
-You help users break down SMART goals into short, concrete weekly tasks.
+You help users turn a SMART goal into small, concrete weekly tasks.
 
-The user's SMART goal is:
 [Goal]
 {goal_text}
 [/Goal]
+{mode_block}
+Notes from the user's reflection (use if relevant; keep it short and practical):
+{reflection_context}
 
-Reflection context (to inspire useful ideas):
-{reflection_context.strip()}
-
-Tasks already added (do not repeat or rephrase these):
+Tasks already added (do NOT repeat or rephrase these):
 {existing_list}
 
-Suggest exactly 3 new weekly tasks. Each task should:
-- Be actionable and specific (describe the exact action)
-- Fit into a single sentence, under 12 words
-- Be achievable within one week
-- Include a time, quantity, or duration if relevant
-- Do not mention name of day like "by Monday", instead use each week or every 3 days
+Write exactly {count} new weekly tasks that:
+- Are specific, one clear action per line
+- ≤ 12 words
+- Achievable within a week
+- Include a time/quantity/duration when useful
+- Avoid day names ("Monday"); use "each day", "every 3 days", etc.
+- If there’s an obstacle, include at least one workaround idea
+- If they said what to keep doing, include at least one “continue” idea
+- Never duplicate or rephrase an existing task
+- Follow the MODIFY/REPLACE rules above if provided
 
-Avoid:
-- Rambling or multiple steps per task
-- Repeating existing tasks
-- Generic phrasing like "try to..." or "maybe"
-
-Respond with only the 3 tasks, in this format:
-
-- ...
-- ...
-- ...
+Output format: {count} lines, each starting with "- " and nothing else.
 """
+
     return smart_wrapper(prompt, goal_text, "tasks")
 
 # CHECK SMART FEEDBACK

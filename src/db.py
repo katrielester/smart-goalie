@@ -145,6 +145,9 @@ def get_goals(user_id):
         (user_id,), fetch="all"
     )
 
+def get_goal_duration_status(goal_id):
+    row = execute_query("SELECT duration_status FROM goals WHERE id = %s", (goal_id,))
+    return row["duration_status"] if row else None
 
 def save_task(goal_id, task_text):
     execute_query("""

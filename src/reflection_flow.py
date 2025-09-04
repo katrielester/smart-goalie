@@ -4,7 +4,7 @@ import streamlit as st
 from db import (
     get_goals, get_tasks, save_reflection, update_task_completion,
     save_task, get_last_reflection, get_next_week_number, reflection_exists,
-    get_user_phase, update_user_phase, get_user_group, replace_or_modify_task,
+    get_user_phase, update_user_phase, get_user_group, replace_or_modify_task, get_goal_duration_status,
     save_reflection_response, save_reflection_draft, load_reflection_draft, delete_reflection_draft
 )
 from llama_utils import summarize_reflection, suggest_tasks_with_context
@@ -221,6 +221,8 @@ def run_weekly_reflection():
     goal_id = all_goals[0]["id"]
     goal_text = all_goals[0]["goal_text"]
 
+    goal_duration_status=get_goal_duration_status(goal_id) or "standard"
+
     # --- STICKY SUCCESS SCREEN: handle cold reloads safely ---
     if st.session_state.get("_post_submit"):
         phase_key = f"reflection_{week}_{session}"
@@ -386,10 +388,22 @@ def run_weekly_reflection():
                 # Only append these once
                 reflection_answers = st.session_state.get("reflection_answers", {})
                 existing_tasks     = [t["task_text"] for t in frozen]
+                # Build edit context
+                edit_mode = (st.session_state.get("editing_choice") or "").lower()  # "modify" | "replace"
+                cur_idx   = st.session_state.get("update_task_idx", 0)
+                cur_task_text = (frozen[cur_idx]["task_text"] if frozen and cur_idx < len(frozen) else "")
+
+                all_existing = [t["task_text"] for t in frozen] if frozen else []
+                # Allow variants when modifying: don't blacklist the current task
+                existing_for_llm = [t for t in all_existing if t != cur_task_text] if edit_mode == "modify" else all_existing
+
                 suggestions = suggest_tasks_with_context(
                     goal_text,
-                    reflection_answers,
-                    existing_tasks
+                    reflection_answers=reflection_answers,
+                    existing_tasks=existing_for_llm,
+                    edit_mode=edit_mode if edit_mode in ("modify", "replace") else None,
+                    last_task=cur_task_text,
+                    count=3,
                 )
                 if suggestions:
                     st.session_state["chat_thread"].append({
@@ -409,8 +423,8 @@ def run_weekly_reflection():
             else:
                 new_text = st.chat_input("Type your updated task here...", key=f"update_task_{task_id}")
                 if new_text:
-                    reason = st.session_state.get("editing_choice", "Modified")
-                    # Defensive: fallback to "Modified" if not set
+                    reason = st.session_state.get("editing_choice", "Modify")
+                    # Defensive: fallback to "Modify" if not set
                     task = frozen[st.session_state["update_task_idx"]]
                     task_id = task["id"]
                     new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
@@ -440,7 +454,7 @@ def run_weekly_reflection():
             # This branch should be unreachable now, but for safety:
             new_text = st.chat_input("Type your updated task here...", key=f"awaiting_input_{task_id}")
             if new_text:
-                reason = st.session_state.get("editing_choice", "Modified")
+                reason = st.session_state.get("editing_choice", "Modify")
                 task = frozen[st.session_state["update_task_idx"]]
                 task_id = task["id"]
                 new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
@@ -659,11 +673,15 @@ def run_weekly_reflection():
                     f"<br><br>📋 <b>Current tasks</b><ul>{task_list_html}</ul>"
                 )
             })
+            if goal_duration_status =="short":
+                dur_prompt="<br>If you've already achieved the goal, describe 1-2 <b>maintenance or follow-up</b> tasks you could do this week. We will adjust the tasks in the next step."
+            else:
+                dur_prompt=""
             st.session_state["chat_thread"].append({
                 "sender": "Assistant",
                 "message": (
                     "🧭 For the <b>coming week</b>, do these tasks still <b>fit your goal</b>?<br> "
-                    "Tell me what still works and what you'd tweak for next week, whether that means making it lighter, more challenging, or changing focus."
+                    f"Tell me what still works and what you'd tweak for next week, whether that means making it lighter, more challenging, or changing focus.{dur_prompt}"
                 )
             })
             st.session_state["ask_alignment"] = True
@@ -744,10 +762,20 @@ def run_weekly_reflection():
                 existing_tasks     = [t["task_text"] for t in frozen]
                 
                 # call with reflection + existing tasks
+                edit_mode = (st.session_state.get("editing_choice") or "").lower()
+                cur_idx   = st.session_state.get("update_task_idx", 0)
+                cur_task_text = (frozen[cur_idx]["task_text"] if frozen and cur_idx < len(frozen) else "")
+
+                all_existing = [t["task_text"] for t in frozen] if frozen else []
+                existing_for_llm = [t for t in all_existing if t != cur_task_text] if edit_mode == "modify" else all_existing
+
                 suggestions = suggest_tasks_with_context(
                     goal_text,
-                    reflection_answers,
-                    existing_tasks
+                    reflection_answers=reflection_answers,
+                    existing_tasks=existing_for_llm,
+                    edit_mode=edit_mode if edit_mode in ("modify", "replace") else None,
+                    last_task=cur_task_text,
+                    count=3,
                 )
                 if suggestions:
                     st.session_state["chat_thread"].append({
@@ -769,7 +797,7 @@ def run_weekly_reflection():
                 if new_text:
                     task = frozen[st.session_state["update_task_idx"]]
                     task_id = task["id"]
-                    reason = "Modified" if st.session_state[f"update_choice_{task_id}"] == "Modify" else "Replaced"
+                    reason = "Modify" if st.session_state[f"update_choice_{task_id}"] == "Modify" else "Replace"
 
                     new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
 
