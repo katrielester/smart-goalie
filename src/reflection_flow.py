@@ -716,8 +716,9 @@ def run_weekly_reflection():
             if f"ask_update_{task_id}" not in st.session_state:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": f"For the next week, what would you like to do with this task?<br><br><b>{task_text}</b>"
+                    "message": f"For the next week, what would you like to do with this task?<br><br><b>{task_text}</b> <br><br> 📝 Tip: Please enter <b>ONE action per task</b>. Multiple actions should be split into separate tasks."
                 })
+
                 st.session_state[f"ask_update_{task_id}"] = True
                 st.rerun()
 
@@ -915,7 +916,7 @@ def run_weekly_reflection():
 
         # ENTRY
         if stage == "entry":
-            # --- LLM SUGGESTIONS (once) ---
+            
             if not st.session_state.get("rt_msg_suggest"):
                 existing_tasks = [t["task_text"] for t in get_tasks(goal_id, active_only=True)]
                 reflection_answers = st.session_state.get("reflection_answers", {})
@@ -929,7 +930,7 @@ def run_weekly_reflection():
                 # Always add a typing prompt bubble (once)
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": "✍️ Type the task you'd like to add (or copy one of the suggestions)."
+                    "message": "✍️ Type the task you'd like to add (or copy one of the suggestions). <br> 📝 Tip: Please enter <b>ONE action per task</b>. Multiple actions should be split into separate tasks."
                 })
                 st.session_state["rt_msg_suggest"] = True
                 save_reflection_state(); st.rerun()
