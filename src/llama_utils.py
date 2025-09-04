@@ -346,12 +346,6 @@ def suggest_tasks_with_context(
     last_task=None,      # text of the task being edited (if any)
     count=3              # how many suggestions to ask for
 ):
-    """
-    Return short weekly task suggestions tailored by goal + reflection context.
-    - Keeps original behavior if edit_mode/last_task are not provided.
-    - If edit_mode == "modify": keep the same intent, tweak scope/clarity/timing.
-    - If edit_mode == "replace": propose different tasks, not rephrases of last_task.
-    """
 
     ra = reflection_answers or {}
 
@@ -396,7 +390,7 @@ You are EDITING an existing weekly task.
 {lt}
 [/Current task]
 
-Rules:
+Suggest exactly 3 weekly tasks with the following rules:
 - Keep the same intent.
 - Offer clearer wording and/or smaller scope or adjusted timing.
 - Include ONE easier/smaller variant among the suggestions.
@@ -409,9 +403,8 @@ You are REPLACING an old weekly task.
 {lt}
 [/Old task]
 
-Rules:
+Suggest exactly 3 weekly tasks with the following rules:
 - Do NOT rephrase or reuse this old task.
-- Propose different actions that still support the goal.
 """
 
     # --- Build the prompt (simple, Mistral-friendly) ---
@@ -424,17 +417,11 @@ The user's SMART goal is:
 [/Goal]
 
 {mode_block}
-
-- Tasks already added (do NOT repeat or rephrase these): {existing_list}
-
-Suggest exactly 3 new weekly tasks that:
-- Are specific, one clear action per line
-- less than 15 words
-- Achievable within a week
-- Include a time/quantity/duration when useful
-- Do NOT include labels or prefixes like "Workaround:" or "Continue:"
-- Do NOT include colons ":" anywhere
-- Do NOT duplicate or rephrase existing tasks
+- Be actionable and specific (describe the exact action)
+- Each task must be concise, under 12 words
+- Be achievable within one week
+- Do not mention name of day like "by Monday", instead use each week or every 3 days
+- Include a time, quantity, or duration if relevant
 
 Notes from the user's reflection (use if relevant; keep it short and practical):
 {reflection_context}
