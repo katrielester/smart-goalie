@@ -392,7 +392,7 @@ You are EDITING an existing weekly task.
 
 Suggest exactly 3 weekly tasks with the following rules:
 - Keep the same intent.
-- Offer clearer wording and/or smaller scope or adjusted timing.
+- Offer clearer wording and/or smaller scope.
 - Include ONE easier/smaller variant among the suggestions.
 """
     elif em == "replace" and lt:
@@ -417,22 +417,27 @@ The user's SMART goal is:
 [/Goal]
 
 {mode_block}
-- Be actionable and specific (describe the exact action)
-- Each task must be concise, under 12 words
-- Be achievable within one week
-- Do not mention name of day like "by Monday", instead use each week or every 3 days
-- Include a time, quantity, or duration if relevant
+- Are specific, one clear action per line
+- Under 12 words
+- Achievable within one week
+- Include time/quantity/duration when useful using plain text (e.g., "for 3 days", "200 words")
+- Do NOT use parentheses (), brackets [] or braces {{}} anywhere
+- Do NOT include labels or headers (no "Note", "Workaround", "Continue")
+- Do NOT copy labels from the context; use the content only
+- No colons ":" and no extra commentary
 
-Notes from the user's reflection (use if relevant; keep it short and practical):
+Tasks already added (do NOT repeat or rephrase these):
+{existing_list}
+
+Notes from the user's reflection (you may use the ideas but never copy labels like "Note:"):
 {reflection_context}
 
 Avoid:
 - Rambling or multiple steps per task
-- Evaluation-heavy instructions
 - Repeating existing tasks
 - Generic phrasing like "try to..." or "maybe"
 
-Respond with only the 3 tasks, in this format:
+Respond with only the 3 tasks, exactly in this format:
 - ...
 - ...
 - ...
