@@ -307,7 +307,7 @@ def suggest_tasks_for_goal(goal_text, existing_tasks=None):
     existing_list = "<br>".join(f"- {task}" for task in existing_tasks) if existing_tasks else "None"
 
     prompt = f"""
-    You help users break down SMART goals into short, concrete weekly tasks.
+    You help users break down a SMART goal into short, concrete weekly tasks.
 
     The user's SMART goal is:
     [Goal]
@@ -396,7 +396,7 @@ You are EDITING an existing weekly task.
 {lt}
 [/Current task]
 
-Rules for MODIFY:
+Rules:
 - Keep the same intent.
 - Offer clearer wording and/or smaller scope or adjusted timing.
 - Include ONE easier/smaller variant among the suggestions.
@@ -409,37 +409,46 @@ You are REPLACING an old weekly task.
 {lt}
 [/Old task]
 
-Rules for REPLACE:
+Rules:
 - Do NOT rephrase or reuse this old task.
 - Propose different actions that still support the goal.
 """
 
     # --- Build the prompt (simple, Mistral-friendly) ---
     prompt = f"""
-You help users turn a SMART goal into small, concrete weekly tasks.
+You help users break down a SMART goal into small, concrete weekly tasks.
 
+The user's SMART goal is:
 [Goal]
 {goal_text}
 [/Goal]
+
 {mode_block}
+
+- Tasks already added (do NOT repeat or rephrase these): {existing_list}
+
+Suggest exactly 3 new weekly tasks that:
+- Are specific, one clear action per line
+- less than 15 words
+- Achievable within a week
+- Include a time/quantity/duration when useful
+- Do NOT include labels or prefixes like "Workaround:" or "Continue:"
+- Do NOT include colons ":" anywhere
+- Do NOT duplicate or rephrase existing tasks
+
 Notes from the user's reflection (use if relevant; keep it short and practical):
 {reflection_context}
 
-Tasks already added (do NOT repeat or rephrase these):
-{existing_list}
+Avoid:
+- Rambling or multiple steps per task
+- Evaluation-heavy instructions
+- Repeating existing tasks
+- Generic phrasing like "try to..." or "maybe"
 
-Write exactly {count} new weekly tasks that:
-- Are specific, one clear action per line
-- ≤ 12 words
-- Achievable within a week
-- Include a time/quantity/duration when useful
-- Avoid day names ("Monday"); use "each day", "every 3 days", etc.
-- If there’s an obstacle, include at least one workaround idea
-- If they said what to keep doing, include at least one “continue” idea
-- Never duplicate or rephrase an existing task
-- Follow the MODIFY/REPLACE rules above if provided
-
-Output format: {count} lines, each starting with "- " and nothing else.
+Respond with only the 3 tasks, in this format:
+- ...
+- ...
+- ...
 """
 
     return smart_wrapper(prompt, goal_text, "tasks")
