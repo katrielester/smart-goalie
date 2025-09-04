@@ -421,7 +421,7 @@ The user's SMART goal is:
 - Under 12 words
 - Achievable within one week
 - Include time/quantity/duration when useful using plain text (e.g., "for 3 days", "200 words")
-- Do NOT mention weekdays. or weekends
+- Do NOT mention weekdays or weekends or any day of the week
 - Do NOT use dashes to add timing
 - Do NOT use parentheses (), brackets [] or braces {{}} anywhere
 - Do NOT include labels or headers (no "Note", "Workaround", "Continue")
