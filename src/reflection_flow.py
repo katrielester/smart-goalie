@@ -87,13 +87,13 @@ def compute_completion(week:int, session:str, batch:str, separate_studies:bool):
     COMPLETION = {
         (1, "a", "1"): "CKM762BU",
         (1, "b", "1"): "CKM762BU",
-        (2, "a", "1"): "PLACEHOLDER",
+        (2, "a", "1"): "CKM762BU",
         (1, "a", "2"): "CKM762BU",
-        (1, "b", "2"): "PLACEHOLDER",
-        (2, "a", "2"): "PLACEHOLDER",
-        (1, "a", "3"): "PLACEHOLDER",
-        (1, "b", "3"): "PLACEHOLDER",
-        (2, "a", "3"): "PLACEHOLDER",
+        (1, "b", "2"): "CKM762BU",
+        (2, "a", "2"): "CKM762BU",
+        (1, "a", "3"): "CKM762BU",
+        (1, "b", "3"): "CKM762BU",
+        (2, "a", "3"): "CKM762BU",
     }
     SCHEDULE = {
         (1, "a", "1"): "4 days (Monday)",
