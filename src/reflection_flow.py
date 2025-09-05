@@ -1025,8 +1025,12 @@ def run_weekly_reflection():
 
             st.session_state["chat_thread"].append({"sender":"Assistant","message": summary})
             st.session_state["chat_thread"].append({
-                "sender":"Assistant",
-                "message":"✅ Thanks for reflecting! Your responses are saved."
+                "sender": "Assistant",
+                "message": (
+                    "✅ Thanks for reflecting! Your responses are saved.<br>"
+                    "⬇️ <b>To finish:</b> please follow the guide just <b>below this chat</b>."
+                    "If you don’t see it yet, please scroll down."
+                )
             })
             st.session_state["last_reflection_summary"] = summary or ""
             st.session_state["summary_appended"] = True
