@@ -607,7 +607,7 @@ st.title("SMART Goalie")
 
 
 # Use pixel height for consistent layout
-chat_height_px = 460
+chat_height_px = 480
 # EXPERIMENTAL START #
 
 previous_len = st.session_state.get("last_rendered_index", 0)
