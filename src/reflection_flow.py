@@ -716,7 +716,7 @@ def run_weekly_reflection():
             if f"ask_update_{task_id}" not in st.session_state:
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": f"For the next week, what would you like to do with this task?<br><br><b>{task_text}</b> <br><br> 📝 Tip: Please enter <b>ONE action per task</b>. Multiple actions should be split into separate tasks."
+                    "message": f"For the next week, what would you like to do with this task?<br><br><b>{task_text}</b> <br><br> 📝 Tip: Please enter <b>ONE action per task</b>. If your task has 'and' or 'then', you might want to split it for easier tracking."
                 })
 
                 st.session_state[f"ask_update_{task_id}"] = True
@@ -930,7 +930,7 @@ def run_weekly_reflection():
                 # Always add a typing prompt bubble (once)
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": "✍️ Type the task you'd like to add (or copy one of the suggestions). <br> 📝 Tip: Please enter <b>ONE action per task</b>. Multiple actions should be split into separate tasks."
+                    "message": "✍️ Type the task you'd like to add (or copy one of the suggestions). <br> 📝 Tip: Please enter <b>ONE action per task</b>. If your task has 'and' or 'then', you might want to split it for easier tracking."
                 })
                 st.session_state["rt_msg_suggest"] = True
                 save_reflection_state(); st.rerun()
