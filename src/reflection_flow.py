@@ -35,7 +35,7 @@ progress_numeric = {
 
 def build_postsurvey_link(user_id: str) -> str:
     """
-    Build the Qualtrics Post-Survey link: ?PROLIFIC_PID=<PROLIFIC_PID>&group=<0|1>
+    Build the Qualtrics Post-Survey link: ?user_id=<PROLIFIC_PID>&group=<0|1>
     """
     base = os.environ.get(
         "QUALTRICS_POST_BASE",
@@ -43,7 +43,7 @@ def build_postsurvey_link(user_id: str) -> str:
     )
     group = "1"
     sep = "&" if "?" in base else "?"
-    return f"{base}{sep}PROLIFIC_PID={user_id}&group={group}"
+    return f"{base}{sep}user_id={user_id}&group={group}"
 
 def save_reflection_state(needs_restore=True):
     ALLOW_RT = {
@@ -165,7 +165,7 @@ def run_weekly_reflection():
         st.session_state["task_progress"] = fixed
 
     if "user_id" not in st.session_state:
-        st.session_state["user_id"] = st.query_params.get("PROLIFIC_PID")
+        st.session_state["user_id"] = query_params.get("PROLIFIC_PID")
 
     if "group" not in st.session_state:
         group_code_raw = get_user_group(st.session_state["user_id"])
