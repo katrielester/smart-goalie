@@ -2,7 +2,7 @@
 
 import streamlit as st
 from db import (
-    get_goals, get_tasks, save_reflection, update_task_completion,
+    get_goals, get_tasks, save_reflection, update_task_completion, get_user_info,
     save_task, get_last_reflection, get_next_week_number, reflection_exists,
     get_user_phase, update_user_phase, get_user_group, replace_or_modify_task, get_goal_duration_status,
     save_reflection_response, save_reflection_draft, load_reflection_draft, delete_reflection_draft
@@ -33,17 +33,19 @@ progress_numeric = {
     "All of it": 4,
 }
 
-def build_postsurvey_link(user_id: str) -> str:
+def build_postsurvey_link(user_id: str, group: str = "1", batch: int | str | None = None) -> str:
     """
-    Build the Qualtrics Post-Survey link: ?user_id=<PROLIFIC_PID>&group=<0|1>
+    Build the Qualtrics Post-Survey link: ?user_id=<PROLIFIC_PID>&group=<0|1>[&batch=<...>]
     """
     base = os.environ.get(
         "QUALTRICS_POST_BASE",
         "https://tudelft.fra1.qualtrics.com/jfe/form/SV_1X4F9qn17Zydgc6"
     )
-    group = "1"
     sep = "&" if "?" in base else "?"
-    return f"{base}{sep}user_id={user_id}&group={group}"
+    url = f"{base}{sep}user_id={user_id}&group={group}"
+    if batch is not None and str(batch).strip() != "":
+        url += f"&batch={batch}"
+    return url
 
 def save_reflection_state(needs_restore=True):
     ALLOW_RT = {
@@ -263,8 +265,17 @@ def run_weekly_reflection():
         and not st.session_state.get("rt_add_stage"):
 
         # --- Special case: Week 2, Session B => send to Qualtrics post-survey ---
+        # inside run_weekly_reflection(), in the "already submitted" special case:
         if week == 2 and session == "b":
-            qx_link = build_postsurvey_link(user_id)
+            # try query param → session_state → DB as last resort
+            b = st.query_params.get("b", st.session_state.get("batch", None))
+            if isinstance(b, list): 
+                b = b[0]
+            if b is None:
+                info = get_user_info(user_id) or {}
+                b = info.get("batch", None)
+
+            qx_link = build_postsurvey_link(user_id, group="1", batch=b)
             st.success(
                 f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
                 "📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. "
@@ -1078,7 +1089,7 @@ def run_weekly_reflection():
         batch = st.query_params.get("b"); batch = batch[0] if isinstance(batch, list) else batch
         st.session_state["batch"] = (batch.strip() if isinstance(batch, str) else "-1")
         if week == 2 and session == "b":
-            qx_link = build_postsurvey_link(user_id)
+            qx_link = build_postsurvey_link(user_id, group="1", batch=st.session_state.get("batch"))
             st.success("✅ Reflection submitted and saved!\n\n📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. At the end of the survey, you'll be redirected back to Prolific to finish.")
             st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
         else:
