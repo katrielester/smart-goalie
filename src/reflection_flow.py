@@ -420,12 +420,12 @@ def run_weekly_reflection():
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
                         "message": (
-                        "💡 Based on your goal and what you shared, here are some fresh task ideas:<br><br>" + suggestions
+                        "💡 Based on your goal and what you shared, here are some fresh task ideas to inspire you:<br><br>" + suggestions
                         )
                     })
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": "✍️ Please write the new version of this task."
+                    "message": "✍️ Please write the new version of your task. <br> 📝 Tip: Do not reply with “Number 1/2/3”, write the full task in your own words."
                 })
                 st.session_state["ask_for_edit"] = True
                 save_reflection_state()
@@ -941,7 +941,7 @@ def run_weekly_reflection():
                 # Always add a typing prompt bubble (once)
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
-                    "message": "✍️ Type the task you'd like to add (or copy one of the suggestions). <br> 📝 Tip: Please enter <b>ONE action per task</b>. If your task has 'and' or 'then', you might want to split it for easier tracking."
+                    "message": "✍️ Type one task you'd like to add (or copy <b>one</b> of the suggestions). <br> 📝 Tip: Do not reply with “Number 1/2/3”, write the full task in your own words."
                 })
                 st.session_state["rt_msg_suggest"] = True
                 save_reflection_state(); st.rerun()

@@ -266,7 +266,7 @@ You are a supportive goal coach.
 
 Your task is to summarize the user's weekly reflection in a warm and encouraging tone.
 
-1. Keep the summary short (1–2 sentences).
+1. Keep the summary short (1-2 sentences).
 2. Focus on any progress made, even small steps.
 3. If the user is struggling, highlight their effort and suggest they keep going.
 4. Paraphrase rather than quote the user's exact words.
@@ -285,7 +285,7 @@ You are a supportive progress coach helping users reflect on their SMART goal pu
 
 Based on the user's input below, summarize their reflection in a warm, friendly tone. 
 
-1. Keep it short: 1–2 sentences max.
+1. Keep it short: 1-2 sentences max.
 2. Mention whether their current tasks still align with the goal.
 3. Acknowledge if they feel confident or uncertain.
 4. End with encouragement like “Keep it up!” or “You've got this!”
@@ -440,9 +440,9 @@ Avoid:
 - Generic phrasing like "try to..." or "maybe"
 
 Respond with only the 3 tasks, exactly in this format:
-- ...
-- ...
-- ...
+1. ...
+2. ...
+3. ...
 """
 
     return smart_wrapper(prompt, goal_text, "tasks")
@@ -465,8 +465,8 @@ Guidelines:
 - Use the tone of these samples, but write your own sentence.
 
 Stylistic samples:
-– Great focus, this goal names a clear outcome!
-– This goal feels broad, consider honing in on one main result.
+- Great focus, this goal names a clear outcome!
+- This goal feels broad, consider honing in on one main result.
 
 [Goal]
 {goal_text}
@@ -488,8 +488,8 @@ Guidelines:
 - Use the tone of these samples, but write your own sentence.
 
 Stylistic samples:
-– Good job, this goal includes a clear progress indicator!
-– Almost there, consider adding a way to measure success.
+- Good job, this goal includes a clear progress indicator!
+- Almost there, consider adding a way to measure success.
 
 [Goal]
 {goal_text}
@@ -511,8 +511,8 @@ Guidelines:
 - Use the tone of these samples, but write your own sentence.
 
 Stylistic samples:
-– Nice, this goal seems doable within two weeks!
-– Looks good! Make sure it fits your energy.
+- Nice, this goal seems doable within two weeks!
+- Looks good! Make sure it fits your energy.
 
 [Goal]
 {goal_text}
@@ -534,9 +534,9 @@ Guidelines:
 - Use the tone of these samples, but write your own sentence.
 
 Stylistic samples:
-– Excellent, this goal aligns with what matters to you!
+- Excellent, this goal aligns with what matters to you!
 - Good start, adding why you want to achieve this would make it even better!
-– Feels a bit generic; adding your “why” could help.
+- Feels a bit generic; adding your “why” could help.
 
 [Goal]
 {goal_text}
@@ -558,8 +558,8 @@ Guidelines:
 - Use the tone of these samples, but write your own sentence.
 
 Stylistic samples:
-– Great, this goal has a clear timeframe!
-– Missing a deadline; adding one will help.
+- Great, this goal has a clear timeframe!
+- Missing a deadline; adding one will help.
 
 [Goal]
 {goal_text}
