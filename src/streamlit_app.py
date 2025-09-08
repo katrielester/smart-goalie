@@ -745,7 +745,7 @@ st.markdown("""
 
     /* Kill bottom margin of iframe container */
     iframe {
-        margin-bottom: 10px !important;
+        margin-bottom: 5px !important;
         display: block;
     }
     </style>
