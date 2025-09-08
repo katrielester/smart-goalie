@@ -278,7 +278,7 @@ def run_weekly_reflection():
             qx_link = build_postsurvey_link(user_id, group="1", batch=b)
             st.success(
                 f"✅ You've already submitted a reflection for **Week {week}, Session {session.upper()}**. Thank you!\n\n"
-                "📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. "
+                "📣 **Final step:** Please click the button below to complete the **Post-Survey** on Qualtrics. "
                 "At the end of the survey, you'll be redirected back to Prolific to finish.",
                 icon="✔️"
             )
@@ -1090,7 +1090,7 @@ def run_weekly_reflection():
         st.session_state["batch"] = (batch.strip() if isinstance(batch, str) else "-1")
         if week == 2 and session == "b":
             qx_link = build_postsurvey_link(user_id, group="1", batch=st.session_state.get("batch"))
-            st.success("✅ Reflection submitted and saved!\n\n📣 **Final step:** Please complete the **Post-Survey** on Qualtrics now. At the end of the survey, you'll be redirected back to Prolific to finish.")
+            st.success("✅ Reflection submitted and saved!\n\n📣 **Final step:** Please click the button below to complete the **Post-Survey** on Qualtrics. At the end of the survey, you'll be redirected back to Prolific to finish.")
             st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
         else:
             _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
