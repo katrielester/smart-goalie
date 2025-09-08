@@ -282,7 +282,7 @@ def run_weekly_reflection():
                 "At the end of the survey, you'll be redirected back to Prolific to finish.",
                 icon="✔️"
             )
-            st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
+            st.link_button("🚀 Open Post-Survey", qx_link)
             return
 
         # --- Otherwise, keep your existing behavior (separate_studies on/off) ---
@@ -1095,7 +1095,7 @@ def run_weekly_reflection():
             with c1:
                 pass
             with c2:
-                st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
+                st.link_button("🚀 Open Post-Survey", qx_link)
             with c3:
                 pass
 
