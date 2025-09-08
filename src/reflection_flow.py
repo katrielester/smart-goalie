@@ -1091,7 +1091,14 @@ def run_weekly_reflection():
         if week == 2 and session == "b":
             qx_link = build_postsurvey_link(user_id, group="1", batch=st.session_state.get("batch"))
             st.success("✅ Reflection submitted and saved!\n\n📣 **Final step:** Please **click the button below** to complete the **Post-Survey** on Qualtrics. At the end of the survey, you'll be redirected back to Prolific to finish.")
-            st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                pass
+            with c2:
+                st.link_button("🚀 Open Post-Survey (Qualtrics)", qx_link)
+            with c3:
+                pass
+
         else:
             _, _, success_msg = compute_completion(week, session, st.session_state["batch"], separate_studies)
             st.success("✅ Reflection submitted and saved!\n\n📥 **Recommended:** Download a copy of your updated plan and reflection so you can revisit it anytime.\n\n" + success_msg)
