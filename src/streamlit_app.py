@@ -253,7 +253,7 @@ else:
 with st.sidebar:
     st.warning(
             "⏳ **Please be patient**\n\n"
-            "When you click or submit, Goalie might take a moment and the page may refresh. That’s normal! \n\n Just wait for the next message to appear, no need to click or type twice. Double-pressing can sometimes add extra text or jump ahead."
+            "When you click or submit, Goalie might take a moment and the page may refresh. That's normal! \n\n Just wait for the next message to appear, no need to click or type twice. Double-pressing can sometimes add extra text or jump ahead."
         )
     with st.expander("💡 Tip & Help", expanded=False):
         st.write(

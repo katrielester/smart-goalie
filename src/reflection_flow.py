@@ -1039,8 +1039,8 @@ def run_weekly_reflection():
                 "sender": "Assistant",
                 "message": (
                     "✅ Thanks for reflecting! Your responses are saved.<br>"
-                    "⬇️ <b>To finish:</b> please follow the guide just <b>below this chat</b>."
-                    "If you don’t see it yet, please scroll all the way down."
+                    "⬇️ <b>To finish:</b> please follow the guide just <b>below this chat</b>. <br>"
+                    "If you don't see it yet, please scroll all the way down."
                 )
             })
             st.session_state["last_reflection_summary"] = summary or ""
