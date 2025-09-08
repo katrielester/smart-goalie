@@ -39,7 +39,7 @@ st.markdown(
         position: sticky !important;
         bottom: 0;
         z-index: 100;
-        background: #1c1f26;
+        background: transparent;
         padding-top: 8px;
       }
       /* Give your chat-iframe room to breathe */
@@ -132,16 +132,18 @@ st.markdown("""
       /* Apply to all Streamlit buttons: normal, download, link */
       .stButton>button,
       .stDownloadButton>button,
-      .stLinkButton>button {
-        background-color: #1f77b4 !important;
+      .stLinkButton>button,
+      .stLinkButton>a, {
+        background-color: #2563eb !important;
         color: #fff      !important;  /* always white by default */
         border-radius: 8px !important;
       }
       /* Hover should remain white text on darker blue */
       .stButton>button:hover,
       .stDownloadButton>button:hover,
-      .stLinkButton>button:hover {
-        background-color: #145a86 !important;
+      .stLinkButton>button:hover,
+      .stLinkButton>a:hover, {
+        background-color: #1d4ed8 !important;
         color: #fff !important;
       }
 
@@ -149,13 +151,15 @@ st.markdown("""
       @media (prefers-color-scheme: light) {
         .stButton>button,
         .stDownloadButton>button,
-        .stLinkButton>button {
-          color: #000 !important;
+        .stLinkButton>button,
+        .stLinkButton>a {
+        color: #fff !important;
         }
         .stButton>button:hover,
         .stDownloadButton>button:hover,
-        .stLinkButton>button:hover {
-          color: #000 !important;
+        .stLinkButton>button:hover,
+        .stLinkButton>a:hover {
+        color: #fff !important;
         }
       }
     .block-container {
