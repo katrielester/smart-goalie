@@ -205,9 +205,10 @@ def user_goals_exist(user_id):
 
 def get_last_reflection(user_id, goal_id):
     return execute_query("""
-        SELECT reflection_text, week_number FROM reflections
+        SELECT reflection_text, week_number, session_id FROM reflections
         WHERE user_id = %s AND goal_id = %s
-        ORDER BY week_number DESC LIMIT 1
+        ORDER BY week_number DESC, session_id DESC, id DESC
+        LIMIT 1
     """, (user_id, goal_id), fetch="one")
 
 
@@ -314,12 +315,10 @@ def get_last_reflection_meta(user_id, goal_id):
     """
     return execute_query(
         """
-        SELECT id, week_number
-          FROM reflections
-         WHERE user_id = %s
-           AND goal_id = %s
-         ORDER BY id DESC
-         LIMIT 1
+        SELECT id, week_number, session_id FROM reflections
+        WHERE user_id = %s AND goal_id = %s
+        ORDER BY week_number DESC, session_id DESC, id DESC
+        LIMIT 1
         """,
         (user_id, goal_id),
         fetch="one",
