@@ -44,7 +44,7 @@ st.markdown(
       }
       /* Give your chat-iframe room to breathe */
       .chat-wrapper {
-        height: calc(100vh-10px) !important;
+        height: calc(100vh) !important;
       }
     </style>
     """,
@@ -646,7 +646,7 @@ with st.container():
             color: #f0f0f0;
         }}
         .chat-wrapper {{
-            height: calc(100vh) !important;
+            height: calc(100vh-10px) !important;
             overflow-y: auto;
             padding: 10px;
             padding-bottom: 0px !important;
