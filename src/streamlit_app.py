@@ -648,7 +648,7 @@ with st.container():
         .chat-wrapper {{
             height: calc(100vh) !important;
             overflow-y: auto;
-            padding: 10px 10px 24px !important;
+            padding: 10px 10px 10px !important;
             border-radius: 10px;
             border: 1px solid #444;
             background-color: #1c1f26;
@@ -682,7 +682,7 @@ with st.container():
     <body>
         <div id="chatbox" class="chat-wrapper">
             {chat_bubble_html}
-            <div id="endofchat" style="height: 24px;"></div>
+            <div id="endofchat" style="height: 10px;"></div>
         </div>
         <script>
             const chatBox = document.getElementById("chatbox");
