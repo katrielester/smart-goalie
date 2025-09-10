@@ -439,7 +439,7 @@ def run_weekly_reflection():
                     task = frozen[st.session_state["update_task_idx"]]
                     task_id = task["id"]
                     new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
-                    st.session_state["task_progress"][new_task_id] = st.session_state["task_progress"].pop(task_id, 0)
+                    # st.session_state["task_progress"][new_task_id] = st.session_state["task_progress"].pop(task_id, 0)
                     st.session_state["chat_thread"].append({
                         "sender": "Assistant",
                         "message": f"✅ Task updated to: '<b>{new_text}</b>'"
@@ -469,7 +469,7 @@ def run_weekly_reflection():
                 task = frozen[st.session_state["update_task_idx"]]
                 task_id = task["id"]
                 new_task_id = replace_or_modify_task(goal_id, task_id, new_text, reason)
-                st.session_state["task_progress"][new_task_id] = st.session_state["task_progress"].pop(task_id, 0)
+                # st.session_state["task_progress"][new_task_id] = st.session_state["task_progress"].pop(task_id, 0)
                 st.session_state["chat_thread"].append({
                     "sender": "Assistant",
                     "message": f"✅ Task updated to: '<b>{new_text}</b>'"
@@ -840,9 +840,14 @@ def run_weekly_reflection():
 
     elif st.session_state["reflection_step"] == len(tasks) + 4:
         # Build reflection text (same as you already do)
+        frozen = st.session_state.get("frozen_tasks", [
+            {"id": t["id"], "task_text": t["task_text"]} for t in tasks
+        ])
+
         task_results = []
-        for task in tasks:
-            tid = task["id"]; txt = task["task_text"]
+        for task in frozen:
+            tid = task["id"]
+            txt = task["task_text"]
             val = st.session_state["task_progress"].get(tid, 0)
             label = [k for k, v in progress_numeric.items() if v == val][0]
             task_results.append(f"{txt}: {label}")
@@ -872,7 +877,10 @@ def run_weekly_reflection():
         if not st.session_state.get(commit_key):
             reflection_id = save_reflection(user_id, goal_id, reflection_text, week_number=week, session_id=session)
             update_user_phase(user_id, phase + 1)
-            for task in tasks:
+            frozen = st.session_state.get("frozen_tasks", [
+                {"id": t["id"], "task_text": t["task_text"]} for t in tasks
+            ])
+            for task in frozen:
                 rating = st.session_state["task_progress"].get(task["id"], 0)
                 save_reflection_response(reflection_id, task_id=task["id"], progress_rating=rating)
             for key, answer in st.session_state["reflection_answers"].items():
@@ -1014,15 +1022,17 @@ def run_weekly_reflection():
 
             if not summary or summary.strip().upper() == "NOLLM":
                 # ---- PROGRESS-BASED FALLBACK (no LLM) ----
-                _tasks_active = get_tasks(goal_id, active_only=True)
-                n = len(_tasks_active)
+                _frozen = st.session_state.get("frozen_tasks", [
+                    {"id": t["id"], "task_text": t["task_text"]} for t in get_tasks(goal_id, active_only=True)
+                ])
+                n = len(_frozen)
+                total = sum(st.session_state.get("task_progress", {}).get(t["id"], 0) for t in ({"id": x["id"]} for x in _frozen))
                 if n == 0:
                     summary = (
                         "Thanks for checking in. Set one tiny, concrete task for next week to get moving!"
                     )
                 else:
                     max_possible = 4 * n
-                    total = sum(st.session_state.get("task_progress", {}).get(t["id"], 0) for t in _tasks_active)
                     ratio = (total / max_possible) if max_possible else 0.0
 
                     if ratio >= 0.70:
@@ -1052,7 +1062,10 @@ def run_weekly_reflection():
         active_tasks_now = [t["task_text"] for t in get_tasks(goal_id, active_only=True)]
         def progress_label(v): return next((k for k, vv in progress_numeric.items() if vv == v), "Unknown")
         progress_lines = []
-        for t in get_tasks(goal_id, active_only=False):
+        _frozen = st.session_state.get("frozen_tasks", [
+            {"id": t["id"], "task_text": t["task_text"]} for t in get_tasks(goal_id, active_only=True)
+        ])
+        for t in _frozen:
             tid = t["id"]
             if tid in st.session_state["task_progress"]:
                 v = st.session_state["task_progress"][tid]
