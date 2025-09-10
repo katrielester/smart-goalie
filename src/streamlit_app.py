@@ -44,7 +44,7 @@ st.markdown(
       }
       /* Give your chat-iframe room to breathe */
       .chat-wrapper {
-        height: calc(100vh) !important;
+        height: calc(100vh - 80px) !important;
       }
     </style>
     """,
@@ -646,13 +646,13 @@ with st.container():
             color: #f0f0f0;
         }}
         .chat-wrapper {{
-            height: calc(100vh-10px) !important;
+            height: calc(100vh) !important;
             overflow-y: auto;
-            padding: 10px;
-            padding-bottom: 0px !important;
+            padding: 10px 10px 24px !important;
             border-radius: 10px;
             border: 1px solid #444;
             background-color: #1c1f26;
+            box-sizing: border-box;
         }}
         .chat-left {{
             text-align: left;
@@ -673,7 +673,6 @@ with st.container():
             padding: 10px;
             margin: 5px 0;
             max-width: 70%;
-            margin-left: auto;
             display: block;
             word-wrap: break-word;
         }}
@@ -682,7 +681,7 @@ with st.container():
     <body>
         <div id="chatbox" class="chat-wrapper">
             {chat_bubble_html}
-            <div id="endofchat" style="height: 0px;"></div>
+            <div id="endofchat" style="height: 24px;"></div>
         </div>
         <script>
             const chatBox = document.getElementById("chatbox");
