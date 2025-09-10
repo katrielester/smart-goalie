@@ -648,7 +648,7 @@ with st.container():
         .chat-wrapper {{
             height: calc(100vh) !important;
             overflow-y: auto;
-            padding: 5px 5px 5px !important;
+            padding: 10px 10px 10px !important;
             border-radius: 10px;
             border: 1px solid #444;
             background-color: #1c1f26;
@@ -661,7 +661,7 @@ with st.container():
             border-radius: 10px;
             padding: 10px;
             margin: 5px 0;
-            max-width: 70%;
+            max-width: 80%;
             display: block;
             word-wrap: break-word;
         }}
@@ -672,7 +672,7 @@ with st.container():
             border-radius: 10px;
             padding: 10px;
             margin: 5px 0;
-            max-width: 70%;
+            max-width: 80%;
             margin-left: auto;
             display: block;
             word-wrap: break-word;
@@ -745,7 +745,7 @@ st.markdown("""
 
     /* Kill bottom margin of iframe container */
     iframe {
-        margin-bottom: 5px !important;
+        margin-bottom: 10px !important;
         display: block;
     }
     </style>
