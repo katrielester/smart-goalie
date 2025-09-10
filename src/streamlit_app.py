@@ -44,7 +44,7 @@ st.markdown(
       }
       /* Give your chat-iframe room to breathe */
       .chat-wrapper {
-        height: calc(100vh - 40px) !important;
+        height: calc(100vh-10px) !important;
       }
     </style>
     """,
