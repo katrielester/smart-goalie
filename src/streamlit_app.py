@@ -673,6 +673,7 @@ with st.container():
             padding: 10px;
             margin: 5px 0;
             max-width: 70%;
+            margin-left: auto;
             display: block;
             word-wrap: break-word;
         }}
