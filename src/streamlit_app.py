@@ -648,7 +648,7 @@ with st.container():
         .chat-wrapper {{
             height: calc(100vh) !important;
             overflow-y: auto;
-            padding: 10px 10px 10px !important;
+            padding: 5px 5px 5px !important;
             border-radius: 10px;
             border: 1px solid #444;
             background-color: #1c1f26;
@@ -745,7 +745,7 @@ st.markdown("""
 
     /* Kill bottom margin of iframe container */
     iframe {
-        margin-bottom: 10px !important;
+        margin-bottom: 5px !important;
         display: block;
     }
     </style>
