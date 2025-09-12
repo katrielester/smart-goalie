@@ -40,7 +40,7 @@ st.markdown(
         bottom: 0;
         z-index: 100;
         background: #1c1f26;
-        padding-top: 4px;
+        padding-top: 2px;
       }
       /* Give your chat-iframe room to breathe */
       .chat-wrapper {
