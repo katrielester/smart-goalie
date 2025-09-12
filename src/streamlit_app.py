@@ -40,7 +40,7 @@ st.markdown(
         bottom: 0;
         z-index: 100;
         background: #1c1f26;
-        padding-top: 8px;
+        padding-top: 4px;
       }
       /* Give your chat-iframe room to breathe */
       .chat-wrapper {
@@ -648,7 +648,7 @@ with st.container():
         .chat-wrapper {{
             height: calc(100vh) !important;
             overflow-y: auto;
-            padding: 10px 10px 10px !important;
+            padding: 10px 10px 6px !important;
             border-radius: 10px;
             border: 1px solid #444;
             background-color: #1c1f26;
@@ -682,7 +682,7 @@ with st.container():
     <body>
         <div id="chatbox" class="chat-wrapper">
             {chat_bubble_html}
-            <div id="endofchat" style="height: 10px;"></div>
+            <div id="endofchat" style="height: 6px;"></div>
         </div>
         <script>
             const chatBox = document.getElementById("chatbox");
@@ -745,7 +745,7 @@ st.markdown("""
 
     /* Kill bottom margin of iframe container */
     iframe {
-        margin-bottom: 10px !important;
+        margin-bottom: 2px !important;
         display: block;
     }
     </style>
