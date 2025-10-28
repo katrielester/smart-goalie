@@ -3,9 +3,10 @@
 import requests, re
 from logger import setup_logger
 
-
+# ssh y0iiqsm3h1mvkh-6441165c@ssh.runpod.io -i ~/.ssh/id_ed25519
 # LLM_API_URL = ssh y0iiqsm3h1mvkh-6441165c@ssh.runpod.io -i ~/.ssh/id_ed25519
-LLM_API_URL = "https://y0iiqsm3h1mvkh-6441165c.proxy.runpod.net/api/generate"
+LLM_API_URL = "https://y0iiqsm3h1mvkh-11434.proxy.runpod.net/api/generate"
+
 
 
 import os
